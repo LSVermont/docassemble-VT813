@@ -306,6 +306,45 @@ class ALIncomeList(DAList):
                         result += Decimal(item.total(times_per_year=times_per_year))
         return result
 
+
+    def total_other_attribute(
+        self,
+        times_per_year: float = 1,
+        source: Optional[SourceType] = None,
+        exclude_source: Optional[SourceType] = None,
+        owner: Optional[str] = None,
+        attribute: Optional[str] = None,
+    ) -> Decimal:
+        """
+        Returns the total periodic value in the list, gathering the list items
+        if necessary. You can optionally filter by `source`. `source` can be a
+        string or a list. You can also filter by one `owner`.
+
+        To calculate `.total()` correctly, all items must have a `.total()` and
+        it should be a positive value. Job-type incomes should automatically
+        exclude deductions.
+        """
+        self._trigger_gather()
+        result: Decimal = Decimal(0)
+        if times_per_year == 0:
+            return result
+        satisfies_sources = _source_to_callable(source, exclude_source)
+        for item in self.elements:
+            if (source is None and exclude_source is None) or (
+                hasattr(item, "source") and satisfies_sources(item.source)
+            ):
+                if owner is None:  # if the user doesn't care who the owner is
+                    result += Decimal(getattr(item,attribute))
+                else:
+                    if (
+                        not (isinstance(owner, DAEmpty))
+                        and hasattr(item, "owner")
+                        and item.owner == owner
+                    ):
+                        result += Decimal(getattr(item,attribute))
+        return result
+
+
     def move_checks_to_list(
         self,
         selected_types: Optional[DADict] = None,

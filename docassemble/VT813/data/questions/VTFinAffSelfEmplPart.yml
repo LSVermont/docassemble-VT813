@@ -65,7 +65,7 @@ code: |
   #nav.set_section("review_vtfinaffselfemplpart")
   #user_role = "plaintiff"
   #user_ask_role = "plaintiff"
-  selfemployment_worksheet
+  do_self_employment_worksheet
   self_empl_gross_sales_monthly_amount
   self_empl_cgs[0].value
   self_empl_office[0].value
@@ -83,16 +83,16 @@ comment: |
   Controls order and branching logic to determine net income for 813
 id: net_income_order
 code: |
-  selfemployment_worksheet
-  self_empl_gross_sales_monthly_amount
-  self_empl_cgs[0].value
-  self_empl_office[0].value
-  self_empl_employees[0].value
-  self_empl_auto[0].value
-  self_empl_common_exp[0].value
-  self_empl_other_insurances[0].value
-  self_empl_debts[0].value
-  self_empl_other_expenses.gather()
+  if not has_schedule_c and do_self_employment_worksheet:
+    self_empl_gross_sales_monthly_amount
+    self_empl_cgs[0].value
+    self_empl_office[0].value
+    self_empl_employees[0].value
+    self_empl_auto[0].value
+    self_empl_common_exp[0].value
+    self_empl_other_insurances[0].value
+    self_empl_debts[0].value
+    self_empl_other_expenses.gather()
   net_income_order = True
 ---
 code: |
@@ -125,6 +125,26 @@ subquestion: |
   This worksheet is on page 11 on the 813A paper form.
   
   Only complete these questions if you have a self-employed business and you can't include an IRS Schedule C.
+fields:
+  - Description of your self-empoyed business: self_employed_description
+  - Do you have a copy of your IRS Schedule C tax form?: has_schedule_c
+    datatype: yesnoradio
+  - note: |
+      Find the line on Schedule C for "net profit." That is your annual net profit. Enter that number here and we will calculate your monthly net income for this form. If you had a net loss, enter 0.
+    show if: has_schedule_c
+  - Annual net profit: self_employed_net_income
+    show if: has_schedule_c
+    datatype: currency
+  - note: |
+      Many people don't file a Schedule C. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly net income from self-employment. Only complete this worksheet if you can’t include an IRS Schedule C.
+    show if: 
+      variable: has_schedule_c
+      is: False
+  - Would you like to do the self-employment income worksheet questions?: do_self_employment_worksheet
+    show if: 
+      variable: has_schedule_c
+      is: False
+    datatype: yesnoradio
 continue button field: selfemployment_worksheet
 ---
 id: Your monthly gross sales or receipts
