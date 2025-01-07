@@ -3550,7 +3550,7 @@ attachments:
       - "users1_mailing_address_line_one": |
           ${ users[0].mailing_address.line_one() } 
       - "users1_mailing_address_line_two": |
-          ${ users[0].address.line_two() } 
+          ${ users[0].mailing_address.line_two() } 
       - "users1_daytime_phone_number": |
           ${ users[0].daytime_phone_number } 
       - "users1_evening_phone_number": ${ users[0].evening_phone_number } 
