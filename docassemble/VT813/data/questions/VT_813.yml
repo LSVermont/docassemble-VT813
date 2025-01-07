@@ -245,6 +245,7 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_813
+  al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
   
@@ -1347,7 +1348,7 @@ fields:
       - Tips
       - Commissions
       - Bonuses
-      - Other
+      - Royalties
   - Specify: x.to_add.new_item_name
     show if:
       variable: x.to_add.new_item_name
@@ -1424,7 +1425,7 @@ subquestion: |
   
   Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
   
-  Monthly total for tips, commissions, bonuses (doesn't include Other): **${ round(jobs.total(source=['Tips', 'Commissions','Bonuses'], times_per_year=12),2) }** 
+  Monthly total for tips, commissions, bonuses (doesn't include Other): **${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) }** 
   
   Monthly total for self-employed work: 
   % if not is_self_employed:
@@ -3578,7 +3579,7 @@ attachments:
       - "overtime_included_yes": ${ overtime_included_any_job } 
       - "overtime_included_no": ${ not overtime_included_any_job } 
       - "users1_income_tips_commissions_monthly_amount": |
-          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses'], times_per_year=12),2) } 
+          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
       - "users1_income_self_employment_monthly_amount": |
           % if has_schedule_c:
           ${ currency(self_employed_net_income/12) } 
@@ -4403,7 +4404,7 @@ attachments:
       - "self_empl_gross_sales_monthly_amount": |
           ${ round(self_empl_gross_sales_monthly_amount,2) } 
       - "self_empl_cgs_amount": |
-          ${ round(self_empl_cgs.total(times_per_year = 12),2) } 
+          ${ round(self_empl_cgs[0].value,2) } 
       - "self_empl_advertising_amount": |
           ${ round(self_empl_common_exp[0].value,2) } 
       - "self_empl_bad_debt_amount": |
@@ -4499,7 +4500,7 @@ attachments:
       - "self_empl_other_exp1_subtotal_amount": |
           ${ round(self_empl_other_expenses.total(times_per_year = 12),2) }
       - "self_employed_expenses_monthly_amount": |
-          ${ round(sum([ expense.total(times_per_year=12) for expense in ['self_empl_cgs'] ]),2) }
+          ${ round(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]),2) }
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
           **${ currency(self_employed_net_income/12) }**  
