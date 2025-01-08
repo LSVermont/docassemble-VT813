@@ -166,8 +166,8 @@ code: |
         self_employed_net_income
       elif do_self_employment_worksheet:
         net_income_order
+    review_jobs
     if len(jobs) > 0:
-      review_jobs
       set_progress(44)    
       paystub_instructions
   single_jobs_attribute
@@ -3193,7 +3193,7 @@ subquestion: |
   Click the image to open it in a new tab. Click the "Edit your answers" button
   to edit your answers.
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
   
   **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_fee_waiver_preview_question    
@@ -3213,25 +3213,46 @@ code: |
 ##################### REVIEW SCREEN #######################
 ---
 id: VT fee waiver review screen
-event: review_VT_fee_waiver
+event: review_VT_813
 question: |
   Review your answers
 subquestion: |  
   ${ review_screen_instructions }
 
-  ###Your court case
+
   
-review:
+review:      
+  - note: |
+      ###About you
+  - Edit: users[0].name.first
+    button: |
+      ${ users[0].name.full() }
+  - Edit: users[0].address.address
+    button: |
+      **Address**: ${ users[0].address.on_one_line() }
+      
+      % if users1_mailing_address_different:
+      **Mailing Address**: ${ users[0].mailing_address.on_one_line() }
+      % endif
+  - Edit: users[0].email
+    button: |
+      **Daytime phone number**: ${ users[0].daytime_phone_number }
+      
+      **Evening phone number**: ${ users[0].evening_phone_number }
+      
+      **Email**: ${ users[0].email }
+  - Edit: users[0].birthdate
+    button: |
+      **Birthdate**:
+      ${ users[0].birthdate }
+
+  - note: |
+     ###Your court case      
   - Edit: 
-    - trial_court_division
-    - recompute:
-      - trial_court_index
-      - trial_court
+    - user_selected_county
     button: |
       
-      **Is in this court division**: ${ trial_court.division_abbr }
-      
-      **Is in this county**: ${( trial_court.address.county )} County
+      **Is in this county**: ${( user_selected_county )} County
 
   - Edit: docket_number
     button: |
@@ -3246,23 +3267,15 @@ review:
     button: |
       **Case name**:
       ${ case_name }
-      
-  - note: |
-      ###About you
-  - Edit: users.revisit
+  - Edit: user_ask_role
     button: |
-      **Your name, contact information and signature**
-
-      % for item in users:
-      * ${ item }
-      % endfor
-
-
-  - Edit: household_size
+      **Role in court case**:
+      ${ user_ask_role }
+  - Edit: other_parties[0].name.first
     button: |
-      **Number of people in your household**:
-      ${ household_size }
+      **Other party**: ${ other_parties[0].name.full() }
       
+      **Other party's birthdate**: ${ other_parties[0].birthdate }
       
   - note: |
       ###Income
@@ -3281,29 +3294,49 @@ review:
       - None
       % endif
 
-  - Edit: 
-      - review_jobs
+  - Edit:
+      - employed
     button: |
-      **Jobs**
-      
-      % if not employed:
-      
-      I do not get income from working
+      % if employed:
+      I get income from working.
       % else:
-
-      % for item in jobs:
-      
-      - ${ item.source }
-      
-      % endfor
-      
-      **Self employed jobs**
-
-      % if is_self_employed:
-      
-
+      I do not get income from working
       % endif
+  - Edit:
+      - why_unemployed
+    button: |
+      I am unemployed because ${ why_unemployed }
+  - note: |
+      ####Jobs
+      % if len(jobs) > 0:
+      ${ jobs_table }
+      
+      % else:
+      No jobs are listed.
+      
+      % endif
+      ${ jobs.add_action() }
+  - Edit: is_self_employed
+    button: |
+      % if is_self_employed:
+      I am self employed as ${ self_employed_description }.
 
+      % else:
+      I am not self employed.
+      % endif      
+  - Edit: 
+    - has_schedule_c
+    button: |
+      % if has_schedule_c:
+      I have my schedule C.  My self employment income is ${ self_employed_net_income }
+      % else:
+      I do not have my schedule C.
+      
+      % if do_self_employment_worksheet:
+      I want to do a self employment worksheet
+      % else:
+      I do not want to do a self employment worksheet.
+      % endif
       % endif
 
   - Edit: 
@@ -3321,84 +3354,128 @@ review:
       - None
       % endif
           
+  - note: |
+      ###Loans   
+  - note: |
+      ####Primary Residence Loans
+      % if len(primary_residence_loans) > 0:
+      ${ primary_residence_loans_table }
       
+      % else:
+      No primary residence loans are listed.
+      
+      % endif
+      ${ primary_residence_loans.add_action() }  
+  - note: |
+      ####Real Estate Loans
+      % if len(real_estate_loans) > 0:
+      ${ real_estate_loans_table }
+      
+      % else:
+      No real estate loans are listed.
+      
+      % endif
+      ${ real_estate_loans.add_action() }  
+  - note: |
+      ####Vehicle Loans
+      % if len(vehicle_loans) > 0:
+      ${ vehicle_loans_table }
+      
+      % else:
+      No vehicle loans are listed.
+      
+      % endif
+      ${ vehicle_loans.add_action() }  
+  - note: |
+      ####Other Loans
+      % if len(other_loans) > 0:
+      ${ other_loans_table }
+      
+      % else:
+      No other loans are listed.
+      
+      % endif
+      ${ other_loans.add_action() }     
+  - note: |
+      ###Debts    
+
+  - note: |
+      ####Credit Card Debt
+      % if len(credit_card_debt) > 0:
+      ${ credit_card_table }
+      
+      % else:
+      No credit care debt is listed.
+      
+      % endif
+      ${ credit_card_debt.add_action() }  
+  - note: |
+      ####Other Debt
+      % if len(other_debt) > 0:
+      ${ other_debt_table }
+      
+      % else:
+      No other debt is listed.
+      
+      % endif
+      ${ other_debt.add_action() }      
   - note: |
       ###Expenses 
-  - Edit: expenses.revisit
-    button: |
-      **Expenses**:
-
-      % if len(expenses) == 0:
-      - None
-      % endif
-      % for item in expenses:
-      - ${ item.display_name.lower() }
-      % endfor
-
- 
+      
   - note: |
-      ###Assets      
+      ####Children Expenses
+      % if len(children_expenses) > 0:
+      ${ children_expenses_table }
       
-  - Edit: vehicles.revisit
-    button: |
-      **Vehicles**
-      
-      % for item in vehicles:
-      * ${ item.make } ${ item.model } ${ item.year }          
-      % endfor
-      % if not vehicles.there_are_any:
-      - None
-      % endif
-  - Edit: 
-      - real_estate.revisit
-    button: |
-      **Real estate**
-
-      % for item in real_estate.complete_elements():
-      % if item.source == "primary residence":
-      * primary residence
       % else:
-      * ${ item.display_name.lower() }
+      No children expenses are listed.
+      
       % endif
-      % endfor
-      % if not real_estate.there_are_any:
-      - None
-      % endif
-
-  - Edit: bank_assets.revisit
-    button: |
-      **Bank accounts and cash**
+      ${ children_expenses.add_action() }
       
-      % for item in bank_assets:
-      - ${ item.display_name.lower() }
-      % endfor
-      % if not bank_assets.there_are_any:
-      - None
-      % endif   
+  - note: |          
+      ####Household Expenses
+      % if len(household_expenses) > 0:
+      ${ household_expenses_table }
       
-  - Edit: other_assets.revisit
-    button: |
-      **Other assets**
-
-      % for item in other_assets.complete_elements():
-        - ${ item.display_name.lower() }
-      % endfor
-
-      % if not other_assets.there_are_any:
-      - None
-      % endif      
-      
-  - Edit: other_reasons_why_cannot_afford
-    button: |
-      **Other reason(s) you cannot afford the fees (optional question)**:
-      
-      % if defined("other_reasons_why_cannot_afford"):
-      % if other_reasons_why_cannot_afford == "":
-      - None
       % else:
-      ${ other_reasons_why_cannot_afford }
+      No household expenses are listed.
+      
       % endif
+      ${ household_expenses.add_action() }
+            
+  - note: |
+      ####Vehicle Expenses
+      % if len(vehicle_expenses) > 0:
+      ${ vehicle_expenses_table }
+      
+      % else:
+      No vehicle expenses are listed.
+      
       % endif
+      ${ vehicle_expenses.add_action() }
+
+            
+  - note: |
+      ####Insurance Expenses
+      % if len(insurance_expenses) > 0:
+      ${ insurance_expenses_table }
+      
+      % else:
+      No insurance expenses are listed.
+      
+      % endif
+      ${ insurance_expenses.add_action() }
+  - note: |
+      ####Personal Expenses
+      % if len(personal_expenses) > 0:
+      ${ personal_expenses_table }
+      
+      % else:
+      No personal expenses are listed.
+      
+      % endif
+      ${ personal_expenses.add_action() }   
 
   - Edit: signature_date
     button: |
