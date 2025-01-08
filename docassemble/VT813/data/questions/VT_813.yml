@@ -2894,10 +2894,10 @@ subquestion: |
   ${ real_estate_loans.add_action() }
 continue button field: real_estate_loans.review_items
 ---
-id: other_loans.revisit
-continue button field: other_loans.revisit
+id: real_estate_loans.revisit
+continue button field: real_estate_loans.revisit
 question: |
-  Edit other_loans
+  Edit real estate loans
 subquestion: |
   ${ real_estate_loans_table }
 
@@ -3306,16 +3306,17 @@ review:
       - why_unemployed
     button: |
       I am unemployed because ${ why_unemployed }
-  - note: |
-      ####Jobs
-      % if len(jobs) > 0:
-      ${ jobs_table }
-      
-      % else:
-      No jobs are listed.
-      
+  - Edit: review_jobs
+    button: |
+      **Jobs**
+
+      % for item in jobs:
+      * ${ item.source }, ${ item.employer.name.first }
+      % endfor
+      % if jobs.number_gathered() == 0:
+      - None
+
       % endif
-      ${ jobs.add_action() }
   - Edit: is_self_employed
     button: |
       % if is_self_employed:
@@ -3356,126 +3357,134 @@ review:
           
   - note: |
       ###Loans   
-  - note: |
-      ####Primary Residence Loans
-      % if len(primary_residence_loans) > 0:
-      ${ primary_residence_loans_table }
-      
-      % else:
-      No primary residence loans are listed.
-      
+
+  - Edit: primary_residence_loans.revisit
+    button: |
+      **Primary residence loans**
+
+      % for item in primary_residence_loans:
+      * ${ item.source }
+      % endfor
+      % if primary_residence_loans.number_gathered() == 0:
+      - None
+
       % endif
-      ${ primary_residence_loans.add_action() }  
-  - note: |
-      ####Real Estate Loans
-      % if len(real_estate_loans) > 0:
-      ${ real_estate_loans_table }
-      
-      % else:
-      No real estate loans are listed.
-      
+  - Edit: real_estate_loans.revisit
+    button: |
+      **Other Real Estate Loans**
+
+      % for item in real_estate_loans:
+      * ${ item.source }
+      % endfor
+      % if real_estate_loans.number_gathered() == 0:
+      - None
+
       % endif
-      ${ real_estate_loans.add_action() }  
-  - note: |
-      ####Vehicle Loans
-      % if len(vehicle_loans) > 0:
-      ${ vehicle_loans_table }
-      
-      % else:
-      No vehicle loans are listed.
-      
+  - Edit: vehicle_loans.revisit
+    button: |
+      **Vehicle loans**
+
+      % for item in vehicle_loans:
+      * ${ item.source }
+      % endfor
+      % if vehicle_loans.number_gathered() == 0:
+      - None
+
       % endif
-      ${ vehicle_loans.add_action() }  
-  - note: |
-      ####Other Loans
-      % if len(other_loans) > 0:
-      ${ other_loans_table }
-      
-      % else:
-      No other loans are listed.
-      
+  - Edit: other_loans.revisit
+    button: |
+      **Other loans**
+
+      % for item in other_loans:
+      * ${ item.source }
+      % endfor
+      % if other_loans.number_gathered() == 0:
+      - None
+
       % endif
-      ${ other_loans.add_action() }     
   - note: |
       ###Debts    
 
-  - note: |
-      ####Credit Card Debt
-      % if len(credit_card_debt) > 0:
-      ${ credit_card_table }
-      
-      % else:
-      No credit care debt is listed.
-      
+  - Edit: credit_card_debt.revisit
+    button: |
+      **Credit card debt**
+
+      % for item in credit_card_debt:
+      * ${ item.source }
+      % endfor
+      % if credit_card_debt.number_gathered() == 0:
+      - None
+
       % endif
-      ${ credit_card_debt.add_action() }  
-  - note: |
-      ####Other Debt
-      % if len(other_debt) > 0:
-      ${ other_debt_table }
-      
-      % else:
-      No other debt is listed.
-      
+  - Edit: other_debt.revisit
+    button: |
+      **Other debt**
+
+      % for item in other_debt:
+      * ${ item.source }
+      % endfor
+      % if other_debt.number_gathered() == 0:
+      - None
+
       % endif
-      ${ other_debt.add_action() }      
   - note: |
       ###Expenses 
       
-  - note: |
-      ####Children Expenses
-      % if len(children_expenses) > 0:
-      ${ children_expenses_table }
-      
-      % else:
-      No children expenses are listed.
-      
-      % endif
-      ${ children_expenses.add_action() }
-      
-  - note: |          
-      ####Household Expenses
-      % if len(household_expenses) > 0:
-      ${ household_expenses_table }
-      
-      % else:
-      No household expenses are listed.
-      
-      % endif
-      ${ household_expenses.add_action() }
-            
-  - note: |
-      ####Vehicle Expenses
-      % if len(vehicle_expenses) > 0:
-      ${ vehicle_expenses_table }
-      
-      % else:
-      No vehicle expenses are listed.
-      
-      % endif
-      ${ vehicle_expenses.add_action() }
+  - Edit: children_expenses.revisit
+    button: |
+      **Children expenses**
 
-            
-  - note: |
-      ####Insurance Expenses
-      % if len(insurance_expenses) > 0:
-      ${ insurance_expenses_table }
-      
-      % else:
-      No insurance expenses are listed.
-      
+      % for item in children_expenses:
+      * ${ item.source }
+      % endfor
+      % if children_expenses.number_gathered() == 0:
+      - None
+
       % endif
-      ${ insurance_expenses.add_action() }
-  - note: |
-      ####Personal Expenses
-      % if len(personal_expenses) > 0:
-      ${ personal_expenses_table }
-      
-      % else:
-      No personal expenses are listed.
-      
+  - Edit: household_expenses.revisit
+    button: |
+      **Household expenses**
+
+      % for item in household_expenses:
+      * ${ item.source }
+      % endfor
+      % if household_expenses.number_gathered() == 0:
+      - None
+
       % endif
-      ${ personal_expenses.add_action() }   
+  - Edit: vehicle_expenses.revisit
+    button: |
+      **Vehicle expenses**
+
+      % for item in vehicle_expenses:
+      * ${ item.make } ${ item.model } ${ item.year }
+      % endfor
+      % if vehicle_expenses.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: insurance_expenses.revisit
+    button: |
+      **Insurance expenses**
+
+      % for item in insurance_expenses:
+      * ${ item.source }
+      % endfor
+      % if insurance_expenses.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: personal_expenses.revisit
+    button: |
+      **Personal expenses**
+
+      % for item in personal_expenses:
+      * ${ item.source }
+      % endfor
+      % if personal_expenses.number_gathered() == 0:
+      - None
+
+      % endif
 
   - Edit: signature_date
     button: |
