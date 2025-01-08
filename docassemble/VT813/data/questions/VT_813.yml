@@ -914,9 +914,9 @@ fields:
   - Do you have a copy of your IRS Schedule E tax form?: has_schedule_e
     datatype: yesnoradio
   - note: |
-      If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental income.
+      If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
       
-      Enter your annual rental income from Schedule E and we will calculate your monthly income for this form. If you had a net loss, enter 0.
+      Enter that amount from Schedule E and we will calculate your monthly net income for this form. If you had a net loss, enter it as a negative number, like this: -5000.00
     show if: has_schedule_e
   - Annual rental income: schedule_e_income
     datatype: currency
