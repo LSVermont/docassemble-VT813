@@ -1419,20 +1419,6 @@ subquestion: |
   
   ${ jobs.add_action() }  
   
-  Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
-  
-  Monthly total for tips, commissions, bonuses (doesn't include Other): **${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) }** 
-  
-  Monthly total for self-employed work: 
-  % if not is_self_employed:
-  **$0**
-  % elif has_schedule_c:
-  **${ currency(self_employed_net_income/12) }**  
-  % else:
-  **${ currency(net_income_order/12) }**
-  % endif
-
-
 
 field: review_jobs
 ---
