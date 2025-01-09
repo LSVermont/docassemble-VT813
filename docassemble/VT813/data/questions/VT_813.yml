@@ -576,11 +576,10 @@ data: !!omap
   - ga: "General Assistance (GA)"
   - medicaid: "Medicaid"
   - medicare: "Medicare"
-  - 3squaresvt: "Food Assistance"
+  - 3squaresvt: "3SquaresVT / Food assistance"
   - ssi: "SSI (Supplemental Security Income)" 
   - vhap: "VHAP"
-  - housing_assist: "Housing Assistance (subsidy/voucher/Section 8)"
-  - other: "Other"
+  - housing_assist: "Housing assistance (subsidy/voucher/Section 8)"
 ---
 id: public_benefits other display
 comment: |
@@ -612,9 +611,7 @@ id: are there public benefits
 question: |
   Do you get public assistance?
 subquestion: |
-  Do you get any kind of government benefit that is based on need, disability, dependent children, or another reason based on your income?
-  
-  We've included a few examples below. You can also check "other."
+  Do you get any of these benefits?
   
   Check any that apply to you.
 fields:
@@ -731,7 +728,6 @@ data: !!omap
   - alimony other: |
       Spousal Maintenance (Alimony) from a person other than ${ other_parties[0].name_full() }
   - other: "Other"
-  - depreciation: "Depreciation expense"
 ---
 variable name: help_text
 data: !!omap
@@ -767,8 +763,6 @@ fields:
     datatype: checkboxes
     code: |
       other_incomes_ordered
-  - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 ---
 comment: |
   will use id: ALIncome complete to set other_incomes[i].complete
@@ -808,8 +802,6 @@ fields:
     show if:
       variable: other_incomes[i].source
       is: unemployment income
-  - note: |
-      **Other kinds of income could include:** disability insurance?, social security?, workers compensation, veteran's income, rental income, interest income, spousal maintenance (alimony), retirement income and annuities.
 validation code: |
   if other_incomes[i].source != "other":
     other_incomes[i].display_name = other_incomes.terms_ordered.get(other_incomes[i].source, other_incomes[i].source)
@@ -915,9 +907,9 @@ fields:
   - Do you have a copy of your IRS Schedule E tax form?: has_schedule_e
     datatype: yesnoradio
   - note: |
-      If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental income.
+      If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
       
-      Enter your annual rental income from Schedule E and we will calculate your monthly income for this form. If you had a net loss, enter 0.
+      Enter that amount from Schedule E and we will calculate your monthly net income for this form. If you had a net loss, enter it as a negative number, like this: -5000.00
     show if: has_schedule_e
   - Annual rental income: schedule_e_income
     datatype: currency
@@ -1073,7 +1065,7 @@ fields:
   - note: |
       ---
 
-      Employer's contact information
+      Employer's address
   - Street address: x.employer.address.address 
     address autocomplete: True
   - Unit: x.employer.address.unit
@@ -1189,6 +1181,8 @@ fields:
   - Other Taxes Withheld/Paid: jobs[i].deductions_other_monthly_amount
     datatype: currency
     required: False
+  - note: |
+      <hr>
   - Does the employer pay any personal expenses?: jobs[i].pay_personal_expenses
     datatype: yesnoradio
   - note: |
@@ -1202,6 +1196,8 @@ fields:
       times_per_year_list
     datatype: integer
     show if: jobs[i].pay_personal_expenses
+  - note: |
+      <hr>
   - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
@@ -1307,7 +1303,7 @@ if: j not in ["full time","part time","self employed"]
 id: itemized job period non-pt-or-ft wages
 generic object: ALItemizedJob
 question: |
-  Details about ${ j.lower() } compensation for your ${ jobs[i].source } job
+  Details about ${ j.lower() } you get at your ${ jobs[i].source } job
 fields:
   - label: |
       Amount
@@ -1577,6 +1573,39 @@ continue button field: paystub_instructions
 ---
 ############################### ABOUT COURT CASE ###############################
 ---
+id: is the user the plaintiff or defendant?
+comment: |
+  This question is asked if the interview can be used by both
+  a Plaintiff and a Defendant. It sets the value of `user_role`, `user_started_case`,
+  `plaintiffs`, `defendants`, `petitioners` and `respondents`.
+  
+  If you know your interview is exclusively
+  used by the Plaintiff or Defendant, set `user_ask_role = 'plaintiff'` or
+  `user_ask_role='defendant'` in your code.
+question: |
+  Did you start this case, or are you responding to a case
+  that someone else started?
+subquestion: |
+  ${ collapse_template(help_user_ask_role_template) }
+fields: 
+  - no label: user_ask_role
+    datatype: radio
+    choices:
+      - Started the case: plaintiff
+      - Responding to a case: defendant
+  - note: |
+      Okay, you are the **Plaintiff** or Petitioner in this case. The other 
+      side is the **Defendant** or Respondent.
+    show if:
+      variable: user_ask_role
+      is: "plaintiff"
+  - note: |
+      Okay, you are the **Defendant** or Respondent in this case. The other 
+      side is the **Plaintiff** or Petitioner.
+    show if:
+      variable: user_ask_role
+      is: "defendant"
+---
 id: choose a court
 question: |
   What court is your case in?
@@ -1596,12 +1625,16 @@ id: court case information
 question: |
   What is the name of the court case you are involved in?
 subquestion: |
-  Example: Kramer vs. Kramer
+  Example: Joanna Kramer vs. Ted Kramer
+  
+  The plaintiff is listed first, then the defendant.
 fields:
   - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
-      If you are starting a case, type in your name (the plaintiff's name) "vs." the other party (the defendant's name).
+      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
+      
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
 ---
 ############################### USERS INFO ###############################
 ---
@@ -2632,7 +2665,7 @@ id: are there primary loans
 question: |
   Do you have any loans on your primary residence?
 subquestion: |
-   Check any that apply to you.
+   If you own your home, check any that apply to you. Otherwise, choose none of the above.
 fields:
   - no label: primary_residence_loans.selected_types
     datatype: checkboxes
