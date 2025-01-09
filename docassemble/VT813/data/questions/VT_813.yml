@@ -2299,10 +2299,16 @@ question: |
 subquestion: |
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
-  
+
+  % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
     - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
+  % endif
+  % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
     - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+  % endif
+  % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_debt.total_monthly_self_payment) }**
+  % endif
    
    For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
     
