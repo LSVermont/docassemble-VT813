@@ -1165,7 +1165,7 @@ fields:
       ---
       Look at a recent pay stub for the following information
       
-      Withholding information on your pay stub (monthly, weekly, every two weeks, etc.)
+      Withholding information on your pay stub (${ times_per_year(times_per_year_list, jobs[i].times_per_year) })
   - Federal: jobs[i].deductions_federal_monthly_amount
     datatype: currency
     required: False
