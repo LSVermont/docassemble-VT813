@@ -4023,13 +4023,13 @@ attachments:
       - "users1_personal_loan_1_self_paid": |
           ${ other_loans.matches(source=['personal'])[0].self_payment } 
       - "users1_personal_loan_2_lender": |
-          ${ other_loans.matches(source=['school'])[1].lender } 
+          ${ other_loans.matches(source=['school'])[0].lender } 
       - "users1_personal_loan_2_amount_owed": |
-          ${ other_loans.matches(source=['school'])[1].balance } 
+          ${ other_loans.matches(source=['school'])[0].balance } 
       - "users1_personal_loan_2_payment": |
-          ${ other_loans.matches(source=['school'])[1].monthly_payment } 
+          ${ other_loans.matches(source=['school'])[0].monthly_payment } 
       - "users1_personal_loan_2_self_paid": |
-          ${ other_loans.matches(source=['school'])[1].self_payment } 
+          ${ other_loans.matches(source=['school'])[0].self_payment } 
       - "users1_personal_loan_3_lender": |
           ${ other_loans.matches(source=['other'])[0].lender } 
       - "users1_personal_loan_3_amount_owed": |
@@ -4037,7 +4037,7 @@ attachments:
       - "users1_personal_loan_3_payment": |
           ${ other_loans.matches(source=['other'])[0].monthly_payment } 
       - "users1_personal_loan_3_self_paid": |
-          ${ other_loans.matches(source=['other'])[2].self_payment } 
+          ${ other_loans.matches(source=['other'])[0].self_payment } 
       - "users1_personal_loan_4_lender": |
           ${ other_loans.matches(source=['other'])[1].lender } 
       - "users1_personal_loan_4_amount_owed": |
@@ -4045,7 +4045,7 @@ attachments:
       - "users1_personal_loan_4_payment": |
           ${ other_loans.matches(source=['other'])[1].monthly_payment } 
       - "users1_personal_loan_4_self_paid": |
-          ${ other_loans.matches(source=['other'])[3].self_payment } 
+          ${ other_loans.matches(source=['other'])[1].self_payment } 
       - "users1_personal_loans_total_lender": ""
       - "users1_personal_loans_total_amount_owed": |
           ${ round(other_loans.balance(),2) } 
