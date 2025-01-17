@@ -1421,9 +1421,9 @@ subquestion: |
   % if is_self_employed:
   You said that you were self employed with an income of
   % if has_schedule_c:
-  ${ self_employed_net_income }
+  ${ currency(self_employed_net_income) }
   % elif do_self_employment_worksheet:
-  ${ net_income_order }
+  ${ currency(str(self_employed_net_income_monthly_amount)) }
   % endif
   % endif
 
@@ -3380,6 +3380,15 @@ review:
           - has_schedule_c
           - self_employed_net_income
           - do_self_employment_worksheet
+          - sself_empl_cgs
+          - self_empl_office
+          - elf_empl_employees
+          - self_empl_auto
+          - self_empl_travel
+          - self_empl_common_exp
+          - self_empl_other_insurances
+          - self_empl_other_expenses
+          - self_empl_debts
           - net_income_order
       - is_self_employed
       - recompute:
@@ -3388,24 +3397,21 @@ review:
       % if is_self_employed:
       I am self employed as ${ self_employed_description }.
 
-      % else:
-      I am not self employed.
-      % endif      
-  - Edit: 
-    - has_schedule_c
-    button: |
       % if has_schedule_c:
       I have my schedule C.  My self employment income is ${ self_employed_net_income }
       % else:
       I do not have my schedule C.
       
       % if do_self_employment_worksheet:
-      I want to do a self employment worksheet
+      My monthly net income is ${ currency(str(self_empl_gross_sales_monthly_amount - sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
       % else:
       I do not want to do a self employment worksheet.
       % endif
       % endif
-
+      
+      % else:
+      I am not self employed.
+      % endif      
   - Edit: 
       - other_incomes.revisit
       - recompute:
@@ -3734,9 +3740,9 @@ attachments:
           ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
       - "users1_income_self_employment_monthly_amount": |
           % if has_schedule_c:
-          ${ currency(self_employed_net_income/12) } 
+          **${ round(self_employed_net_income/12) }**  
           % else:
-          ${ currency(net_income_order/12) }
+          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
           % endif
 
       - "users1_employer_paid_expenses_monthly_amount": |
@@ -3745,7 +3751,7 @@ attachments:
           % if employed and is_self_employed and has_schedule_c:
           ${ round(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round(float(jobs.total(times_per_year=12)) + float(net_income_order/12),2) }
+          ${ round(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),2) }
           $ else: 
           ${ round(jobs.total(times_per_year = 12),2) }
           % endif
@@ -3783,7 +3789,7 @@ attachments:
           % if employed and is_self_employed and has_schedule_c:
           ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(net_income_order/12),2) }
+          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_employed_net_income_monthly_amount),2) }
           $ else: 
           ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)),2) }
           % endif
@@ -4657,6 +4663,6 @@ attachments:
           % if has_schedule_c:
           **${ currency(self_employed_net_income/12) }**  
           % else:
-          **${ currency(net_income_order/12) }**
+          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
           % endif
 ---
