@@ -160,17 +160,8 @@ code: |
     public_benefits.review_items
   set_progress(42)
 
-  if employed:
-    if is_self_employed:
-      if has_schedule_c:
-        self_employed_net_income
-      elif do_self_employment_worksheet:
-        net_income_order
-    review_jobs
-    if len(jobs) > 0:
-      set_progress(44)    
-      paystub_instructions
-  single_jobs_attribute
+
+  jobs_order
   
   set_progress(48)
   if len(other_incomes) > 0:
@@ -235,6 +226,20 @@ code: |
   set_progress(80)
   interview_order_VT_813 = True
 
+---
+code: |
+  if employed:
+    if is_self_employed:
+      if has_schedule_c:
+        self_employed_net_income
+      elif do_self_employment_worksheet:
+        net_income_order
+    if len(jobs) > 0:
+      review_jobs
+      set_progress(44)    
+      paystub_instructions
+  single_jobs_attribute
+  jobs_order = True
 ---
 ###################### MAIN INTERVIEW ORDER ######################
 id: interview order main
@@ -976,6 +981,7 @@ fields:
     show if:
       variable: employed
       is: False
+
 ---
 id: how many itemized jobs
 question: |
@@ -1411,6 +1417,16 @@ id: job review
 question: |
   Review your jobs
 subquestion: |
+
+  % if is_self_employed:
+  You said that you were self employed with an income of
+  % if has_schedule_c:
+  ${ self_employed_net_income }
+  % elif do_self_employment_worksheet:
+  ${ net_income_order }
+  % endif
+  % endif
+
   Here is what you've told us about your jobs. You can add more or continue
   to the next question.
 
@@ -1418,7 +1434,8 @@ subquestion: |
   ${ jobs_table } 
   
   ${ jobs.add_action() }  
-  
+
+
 
 field: review_jobs
 ---
@@ -1799,7 +1816,8 @@ fields:
     code: |
       household_expenses_ordered
     default:
-      rent: primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
+      code: | 
+        {'rent': len(primary_residence_loans) == 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2110,13 +2128,18 @@ question: |
   What kind of insurance expenses do you have?
 subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+
+  % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
+  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }.  Healh insurance is selected below and these amounts will be entered into the worksheet.  You can change these amounts in the table of insurance expenses.
+  % endif
 fields:
   - no label: insurance_expenses.selected_types
     datatype: checkboxes
     code: |
       insurance_expenses_ordered
     default:
-      insur_health: health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0
+      code: |
+        {'insur_health': health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0}
 ---
 id: insurance expense information
 reconsider: insurance_expenses[i].display_name
@@ -3237,7 +3260,7 @@ code: |
 
 ##################### REVIEW SCREEN #######################
 ---
-id: VT fee waiver review screen
+id: VT 813 review screen
 event: review_VT_813
 question: |
   Review your answers
@@ -3320,17 +3343,26 @@ review:
       % endif
 
   - Edit:
+      - invalidate:
+          - why_unemployed
+          - is_self_employed
+          - has_schedule_c
+          - self_employed_net_income
+          - do_self_employment_worksheet
+          - net_income_order
+          - jobs
+          - review_jobs
       - employed
+      - recompute:
+        - single_jobs_attribute
+        - jobs_order
     button: |
       % if employed:
       I get income from working.
       % else:
-      I do not get income from working
-      % endif
-  - Edit:
-      - why_unemployed
-    button: |
+      I do not get income from working.
       I am unemployed because ${ why_unemployed }
+      % endif
   - Edit: review_jobs
     button: |
       **Jobs**
@@ -3338,11 +3370,20 @@ review:
       % for item in jobs:
       * ${ item.source }, ${ item.employer.name.first }
       % endfor
-      % if jobs.number_gathered() == 0:
+      % if len(jobs) == 0:
       - None
 
       % endif
-  - Edit: is_self_employed
+  - Edit:
+      - invalidate:
+          - is_self_employed
+          - has_schedule_c
+          - self_employed_net_income
+          - do_self_employment_worksheet
+          - net_income_order
+      - is_self_employed
+      - recompute:
+        - jobs_order
     button: |
       % if is_self_employed:
       I am self employed as ${ self_employed_description }.
