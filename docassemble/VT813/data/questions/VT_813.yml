@@ -2182,12 +2182,13 @@ validation code: |
 if: insurance_expenses[i].source == "insur_health"
 code: |
   insurance_expenses[i].times_per_year = 12
-  if health_insurance_paid_by_employer_total > 0:
-    insurance_expenses[i].paid_by_other = True
-    insurance_expenses[i].paid_by_other_monthly = health_insurance_paid_by_employer_total
-    insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
-  else:
-    insurance_expenses[i].value = health_insurance_paid_total  
+  if health_insurance_paid_by_employer_total + health_insurance_paid_total > 0:
+    if health_insurance_paid_by_employer_total > 0:
+      insurance_expenses[i].paid_by_other = True
+      insurance_expenses[i].paid_by_other_monthly = health_insurance_paid_by_employer_total
+      insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
+    else:
+      insurance_expenses[i].value = health_insurance_paid_total  
 ---
 id: insurance expense paid by other question
 question:  Other Payments for ${ insurance_expenses[i].display_name }
