@@ -234,6 +234,8 @@ code: |
         self_employed_net_income
       elif do_self_employment_worksheet:
         net_income_order
+        self_employed_expenses_monthly_amount
+        self_employed_net_income_monthly_amount
     if len(jobs) > 0:
       review_jobs
       set_progress(44)    
@@ -3234,7 +3236,8 @@ id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
 subquestion: |
-  
+
+
   Here is a preview of the form you will sign on the next page. 
   
   ${ al_court_bundle.as_pdf(key='preview') }
@@ -3351,6 +3354,8 @@ review:
           - self_employed_net_income
           - do_self_employment_worksheet
           - net_income_order
+          - self_employed_expenses_monthly_amount
+          - self_employed_net_income_monthly_amount
           - jobs
           - review_jobs
       - employed
@@ -3381,6 +3386,8 @@ review:
           - has_schedule_c
           - self_employed_net_income
           - do_self_employment_worksheet
+          - self_employed_expenses_monthly_amount
+          - self_employed_net_income_monthly_amount
           - sself_empl_cgs
           - self_empl_office
           - elf_empl_employees
@@ -3740,10 +3747,12 @@ attachments:
       - "users1_income_tips_commissions_monthly_amount": |
           ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
       - "users1_income_self_employment_monthly_amount": |
-          % if has_schedule_c:
-          **${ round(self_employed_net_income/12) }**  
+          % if employed and is_self_employed and has_schedule_c:
+          ${ round(self_employed_net_income/12,2) }
+          % elif employed and is_self_employed and do_self_employment_worksheet:
+          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % else:
-          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
+          0.00
           % endif
 
       - "users1_employer_paid_expenses_monthly_amount": |
@@ -3753,7 +3762,7 @@ attachments:
           ${ round(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
           ${ round(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),2) }
-          $ else: 
+          % else: 
           ${ round(jobs.total(times_per_year = 12),2) }
           % endif
       - "users1_income_rental_monthly_amount": |
@@ -3788,11 +3797,11 @@ attachments:
           ${ round(other_incomes.total(times_per_year = 12),2) } 
       - "users1_income_monthly_total": |
           % if employed and is_self_employed and has_schedule_c:
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_employed_net_income/12),2) }
+          ${ round( other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_employed_net_income_monthly_amount),2) }
-          $ else: 
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)),2) }
+          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])) ,2) }
+          % else: 
+          ${ round(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12),2) }
           % endif
       - "users1_receives_benefits_yes": |
           ${ len(public_benefits) > 0 } 
