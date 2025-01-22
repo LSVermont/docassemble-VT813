@@ -149,7 +149,7 @@ code: |
   case_name
   docket_number
   
-  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
+  #This is where we collect the desired court county and the exact court is determined.
   user_selected_county
   trial_court.address.county
   
@@ -1786,18 +1786,18 @@ subquestion: |
 id: household_expenses.terms_ordered
 variable name: household_expenses.terms_ordered
 data: !!omap
-  - rent: "Rent or Mortgage"
+  - rent: "Rent or mortgage"
   - property_tax: "Property taxes"
-  - home_insurance: "Homeowners' or Renter's Insurance"
+  - home_insurance: "Homeowners' or renter's insurance"
   - electric: "Electricity"
-  - phone: "Telephone (Land and Cell Phone)"
+  - phone: "Telephone (land and cell phone)"
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, Plowing, Trash"
+  - mowplowtrash: "Mowing, plowing, trash"
   - food: "Groceries"
-  - cableinternet: "Cable/Internet"
-  - laundry: "Laundry/Dry Cleaning"
+  - cableinternet: "Cable/internet"
+  - laundry: "Laundry/dry cleaning"
   - repairs: "Maintenance/repairs"
 --- 
 id: household expenses other display
@@ -1821,7 +1821,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the worksheet.
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: household_expenses.selected_types
@@ -1888,9 +1888,9 @@ code: |
   
 ---
 id: household expenses paid by others
-question:  Other Payments for ${ household_expenses[i].display_name }
+question:  Other payments for ${ household_expenses[i].display_name }
 subquestion: |
-  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) }
+  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: household_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -1940,7 +1940,7 @@ rows: household_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -1981,7 +1981,7 @@ question: |
   What kind of vehicle expenses do you have?
 subquestion: | 
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the worksheet.
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
   % endif
 
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2044,9 +2044,9 @@ code: |
     vehicle_expenses[i].paid_by_other_monthly = 0
 ---
 id: vehicle expenses paid by others
-question:  Other Payments for ${ vehicle_expenses[i].display_name }
+question:  Other payments for ${ vehicle_expenses[i].display_name }
 subquestion: |
-  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) }
+  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: vehicle_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2090,7 +2090,7 @@ rows: vehicle_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -2197,7 +2197,7 @@ code: |
     insurance_expenses[i].value = health_insurance_paid_total  
 ---
 id: insurance expense paid by other question
-question:  Other Payments for ${ insurance_expenses[i].display_name }
+question:  Other payments for ${ insurance_expenses[i].display_name }
 subquestion: |
   You said your ${ insurance_expenses[i].display_name } expense is ${ insurance_expenses[i].total(times_per_year=12) } per month.
 fields: 
@@ -2244,7 +2244,7 @@ rows: insurance_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -2259,26 +2259,26 @@ id: personal_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: personal_expenses.terms_ordered
 data: !!omap
-  - medical: "Uninsured Medical Expenses"
-  - clothes: "Clothing/Shoes"
-  - toiletries: "Toiletries/Cosmetics"
-  - dining: "Meals/Snacks eaten out"
-  - hair: "Hair Care"
-  - reading: "Magazines, Newspapers, Books, other reading material"
-  - tobalch: "Tobacco and Alcohol Products"
+  - medical: "Uninsured medical expenses"
+  - clothes: "Clothing/shoes"
+  - toiletries: "Toiletries/cosmetics"
+  - dining: "Meals/snacks eaten out"
+  - hair: "Hair care"
+  - reading: "Magazines, newspapers, books, other reading material"
+  - tobalch: "Tobacco and alcohol products"
   - pets: "Veterinarian and other pet expenses"
   - entertain: "Entertainment (movies, bowling, museums, etc.)"
   - gifts: "Gifts for others"
-  - charity: "Charitable Contributions"
+  - charity: "Charitable contributions"
   - vacation: "Vacation"
-  - dues: "Union Dues"
-  - save: "Monthly Contribution to Savings"
-  - contributions: "Monthly Contribution to Retirement Funds (401K, IRA, etc.)"
-  - loans: "Monthly Loan & Debt Payments"
+  - dues: "Union dues"
+  - save: "Monthly contribution to savings"
+  - contributions: "Monthly contribution to retirement funds (401K, IRA, etc.)"
+  - loans: "Monthly loan and debt payments"
   - other_kids: |
-      Expenses for Children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court Ordered Child Support you pay for children of another relationship."
-  - alimony: "Court Ordered Spousal Maintenance (Alimony) you pay"
+      Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
+  - child_support: "Court-ordered child support you pay for children of another relationship."
+  - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
 id: personal expenses other display default
@@ -2322,7 +2322,7 @@ subquestion: |
    
    For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
     
-  "Monthly Loan & Debt Payments" is selected below and this amount will be entered into the worksheet.
+  "Monthly loan & debt payments" is selected below and this amount will be entered into the form. You will be able to edit it.
 
   % endif
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2385,9 +2385,9 @@ code: |
     personal_expenses[i].paid_by_other_monthly = 0
 ---
 id: personal expenses paid by others question
-question:  Other Payments for ${ personal_expenses[i].display_name }
+question:  Other payments for ${ personal_expenses[i].display_name }
 subquestion: |
-  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) }
+  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: personal_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2435,7 +2435,7 @@ rows: personal_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12))) if not row_item.paid_by_other else currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       "$0" if not row_item.paid_by_other else currency(row_item.paid_by_other_monthly)
@@ -2599,7 +2599,7 @@ rows: children_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(row_item.total(times_per_year=12))
 edit:
   - source
@@ -2703,8 +2703,6 @@ id: info for each primary_residence_loans
 reconsider: primary_residence_loans[i].display_name
 question: |
   About your ${ primary_residence_loans[i].display_name.lower() }
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Loan: primary_residence_loans[i].source
     code: |
@@ -2771,7 +2769,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2832,8 +2830,6 @@ id: info for each other_loans
 reconsider: other_loans[i].display_name
 question: |
   About your ${ other_loans[i].display_name.lower() }
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Loan: other_loans[i].source
     code: |
@@ -2890,7 +2886,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2919,8 +2915,6 @@ code: |
 id: info for each real estate loans
 question: |
   About your ${ ordinal(i) } real estate loan
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Property Description: real_estate_loans[i].source
   - Lender: real_estate_loans[i].lender
@@ -2964,7 +2958,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2991,8 +2985,6 @@ code: |
 id: info for each vehicle loans
 question: |
   About your ${ ordinal(i) } vehicle loan
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Vehicle (Year, Make, Model): vehicle_loans[i].source
   - Lender: vehicle_loans[i].lender
@@ -3003,6 +2995,7 @@ fields:
   - Are YOU making this payment?: vehicle_loans[i].self_payment
     datatype: yesnoradio
 ---
+id: more vehicle loans
 reconsider: vehicle_loans.total_monthly_self_payment
 question: Do you want to list any more vehicle loans?
 subquestion: |
@@ -3037,7 +3030,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -3051,7 +3044,7 @@ objects:
   - credit_card_debt: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: is there credit card debt
-question: Credit Card Debt
+question: Credit card debt
 fields:
   - Do you have any credit card debt?: credit_card_debt.there_are_any
     datatype: yesnoradio
@@ -3066,8 +3059,6 @@ code: |
 id: info for each credit_card_debt loans
 question: |
   About your ${ ordinal(i) } credit_card_debt
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Card Holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
@@ -3112,7 +3103,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -3126,7 +3117,7 @@ objects:
   - other_debt: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: is there other debt
-question: other Debt
+question: Other debt
 fields:
   - Do you have any other debt?: other_debt.there_are_any
     datatype: yesnoradio
@@ -3140,12 +3131,10 @@ code: |
 ---
 id: info for each other_debt loans
 question: |
-  About your ${ ordinal(i) } other debt
-subquestion: |
-  Make your best guess when answering these questions.
+  About your other debt
 fields:
-  - Type of Debt: other_debt[i].source
-  - Company/Entity Owwed: other_debt[i].lender
+  - Type of debt: other_debt[i].source
+  - Company/Entity owed: other_debt[i].lender
   - Balance owed: other_debt[i].balance
     datatype: currency
   - Monthly payment: other_debt[i].monthly_payment
@@ -3187,7 +3176,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
