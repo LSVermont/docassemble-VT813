@@ -160,17 +160,8 @@ code: |
     public_benefits.review_items
   set_progress(42)
 
-  if employed:
-    if is_self_employed:
-      if has_schedule_c:
-        self_employed_net_income
-      elif do_self_employment_worksheet:
-        net_income_order
-    if len(jobs) > 0:
-      review_jobs
-      set_progress(44)    
-      paystub_instructions
-  single_jobs_attribute
+
+  jobs_order
   
   set_progress(48)
   if len(other_incomes) > 0:
@@ -236,6 +227,22 @@ code: |
   interview_order_VT_813 = True
 
 ---
+code: |
+  if employed:
+    if is_self_employed:
+      if has_schedule_c:
+        self_employed_net_income
+      elif do_self_employment_worksheet:
+        net_income_order
+        self_employed_expenses_monthly_amount
+        self_employed_net_income_monthly_amount
+    if len(jobs) > 0:
+      review_jobs
+      set_progress(44)    
+      paystub_instructions
+  single_jobs_attribute
+  jobs_order = True
+---
 ###################### MAIN INTERVIEW ORDER ######################
 id: interview order main
 comment: |
@@ -245,6 +252,7 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_813
+  al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
   
@@ -975,6 +983,7 @@ fields:
     show if:
       variable: employed
       is: False
+
 ---
 id: how many itemized jobs
 question: |
@@ -1164,7 +1173,7 @@ fields:
       ---
       Look at a recent pay stub for the following information
       
-      Withholding information on your pay stub (monthly, weekly, every two weeks, etc.)
+      Withholding information on your pay stub (${ times_per_year(times_per_year_list, jobs[i].times_per_year) })
   - Federal: jobs[i].deductions_federal_monthly_amount
     datatype: currency
     required: False
@@ -1343,7 +1352,7 @@ fields:
       - Tips
       - Commissions
       - Bonuses
-      - Other
+      - Royalties
   - Specify: x.to_add.new_item_name
     show if:
       variable: x.to_add.new_item_name
@@ -1410,6 +1419,16 @@ id: job review
 question: |
   Review your jobs
 subquestion: |
+
+  % if is_self_employed:
+  You said that you were self employed with an income of
+  % if has_schedule_c:
+  ${ currency(self_employed_net_income) }
+  % elif do_self_employment_worksheet:
+  ${ currency(str(self_employed_net_income_monthly_amount)) }
+  % endif
+  % endif
+
   Here is what you've told us about your jobs. You can add more or continue
   to the next question.
 
@@ -1417,19 +1436,6 @@ subquestion: |
   ${ jobs_table } 
   
   ${ jobs.add_action() }  
-  
-  Monthly total for wages: **${ currency(jobs.total(source=["part time", "full time"],times_per_year=12)) }**
-  
-  Monthly total for tips, commissions, bonuses (doesn't include Other): **${ round(jobs.total(source=['Tips', 'Commissions','Bonuses'], times_per_year=12),2) }** 
-  
-  Monthly total for self-employed work: 
-  % if not is_self_employed:
-  **$0**
-  % elif has_schedule_c:
-  **${ currency(self_employed_net_income/12) }**  
-  % else:
-  **${ currency(net_income_order/12) }**
-  % endif
 
 
 
@@ -1812,7 +1818,8 @@ fields:
     code: |
       household_expenses_ordered
     default:
-      rent: primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
+      code: | 
+        {'rent': len(primary_residence_loans) == 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2123,13 +2130,18 @@ question: |
   What kind of insurance expenses do you have?
 subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+
+  % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
+  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }.  Healh insurance is selected below and these amounts will be entered into the worksheet.  You can change these amounts in the table of insurance expenses.
+  % endif
 fields:
   - no label: insurance_expenses.selected_types
     datatype: checkboxes
     code: |
       insurance_expenses_ordered
     default:
-      insur_health: health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0
+      code: |
+        {'insur_health': health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0}
 ---
 id: insurance expense information
 reconsider: insurance_expenses[i].display_name
@@ -2172,12 +2184,13 @@ validation code: |
 if: insurance_expenses[i].source == "insur_health"
 code: |
   insurance_expenses[i].times_per_year = 12
-  if health_insurance_paid_by_employer_total > 0:
-    insurance_expenses[i].paid_by_other = True
-    insurance_expenses[i].paid_by_other_monthly = health_insurance_paid_by_employer_total
-    insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
-  else:
-    insurance_expenses[i].value = health_insurance_paid_total  
+  if health_insurance_paid_by_employer_total + health_insurance_paid_total > 0:
+    if health_insurance_paid_by_employer_total > 0:
+      insurance_expenses[i].paid_by_other = True
+      insurance_expenses[i].paid_by_other_monthly = health_insurance_paid_by_employer_total
+      insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
+    else:
+      insurance_expenses[i].value = health_insurance_paid_total  
 ---
 id: insurance expense paid by other question
 question:  Other Payments for ${ insurance_expenses[i].display_name }
@@ -2298,10 +2311,16 @@ question: |
 subquestion: |
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
-  
+
+  % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
     - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
+  % endif
+  % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
     - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+  % endif
+  % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_debt.total_monthly_self_payment) }**
+  % endif
    
    For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
     
@@ -2926,10 +2945,10 @@ subquestion: |
   ${ real_estate_loans.add_action() }
 continue button field: real_estate_loans.review_items
 ---
-id: other_loans.revisit
-continue button field: other_loans.revisit
+id: real_estate_loans.revisit
+continue button field: real_estate_loans.revisit
 question: |
-  Edit other_loans
+  Edit real estate loans
 subquestion: |
   ${ real_estate_loans_table }
 
@@ -3217,7 +3236,8 @@ id: preview VT_fee_waiver
 question: |
   Preview your form before you sign it
 subquestion: |
-  
+
+
   Here is a preview of the form you will sign on the next page. 
   
   ${ al_court_bundle.as_pdf(key='preview') }
@@ -3225,7 +3245,7 @@ subquestion: |
   Click the image to open it in a new tab. Click the "Edit your answers" button
   to edit your answers.
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
   
   **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_fee_waiver_preview_question    
@@ -3244,26 +3264,47 @@ code: |
 
 ##################### REVIEW SCREEN #######################
 ---
-id: VT fee waiver review screen
-event: review_VT_fee_waiver
+id: VT 813 review screen
+event: review_VT_813
 question: |
   Review your answers
 subquestion: |  
   ${ review_screen_instructions }
 
-  ###Your court case
+
   
-review:
+review:      
+  - note: |
+      ###About you
+  - Edit: users[0].name.first
+    button: |
+      ${ users[0].name.full() }
+  - Edit: users[0].address.address
+    button: |
+      **Address**: ${ users[0].address.on_one_line() }
+      
+      % if users1_mailing_address_different:
+      **Mailing Address**: ${ users[0].mailing_address.on_one_line() }
+      % endif
+  - Edit: users[0].email
+    button: |
+      **Daytime phone number**: ${ users[0].daytime_phone_number }
+      
+      **Evening phone number**: ${ users[0].evening_phone_number }
+      
+      **Email**: ${ users[0].email }
+  - Edit: users[0].birthdate
+    button: |
+      **Birthdate**:
+      ${ users[0].birthdate }
+
+  - note: |
+     ###Your court case      
   - Edit: 
-    - trial_court_division
-    - recompute:
-      - trial_court_index
-      - trial_court
+    - user_selected_county
     button: |
       
-      **Is in this court division**: ${ trial_court.division_abbr }
-      
-      **Is in this county**: ${( trial_court.address.county )} County
+      **Is in this county**: ${( user_selected_county )} County
 
   - Edit: docket_number
     button: |
@@ -3278,23 +3319,15 @@ review:
     button: |
       **Case name**:
       ${ case_name }
-      
-  - note: |
-      ###About you
-  - Edit: users.revisit
+  - Edit: user_ask_role
     button: |
-      **Your name, contact information and signature**
-
-      % for item in users:
-      * ${ item }
-      % endfor
-
-
-  - Edit: household_size
+      **Role in court case**:
+      ${ user_ask_role }
+  - Edit: other_parties[0].name.first
     button: |
-      **Number of people in your household**:
-      ${ household_size }
+      **Other party**: ${ other_parties[0].name.full() }
       
+      **Other party's birthdate**: ${ other_parties[0].birthdate }
       
   - note: |
       ###Income
@@ -3313,31 +3346,80 @@ review:
       - None
       % endif
 
-  - Edit: 
-      - review_jobs
+  - Edit:
+      - invalidate:
+          - why_unemployed
+          - is_self_employed
+          - has_schedule_c
+          - self_employed_net_income
+          - do_self_employment_worksheet
+          - net_income_order
+          - self_employed_expenses_monthly_amount
+          - self_employed_net_income_monthly_amount
+          - jobs
+          - review_jobs
+      - employed
+      - recompute:
+        - single_jobs_attribute
+        - jobs_order
+    button: |
+      % if employed:
+      I get income from working.
+      % else:
+      I do not get income from working.
+      I am unemployed because ${ why_unemployed }
+      % endif
+  - Edit: review_jobs
     button: |
       **Jobs**
-      
-      % if not employed:
-      
-      I do not get income from working
-      % else:
 
       % for item in jobs:
-      
-      - ${ item.source }
-      
+      * ${ item.source }, ${ item.employer.name.first }
       % endfor
-      
-      **Self employed jobs**
+      % if len(jobs) == 0:
+      - None
 
+      % endif
+  - Edit:
+      - invalidate:
+          - is_self_employed
+          - has_schedule_c
+          - self_employed_net_income
+          - do_self_employment_worksheet
+          - self_employed_expenses_monthly_amount
+          - self_employed_net_income_monthly_amount
+          - sself_empl_cgs
+          - self_empl_office
+          - elf_empl_employees
+          - self_empl_auto
+          - self_empl_travel
+          - self_empl_common_exp
+          - self_empl_other_insurances
+          - self_empl_other_expenses
+          - self_empl_debts
+          - net_income_order
+      - is_self_employed
+      - recompute:
+        - jobs_order
+    button: |
       % if is_self_employed:
+      I am self employed as ${ self_employed_description }.
+
+      % if has_schedule_c:
+      I have my schedule C.  My self employment income is ${ self_employed_net_income }
+      % else:
+      I do not have my schedule C.
       
-
+      % if do_self_employment_worksheet:
+      My monthly net income is ${ currency(str(self_empl_gross_sales_monthly_amount - sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      % else:
+      I do not want to do a self employment worksheet.
       % endif
-
       % endif
-
+      
+      % else:
+      I am not self employed.
+      % endif      
   - Edit: 
       - other_incomes.revisit
       - recompute:
@@ -3353,83 +3435,135 @@ review:
       - None
       % endif
           
-      
+  - note: |
+      ###Loans   
+
+  - Edit: primary_residence_loans.revisit
+    button: |
+      **Primary residence loans**
+
+      % for item in primary_residence_loans:
+      * ${ item.source }
+      % endfor
+      % if primary_residence_loans.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: real_estate_loans.revisit
+    button: |
+      **Other Real Estate Loans**
+
+      % for item in real_estate_loans:
+      * ${ item.source }
+      % endfor
+      % if real_estate_loans.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: vehicle_loans.revisit
+    button: |
+      **Vehicle loans**
+
+      % for item in vehicle_loans:
+      * ${ item.source }
+      % endfor
+      % if vehicle_loans.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: other_loans.revisit
+    button: |
+      **Other loans**
+
+      % for item in other_loans:
+      * ${ item.source }
+      % endfor
+      % if other_loans.number_gathered() == 0:
+      - None
+
+      % endif
+  - note: |
+      ###Debts    
+
+  - Edit: credit_card_debt.revisit
+    button: |
+      **Credit card debt**
+
+      % for item in credit_card_debt:
+      * ${ item.source }
+      % endfor
+      % if credit_card_debt.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: other_debt.revisit
+    button: |
+      **Other debt**
+
+      % for item in other_debt:
+      * ${ item.source }
+      % endfor
+      % if other_debt.number_gathered() == 0:
+      - None
+
+      % endif
   - note: |
       ###Expenses 
-  - Edit: expenses.revisit
+      
+  - Edit: children_expenses.revisit
     button: |
-      **Expenses**:
+      **Children expenses**
 
-      % if len(expenses) == 0:
-      - None
-      % endif
-      % for item in expenses:
-      - ${ item.display_name.lower() }
+      % for item in children_expenses:
+      * ${ item.source }
       % endfor
-
- 
-  - note: |
-      ###Assets      
-      
-  - Edit: vehicles.revisit
-    button: |
-      **Vehicles**
-      
-      % for item in vehicles:
-      * ${ item.make } ${ item.model } ${ item.year }          
-      % endfor
-      % if not vehicles.there_are_any:
+      % if children_expenses.number_gathered() == 0:
       - None
+
       % endif
-  - Edit: 
-      - real_estate.revisit
+  - Edit: household_expenses.revisit
     button: |
-      **Real estate**
+      **Household expenses**
 
-      % for item in real_estate.complete_elements():
-      % if item.source == "primary residence":
-      * primary residence
-      % else:
-      * ${ item.display_name.lower() }
-      % endif
+      % for item in household_expenses:
+      * ${ item.source }
       % endfor
-      % if not real_estate.there_are_any:
+      % if household_expenses.number_gathered() == 0:
       - None
+
       % endif
-
-  - Edit: bank_assets.revisit
+  - Edit: vehicle_expenses.revisit
     button: |
-      **Bank accounts and cash**
-      
-      % for item in bank_assets:
-      - ${ item.display_name.lower() }
+      **Vehicle expenses**
+
+      % for item in vehicle_expenses:
+      * ${ item.make } ${ item.model } ${ item.year }
       % endfor
-      % if not bank_assets.there_are_any:
+      % if vehicle_expenses.number_gathered() == 0:
       - None
-      % endif   
-      
-  - Edit: other_assets.revisit
-    button: |
-      **Other assets**
 
-      % for item in other_assets.complete_elements():
-        - ${ item.display_name.lower() }
-      % endfor
-
-      % if not other_assets.there_are_any:
-      - None
-      % endif      
-      
-  - Edit: other_reasons_why_cannot_afford
-    button: |
-      **Other reason(s) you cannot afford the fees (optional question)**:
-      
-      % if defined("other_reasons_why_cannot_afford"):
-      % if other_reasons_why_cannot_afford == "":
-      - None
-      % else:
-      ${ other_reasons_why_cannot_afford }
       % endif
+  - Edit: insurance_expenses.revisit
+    button: |
+      **Insurance expenses**
+
+      % for item in insurance_expenses:
+      * ${ item.source }
+      % endfor
+      % if insurance_expenses.number_gathered() == 0:
+      - None
+
+      % endif
+  - Edit: personal_expenses.revisit
+    button: |
+      **Personal expenses**
+
+      % for item in personal_expenses:
+      * ${ item.source }
+      % endfor
+      % if personal_expenses.number_gathered() == 0:
+      - None
+
       % endif
 
   - Edit: signature_date
@@ -3582,7 +3716,7 @@ attachments:
       - "users1_mailing_address_line_one": |
           ${ users[0].mailing_address.line_one() } 
       - "users1_mailing_address_line_two": |
-          ${ users[0].address.line_two() } 
+          ${ users[0].mailing_address.line_two() } 
       - "users1_daytime_phone_number": |
           ${ users[0].daytime_phone_number } 
       - "users1_evening_phone_number": ${ users[0].evening_phone_number } 
@@ -3611,12 +3745,14 @@ attachments:
       - "overtime_included_yes": ${ overtime_included_any_job } 
       - "overtime_included_no": ${ not overtime_included_any_job } 
       - "users1_income_tips_commissions_monthly_amount": |
-          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses'], times_per_year=12),2) } 
+          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
       - "users1_income_self_employment_monthly_amount": |
-          % if has_schedule_c:
-          ${ currency(self_employed_net_income/12) } 
+          % if employed and is_self_employed and has_schedule_c:
+          ${ round(self_employed_net_income/12,2) }
+          % elif employed and is_self_employed and do_self_employment_worksheet:
+          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % else:
-          ${ currency(net_income_order/12) }
+          0.00
           % endif
 
       - "users1_employer_paid_expenses_monthly_amount": |
@@ -3625,8 +3761,8 @@ attachments:
           % if employed and is_self_employed and has_schedule_c:
           ${ round(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round(float(jobs.total(times_per_year=12)) + float(net_income_order/12),2) }
-          $ else: 
+          ${ round(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),2) }
+          % else: 
           ${ round(jobs.total(times_per_year = 12),2) }
           % endif
       - "users1_income_rental_monthly_amount": |
@@ -3661,11 +3797,11 @@ attachments:
           ${ round(other_incomes.total(times_per_year = 12),2) } 
       - "users1_income_monthly_total": |
           % if employed and is_self_employed and has_schedule_c:
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_employed_net_income/12),2) }
+          ${ round( other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12) + float(self_employed_net_income/12),2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(net_income_order/12),2) }
-          $ else: 
-          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)),2) }
+          ${ round( float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])) ,2) }
+          % else: 
+          ${ round(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12),2) }
           % endif
       - "users1_receives_benefits_yes": |
           ${ len(public_benefits) > 0 } 
@@ -3936,13 +4072,13 @@ attachments:
       - "users1_personal_loan_1_self_paid": |
           ${ other_loans.matches(source=['personal'])[0].self_payment } 
       - "users1_personal_loan_2_lender": |
-          ${ other_loans.matches(source=['school'])[1].lender } 
+          ${ other_loans.matches(source=['school'])[0].lender } 
       - "users1_personal_loan_2_amount_owed": |
-          ${ other_loans.matches(source=['school'])[1].balance } 
+          ${ other_loans.matches(source=['school'])[0].balance } 
       - "users1_personal_loan_2_payment": |
-          ${ other_loans.matches(source=['school'])[1].monthly_payment } 
+          ${ other_loans.matches(source=['school'])[0].monthly_payment } 
       - "users1_personal_loan_2_self_paid": |
-          ${ other_loans.matches(source=['school'])[1].self_payment } 
+          ${ other_loans.matches(source=['school'])[0].self_payment } 
       - "users1_personal_loan_3_lender": |
           ${ other_loans.matches(source=['other'])[0].lender } 
       - "users1_personal_loan_3_amount_owed": |
@@ -3950,7 +4086,7 @@ attachments:
       - "users1_personal_loan_3_payment": |
           ${ other_loans.matches(source=['other'])[0].monthly_payment } 
       - "users1_personal_loan_3_self_paid": |
-          ${ other_loans.matches(source=['other'])[2].self_payment } 
+          ${ other_loans.matches(source=['other'])[0].self_payment } 
       - "users1_personal_loan_4_lender": |
           ${ other_loans.matches(source=['other'])[1].lender } 
       - "users1_personal_loan_4_amount_owed": |
@@ -3958,7 +4094,7 @@ attachments:
       - "users1_personal_loan_4_payment": |
           ${ other_loans.matches(source=['other'])[1].monthly_payment } 
       - "users1_personal_loan_4_self_paid": |
-          ${ other_loans.matches(source=['other'])[3].self_payment } 
+          ${ other_loans.matches(source=['other'])[1].self_payment } 
       - "users1_personal_loans_total_lender": ""
       - "users1_personal_loans_total_amount_owed": |
           ${ round(other_loans.balance(),2) } 
@@ -4436,7 +4572,7 @@ attachments:
       - "self_empl_gross_sales_monthly_amount": |
           ${ round(self_empl_gross_sales_monthly_amount,2) } 
       - "self_empl_cgs_amount": |
-          ${ round(self_empl_cgs.total(times_per_year = 12),2) } 
+          ${ round(self_empl_cgs[0].value,2) } 
       - "self_empl_advertising_amount": |
           ${ round(self_empl_common_exp[0].value,2) } 
       - "self_empl_bad_debt_amount": |
@@ -4532,11 +4668,11 @@ attachments:
       - "self_empl_other_exp1_subtotal_amount": |
           ${ round(self_empl_other_expenses.total(times_per_year = 12),2) }
       - "self_employed_expenses_monthly_amount": |
-          ${ round(sum([ expense.total(times_per_year=12) for expense in ['self_empl_cgs'] ]),2) }
+          ${ round(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]),2) }
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
           **${ currency(self_employed_net_income/12) }**  
           % else:
-          **${ currency(net_income_order/12) }**
+          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
           % endif
 ---

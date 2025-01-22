@@ -93,6 +93,8 @@ code: |
     self_empl_other_insurances[0].value
     self_empl_debts[0].value
     self_empl_other_expenses.gather()
+    times_per_year_complete
+    al_expense_lists
   net_income_order = True
 ---
 code: |
@@ -179,44 +181,65 @@ objects:
   - self_empl_office: ALExpenseList.using(auto_gather = False, gathered = True)
 ---
 code: |
+  self_empl_cgs[0].source = "Cost of Goods Sold"
+  self_empl_cgs[0].times_per_year = 12
   self_empl_office[0].source = "Rent paid"
   self_empl_office[0].times_per_year = 12
----
-code: |
   self_empl_office[1].source = "Interest paid on business mortgage"
   self_empl_office[1].times_per_year = 12
----
-code: |
   self_empl_office[2].source = "Equipment"
   self_empl_office[2].times_per_year = 12
----
-code: |
   self_empl_office[3].source = "Depreciation"
   self_empl_office[3].times_per_year = 12
----
-code: |
   self_empl_office[4].source = "Depletion"
   self_empl_office[4].times_per_year = 12
----
-code: |
   self_empl_office[5].source = "Other property"
   self_empl_office[5].times_per_year = 12
----
-code: |
   self_empl_office[6].source = "Repairs"
   self_empl_office[6].times_per_year = 12
----
-code: |
   self_empl_office[7].source = "Utilities and phone"
   self_empl_office[7].times_per_year = 12
----
-code: |
   self_empl_office[8].source = "Office expenses"
   self_empl_office[8].times_per_year = 12
----
-code: |
   self_empl_office[9].source = "Supplies"
   self_empl_office[9].times_per_year = 12
+  self_empl_employees[0].source = "Wages paid"
+  self_empl_employees[0].times_per_year = 12
+  self_empl_employees[1].source = "Commissions paid"
+  self_empl_employees[1].times_per_year = 12
+  self_empl_employees[2].source = "Employee benefit programs"
+  self_empl_employees[2].times_per_year = 12
+  self_empl_employees[3].source = "Pension paid"
+  self_empl_employees[3].times_per_year = 12
+  self_empl_auto[0].source = "Auto insurance"
+  self_empl_auto[0].times_per_year = 12
+  self_empl_auto[1].source = "Auto maintenance"
+  self_empl_auto[1].times_per_year = 12
+  self_empl_auto[2].source = "Auto registration"
+  self_empl_auto[2].times_per_year = 12
+  self_empl_auto[3].source = "Gasoline"
+  self_empl_auto[3].times_per_year = 12
+  self_empl_travel[0].source = "Travel"
+  self_empl_travel[0].times_per_year = 12
+  self_empl_travel[1].source = "Meals and Entertainment"
+  self_empl_travel[1].times_per_year = 12
+  self_empl_common_exp[0].source = "Advertising"
+  self_empl_common_exp[0].times_per_year = 12
+  self_empl_common_exp[1].source = "Dues and publications"
+  self_empl_common_exp[1].times_per_year = 12  
+  self_empl_common_exp[2].source = "Legal and professional fees"
+  self_empl_common_exp[2].times_per_year = 12  
+  self_empl_common_exp[3].source = "Laundry and cleaning"
+  self_empl_common_exp[3].times_per_year = 12
+  self_empl_debts[0].source = "Taxes paid"
+  self_empl_debts[0].times_per_year = 12
+  self_empl_debts[1].source = "Other interest paid"
+  self_empl_debts[1].times_per_year = 12  
+  self_empl_debts[2].source = "Bad debt"
+  self_empl_debts[2].times_per_year = 12
+  self_empl_other_insurances[0].times_per_year = 12
+  self_empl_other_insurances[1].times_per_year = 12
+  times_per_year_complete = True
 ---
 id: Office and equipment expenses
 question: |
@@ -268,22 +291,6 @@ fields:
 objects: 
   - self_empl_employees: ALExpenseList.using(auto_gather = False, gathered = True)
 ---
-code: |
-  self_empl_employees[0].source = "Wages paid"
-  self_empl_employees[0].times_per_year = 12
----
-code: |
-  self_empl_employees[1].source = "Commissions paid"
-  self_empl_employees[1].times_per_year = 12
----
-code: |
-  self_empl_employees[2].source = "Employee benefit programs"
-  self_empl_employees[2].times_per_year = 12
----
-code: |
-  self_empl_employees[3].source = "Pension paid"
-  self_empl_employees[3].times_per_year = 12
----
 id: Wages and other employee expenses
 question: |
   Monthly business expenses from self-employment
@@ -310,30 +317,6 @@ fields:
 objects: 
   - self_empl_auto: ALExpenseList.using(auto_gather = False, gathered = True)
   - self_empl_travel: ALExpenseList.using(auto_gather = False, gathered = True)
----
-code: |
-  self_empl_auto[0].source = "Auto insurance"
-  self_empl_auto[0].times_per_year = 12
----
-code: |
-  self_empl_auto[1].source = "Auto maintenance"
-  self_empl_auto[1].times_per_year = 12
----
-code: |
-  self_empl_auto[2].source = "Auto registration"
-  self_empl_auto[2].times_per_year = 12
----
-code: |
-  self_empl_auto[3].source = "Gasoline"
-  self_empl_auto[3].times_per_year = 12
----
-code: |
-  self_empl_travel[0].source = "Travel"
-  self_empl_travel[0].times_per_year = 12
----
-code: |
-  self_empl_travel[1].source = "Meals and Entertainment"
-  self_empl_travel[1].times_per_year = 12
 ---
 id: Auto travel and meal expenses
 question: |
@@ -369,22 +352,6 @@ fields:
 objects: 
   - self_empl_common_exp: ALExpenseList.using(auto_gather = False, gathered = True)
 ---
-code: |
-  self_empl_common_exp[0].source = "Advertising"
-  self_empl_common_exp[0].times_per_year = 12  
----
-code: |
-  self_empl_common_exp[1].source = "Dues and publications"
-  self_empl_common_exp[1].times_per_year = 12  
----
-code: |
-  self_empl_common_exp[2].source = "Legal and professional fees"
-  self_empl_common_exp[2].times_per_year = 12  
----
-code: |
-  self_empl_common_exp[3].source = "Laundry and cleaning"
-  self_empl_common_exp[3].times_per_year = 12  
----
 id: Other common business expenses
 question: |
   Monthly business expenses from self-employment
@@ -411,14 +378,6 @@ fields:
 objects: 
   - self_empl_other_insurances: ALExpenseList.using(auto_gather = False, gathered = True)
 ---
-code: |
-  self_empl_other_insurances[0].source = "First other insurance"
-  self_empl_other_insurances[0].times_per_year = 12
----
-code: |
-  self_empl_other_insurances[1].source = "Second other insurance"
-  self_empl_other_insurances[1].times_per_year = 12
----
 id: Insurance that is not health insurance
 question: |
   Monthly business expenses from self-employment
@@ -443,18 +402,6 @@ fields:
 objects: 
   - self_empl_debts: ALExpenseList.using(auto_gather = False, gathered = True)
 ---
-code: |
-  self_empl_debts[0].source = "Taxes paid"
-  self_empl_debts[0].times_per_year = 12
----
-code: |
-  self_empl_debts[1].source = "Other interest paid"
-  self_empl_debts[1].times_per_year = 12  
----
-code: |
-  self_empl_debts[2].source = "Bad debt"
-  self_empl_debts[2].times_per_year = 12
----
 id: Bad debt taxes and other interest paid
 question: |
   Monthly business expenses from self-employment
@@ -475,7 +422,7 @@ fields:
     required: false
 ---
 objects:
-  - self_empl_other_expenses: ALExpenseList
+  - self_empl_other_expenses: ALExpenseList.using(complete_attribute='times_per_year')
 ---
 id: Gather other expenses
 question: |
