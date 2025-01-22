@@ -3567,11 +3567,11 @@ attachments:
       - "users1_name": |
           ${ users[0].name } 
       - "users1_birthdate": |
-          ${ users[0].birthdate } 
+          ${ format_date(users[0].birthdate, format='M/d/yyyy') }
       - "other_parties1_name": |
           ${ other_parties[0].name } 
       - "other_parties1_birthdate": |
-          ${ other_parties[0].birthdate } 
+          ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
       - "role_plaintiff": |
           ${ user_ask_role == "plaintiff" }
       - "role_defendant": |
@@ -3594,6 +3594,7 @@ attachments:
       - "users1_evening_phone_number": ${ users[0].evening_phone_number } 
       - "users1_email": ${ users[0].email } 
       - "signature_date": ${ signature_date } 
+      - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name_full__1": |
           ${ users[0].name.full() } 
       - "users1_employer_0_name": |
