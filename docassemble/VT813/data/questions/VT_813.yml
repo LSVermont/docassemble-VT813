@@ -149,7 +149,7 @@ code: |
   case_name
   docket_number
   
-  #This is where we collect the desired court division and county. With those two pieces of info and our comprehensive courts_list_full spreadsheet, the exact court is determined.
+  #This is where we collect the desired court county and the exact court is determined.
   user_selected_county
   trial_court.address.county
   
@@ -660,18 +660,18 @@ fields:
     code: |
       times_per_year_list
     js hide if: |
-      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" || val("public_benefits[i].source") === "ssi"|| val("public_benefits[i].source") === "vhap"|| val("public_benefits[i].source") === "housing_assist"
+      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" 
   - Amount of income: public_benefits[i].value
     datatype: currency
     js hide if: |
-      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" || val("public_benefits[i].source") === "ssi"|| val("public_benefits[i].source") === "vhap"|| val("public_benefits[i].source") === "housing_assist"
+      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" 
 validation code: |
   if public_benefits[i].source != "other":
     public_benefits[i].display_name = public_benefits.terms_ordered.get(public_benefits[i].source, public_benefits[i].source)
   else:
     public_benefits[i].display_name = public_benefits[i].source_other
 ---
-if: public_benefits[i].source in ["medicaid","medicare","dynasaur","ssi","vhap","housing_assist"]
+if: public_benefits[i].source in ["medicaid","medicare","dynasaur"]
 code: |
   public_benefits[i].value = 0
   public_benefits[i].times_per_year = 0
@@ -711,7 +711,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      "Varies" if row_item.source in ["medicaid","medicare","dynasaur","ssi","vhap","housing_assist"] else currency(row_item.total(times_per_year=12))
+      "Varies" if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
 edit:
   - source
   - value
@@ -840,15 +840,15 @@ data: !!omap
   - wages: "Wages and Salaries"
   - other: "Other"
 ---
-id: Rental Income and expenses
+id: rental income and expenses
 question: |
-  Rental Income Worksheet
+  Rental income worksheet
 subquestion: |
   Complete this worksheet only if you have rental income.
 fields:
   - Annual rent received: annual_rental_income
     datatype: currency
-  - What expenses do you have?: rental_expenses.selected_types
+  - What expenses did you have for your rental business?: rental_expenses.selected_types
     datatype: checkboxes
     code: |
       rental_expenses_ordered
@@ -909,7 +909,8 @@ code: |
 code: |
   monthly_rental_income = (annual_rental_income - float(rental_expenses.total(times_per_year=1)))/12
 ---
-question:  Rental Income
+id: rental net income
+question:  Rental income
 fields:
   - Do you have a copy of your IRS Schedule E tax form?: has_schedule_e
     datatype: yesnoradio
@@ -918,7 +919,7 @@ fields:
       
       Enter that amount from Schedule E and we will calculate your monthly net income for this form. If you had a net loss, enter it as a negative number, like this: -5000.00
     show if: has_schedule_e
-  - Annual rental income: schedule_e_income
+  - Annual rental net income: schedule_e_income
     datatype: currency
     show if: has_schedule_e
   - note: |
@@ -1133,7 +1134,7 @@ if: j in ["full time","part time"]
 id: itemized job period pt and ft wages
 generic object: ALItemizedJob
 question: |
-  Details about ${ j } compensation for your ${ jobs[i].source } job
+  Details about ${ j } pay for your ${ jobs[i].source } job
 fields:
   - Paid hourly or salary?: jobs[i].to_add[j].is_hourly
     input type: radio
@@ -1261,12 +1262,14 @@ code: |
   jobs.deductions_other_monthly_amount
   single_jobs_attribute = True
 ---
+id: healthcare benefits
 question: Healthcare benefits
 fields:
   - Could you get insurance through this job -- even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
     datatype: yesnoradio
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
+    show if: jobs[i].healthcare_available
   - Total Monthly Family Health Insurance Cost to Employee: jobs[i].health_insurance_family_cost
     datatype: currency
     show if: jobs[i].healthcare_available
@@ -1369,7 +1372,7 @@ code: |
   if x.is_part_time:
     x.to_add.new_item_name = "part time"
   else:
-    x.to_add.new_item_name = "part time"
+    x.to_add.new_item_name = "full time"
   
 ---
 id: edit wages and other incomes from a job
@@ -1567,7 +1570,6 @@ id: paystub instructions
 question: |
   Important
 subquestion: |
-  Keep in mind
 
   If you got paychecks in the last 12 months, you will need to attach copies of the 4 most recent paystubs to this form.
 
@@ -1618,7 +1620,7 @@ fields:
   - note: |
       Choose the county court where you will file this form. 
       
-      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
+      If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
@@ -1640,6 +1642,21 @@ fields:
       **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
       
       If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+---
+id: docket number
+question: |
+  What is the case number used to track this case in court?
+subquestion: |
+  Look at your court papers to find the case number. It's usually in the upper-right corner.
+fields:
+  - I don't know the case number: dont_know_docket_number
+    datatype: yesno    
+  - Case number: docket_number
+    hide if: dont_know_docket_number
+validation code: |
+  # This should be safe too
+  if dont_know_docket_number:
+    docket_number = ''    
 ---
 ############################### USERS INFO ###############################
 ---
@@ -1775,18 +1792,18 @@ subquestion: |
 id: household_expenses.terms_ordered
 variable name: household_expenses.terms_ordered
 data: !!omap
-  - rent: "Rent or Mortgage"
+  - rent: "Rent or mortgage"
   - property_tax: "Property taxes"
-  - home_insurance: "Homeowners' or Renter's Insurance"
+  - home_insurance: "Homeowners' or renter's insurance"
   - electric: "Electricity"
-  - phone: "Telephone (Land and Cell Phone)"
+  - phone: "Telephone (land and cell phone)"
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, Plowing, Trash"
+  - mowplowtrash: "Mowing, plowing, trash"
   - food: "Groceries"
-  - cableinternet: "Cable/Internet"
-  - laundry: "Laundry/Dry Cleaning"
+  - cableinternet: "Cable/internet"
+  - laundry: "Laundry/dry cleaning"
   - repairs: "Maintenance/repairs"
 --- 
 id: household expenses other display
@@ -1810,7 +1827,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the worksheet.
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: household_expenses.selected_types
@@ -1878,9 +1895,9 @@ code: |
   
 ---
 id: household expenses paid by others
-question:  Other Payments for ${ household_expenses[i].display_name }
+question:  Other payments for ${ household_expenses[i].display_name }
 subquestion: |
-  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) }
+  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: household_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -1930,7 +1947,7 @@ rows: household_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -1971,7 +1988,7 @@ question: |
   What kind of vehicle expenses do you have?
 subquestion: | 
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the worksheet.
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
   % endif
 
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2034,9 +2051,9 @@ code: |
     vehicle_expenses[i].paid_by_other_monthly = 0
 ---
 id: vehicle expenses paid by others
-question:  Other Payments for ${ vehicle_expenses[i].display_name }
+question:  Other payments for ${ vehicle_expenses[i].display_name }
 subquestion: |
-  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) }
+  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: vehicle_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2080,7 +2097,7 @@ rows: vehicle_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -2193,7 +2210,7 @@ code: |
       insurance_expenses[i].value = health_insurance_paid_total  
 ---
 id: insurance expense paid by other question
-question:  Other Payments for ${ insurance_expenses[i].display_name }
+question:  Other payments for ${ insurance_expenses[i].display_name }
 subquestion: |
   You said your ${ insurance_expenses[i].display_name } expense is ${ insurance_expenses[i].total(times_per_year=12) } per month.
 fields: 
@@ -2240,7 +2257,7 @@ rows: insurance_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       currency(row_item.paid_by_other_monthly)
@@ -2255,26 +2272,26 @@ id: personal_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: personal_expenses.terms_ordered
 data: !!omap
-  - medical: "Uninsured Medical Expenses"
-  - clothes: "Clothing/Shoes"
-  - toiletries: "Toiletries/Cosmetics"
-  - dining: "Meals/Snacks eaten out"
-  - hair: "Hair Care"
-  - reading: "Magazines, Newspapers, Books, other reading material"
-  - tobalch: "Tobacco and Alcohol Products"
+  - medical: "Uninsured medical expenses"
+  - clothes: "Clothing/shoes"
+  - toiletries: "Toiletries/cosmetics"
+  - dining: "Meals/snacks eaten out"
+  - hair: "Hair care"
+  - reading: "Magazines, newspapers, books, other reading material"
+  - tobalch: "Tobacco and alcohol products"
   - pets: "Veterinarian and other pet expenses"
   - entertain: "Entertainment (movies, bowling, museums, etc.)"
   - gifts: "Gifts for others"
-  - charity: "Charitable Contributions"
+  - charity: "Charitable contributions"
   - vacation: "Vacation"
-  - dues: "Union Dues"
-  - save: "Monthly Contribution to Savings"
-  - contributions: "Monthly Contribution to Retirement Funds (401K, IRA, etc.)"
-  - loans: "Monthly Loan & Debt Payments"
+  - dues: "Union dues"
+  - save: "Monthly contribution to savings"
+  - contributions: "Monthly contribution to retirement funds (401K, IRA, etc.)"
+  - loans: "Monthly loan and debt payments"
   - other_kids: |
-      Expenses for Children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court Ordered Child Support you pay for children of another relationship."
-  - alimony: "Court Ordered Spousal Maintenance (Alimony) you pay"
+      Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
+  - child_support: "Court-ordered child support you pay for children of another relationship."
+  - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
 id: personal expenses other display default
@@ -2324,7 +2341,7 @@ subquestion: |
    
    For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
     
-  "Monthly Loan & Debt Payments" is selected below and this amount will be entered into the worksheet.
+  "Monthly loan & debt payments" is selected below and this amount will be entered into the form. You will be able to edit it.
 
   % endif
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2387,9 +2404,9 @@ code: |
     personal_expenses[i].paid_by_other_monthly = 0
 ---
 id: personal expenses paid by others question
-question:  Other Payments for ${ personal_expenses[i].display_name }
+question:  Other payments for ${ personal_expenses[i].display_name }
 subquestion: |
-  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) }
+  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: personal_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2437,7 +2454,7 @@ rows: personal_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(float(row_item.total(times_per_year=12))) if not row_item.paid_by_other else currency(float(row_item.total(times_per_year=12)) - row_item.paid_by_other_monthly)
   - Amount paid by somebody else: |
       "$0" if not row_item.paid_by_other else currency(row_item.paid_by_other_monthly)
@@ -2601,7 +2618,7 @@ rows: children_expenses
 columns:
   - Type: |
       row_item.display_name
-  - Amount paid by you: |
+  - Amount paid by you each month: |
       currency(row_item.total(times_per_year=12))
 edit:
   - source
@@ -2705,8 +2722,6 @@ id: info for each primary_residence_loans
 reconsider: primary_residence_loans[i].display_name
 question: |
   About your ${ primary_residence_loans[i].display_name.lower() }
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Loan: primary_residence_loans[i].source
     code: |
@@ -2773,7 +2788,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2834,8 +2849,6 @@ id: info for each other_loans
 reconsider: other_loans[i].display_name
 question: |
   About your ${ other_loans[i].display_name.lower() }
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Loan: other_loans[i].source
     code: |
@@ -2892,7 +2905,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2906,7 +2919,7 @@ objects:
   - real_estate_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: are the real estate loans
-question: Other Real Estate Loans
+question: Other real estate loans
 subquestion: |
   DO NOT include business or rental property loans.
 fields:
@@ -2921,8 +2934,6 @@ code: |
 id: info for each real estate loans
 question: |
   About your ${ ordinal(i) } real estate loan
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Property Description: real_estate_loans[i].source
   - Lender: real_estate_loans[i].lender
@@ -2966,7 +2977,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -2980,7 +2991,7 @@ objects:
   - vehicle_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: are there vehicle loans
-question: Vehicle Loans
+question: Vehicle loans
 fields:
   - Do you have any vehicle loans?: vehicle_loans.there_are_any
     datatype: yesnoradio
@@ -2993,8 +3004,6 @@ code: |
 id: info for each vehicle loans
 question: |
   About your ${ ordinal(i) } vehicle loan
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Type of Vehicle (Year, Make, Model): vehicle_loans[i].source
   - Lender: vehicle_loans[i].lender
@@ -3005,6 +3014,7 @@ fields:
   - Are YOU making this payment?: vehicle_loans[i].self_payment
     datatype: yesnoradio
 ---
+id: more vehicle loans
 reconsider: vehicle_loans.total_monthly_self_payment
 question: Do you want to list any more vehicle loans?
 subquestion: |
@@ -3039,7 +3049,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -3053,7 +3063,7 @@ objects:
   - credit_card_debt: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: is there credit card debt
-question: Credit Card Debt
+question: Credit card debt
 fields:
   - Do you have any credit card debt?: credit_card_debt.there_are_any
     datatype: yesnoradio
@@ -3068,8 +3078,6 @@ code: |
 id: info for each credit_card_debt loans
 question: |
   About your ${ ordinal(i) } credit_card_debt
-subquestion: |
-  Make your best guess when answering these questions.
 fields:
   - Card Holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
@@ -3114,7 +3122,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -3128,7 +3136,7 @@ objects:
   - other_debt: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: is there other debt
-question: other Debt
+question: Other debt
 fields:
   - Do you have any other debt?: other_debt.there_are_any
     datatype: yesnoradio
@@ -3142,12 +3150,10 @@ code: |
 ---
 id: info for each other_debt loans
 question: |
-  About your ${ ordinal(i) } other debt
-subquestion: |
-  Make your best guess when answering these questions.
+  About your other debt
 fields:
-  - Type of Debt: other_debt[i].source
-  - Company/Entity Owwed: other_debt[i].lender
+  - Type of debt: other_debt[i].source
+  - Company/Entity owed: other_debt[i].lender
   - Balance owed: other_debt[i].balance
     datatype: currency
   - Monthly payment: other_debt[i].monthly_payment
@@ -3189,7 +3195,7 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - Check here if YOU are making this payment: |
+  - YOU are making this payment: |
       row_item.self_payment
 edit:
   - source
@@ -3695,11 +3701,11 @@ attachments:
       - "users1_name": |
           ${ users[0].name } 
       - "users1_birthdate": |
-          ${ users[0].birthdate } 
+          ${ format_date(users[0].birthdate, format='M/d/yyyy') }
       - "other_parties1_name": |
           ${ other_parties[0].name } 
       - "other_parties1_birthdate": |
-          ${ other_parties[0].birthdate } 
+          ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
       - "role_plaintiff": |
           ${ user_ask_role == "plaintiff" }
       - "role_defendant": |
@@ -3722,6 +3728,7 @@ attachments:
       - "users1_evening_phone_number": ${ users[0].evening_phone_number } 
       - "users1_email": ${ users[0].email } 
       - "signature_date": ${ signature_date } 
+      - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name_full__1": |
           ${ users[0].name.full() } 
       - "users1_employer_0_name": |
