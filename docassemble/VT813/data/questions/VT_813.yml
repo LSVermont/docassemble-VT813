@@ -353,11 +353,11 @@ code: |
 id: are there shared children
 question: Minor children with ${ other_parties[0].name.full() }
 fields:
-  - Do you have minor children with ${ other_parties[0].name.full() }?: shared_children.there_are_any
+  - Do you have children under 18 years old with ${ other_parties[0].name.full() }?: shared_children.there_are_any
     datatype: yesnoradio
 ---
 id: shared children
-question: ${ title_case(ordinal(i)) } Child with ${ other_parties[0].name.full() }
+question: ${ title_case(ordinal(i)) } child with ${ other_parties[0].name.full() }
 fields:
   - Name: shared_children[i].name
   - Date of Birth: shared_children[i].birthdate
@@ -477,7 +477,7 @@ code: |
   shared_children_income_other_display = "another source of income"
 ---
 id: other children
-question: ${ title_case(ordinal(i)) } Child whom you provide support
+question: ${ title_case(ordinal(i)) } child whom you provide support
 fields:
   - Name: other_children[i].name.first
   - Date of Birth: other_children[i].birthdate
@@ -530,9 +530,9 @@ fields:
     datatype: yesnoradio
 ---
 id: are there other children
-question: Other Minor Children
+question: Other minor children
 fields:
-  - Do you have other Minor Children for whom you provide support?: other_children.there_are_any
+  - Do you have other children under age 18 for whom you provide support?: other_children.there_are_any
     datatype: yesnoradio
 ---
 code: |
@@ -2625,7 +2625,7 @@ edit:
   - value
 ---
 id: childcare costs
-question: Your Child Care Costs For Children With ${ other_parties[0].name.full() }
+question: Your child care costs For children with ${ other_parties[0].name.full() }
 subquestion: |
   If monthly amounts change during the year, use total annual amount divided by 12.
 fields:
@@ -2640,7 +2640,7 @@ code: |
   children_expenses
 ---
 id: extraordinatry expenses
-question: Your Extraordinary Expenses For Children With ${ other_parties[0].name.full() }
+question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 fields:
   - note: |
       **Child's Uninsured Medical Expenses**
