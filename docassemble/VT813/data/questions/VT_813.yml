@@ -1092,7 +1092,7 @@ subquestion: |
   % if is_self_employed and len(x.complete_elements()) > 0:
   You've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % elif is_self_employed:
-  You've already told us about your self-employed income 
+  You've already told us about your self-employed income. 
   % elif len(x.complete_elements()) > 0:
   You've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % endif
@@ -1172,7 +1172,7 @@ fields:
     datatype: yesnoradio
   - note: |
       ---
-      Look at a recent pay stub for the following information
+      Look at a recent pay stub for the following information.
       
       Withholding information on your pay stub (${ times_per_year(times_per_year_list, jobs[i].times_per_year) })
   - Federal: jobs[i].deductions_federal_monthly_amount
@@ -1207,7 +1207,7 @@ fields:
     show if: jobs[i].pay_personal_expenses
   - note: |
       <hr>
-  - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 code: |
@@ -1325,7 +1325,7 @@ fields:
     code: |
       times_per_year_list
     datatype: integer
-  - Does the job have any more incomes like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have any more incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 id: sets hourly to false if salary
@@ -1424,11 +1424,11 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  You said that you were self employed with an income of
+  **You said that you were self employed with a net income of**
   % if has_schedule_c:
-  ${ currency(self_employed_net_income) }
+  **${ currency(self_employed_net_income) } each month.**
   % elif do_self_employment_worksheet:
-  ${ currency(str(self_employed_net_income_monthly_amount)) }
+  **${ currency(str(self_employed_net_income_monthly_amount)) } each month.**
   % endif
   % endif
 
@@ -1827,7 +1827,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: household_expenses.selected_types
@@ -1988,7 +1988,7 @@ question: |
   What kind of vehicle expenses do you have?
 subquestion: | 
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
 
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2149,7 +2149,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 
   % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
-  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }.  Healh insurance is selected below and these amounts will be entered into the worksheet.  You can change these amounts in the table of insurance expenses.
+  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }. Health insurance is selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: insurance_expenses.selected_types
@@ -2339,9 +2339,9 @@ subquestion: |
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_debt.total_monthly_self_payment) }**
   % endif
    
-   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
+   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }.**
     
-  "Monthly loan & debt payments" is selected below and this amount will be entered into the form. You will be able to edit it.
+  "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
 
   % endif
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2518,9 +2518,9 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your out of pocket childcare costs is ${ currency(out_of_pocket_costs)} (the total childcare costs of ${currency(total_monthly_childcare_costs) } minus the subsidy ${ currency(childcare_subsidy) }).
+  You said earlier that your out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare costs of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
   
-  Because of this, "Out of Pocket Costs" is pre-selected below, and will have this amount.  You can still edit it after entering the information about all of the expenses.
+  Because of this, "Out-of-pocket costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -2625,11 +2625,11 @@ edit:
   - value
 ---
 id: childcare costs
-question: Your child care costs For children with ${ other_parties[0].name.full() }
+question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
   If monthly amounts change during the year, use total annual amount divided by 12.
 fields:
-  - Total Monthly Childcare Costs: total_monthly_childcare_costs
+  - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
   - Subsidy: childcare_subsidy
     datatype: currency
@@ -2639,7 +2639,7 @@ validation code: |
 code: |
   children_expenses
 ---
-id: extraordinatry expenses
+id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 fields:
   - note: |
@@ -2748,7 +2748,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount  you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**
+  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**
   
   Tap Next if you don't have more to add.
   
@@ -2875,7 +2875,7 @@ reconsider: other_loans.total_monthly_self_payment
 question: Do you want to list any other loans?
 subquestion: |
   
-  The total for the monthly expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay is **${ currency(other_loans.total_monthly_self_payment) }**
+  The total for the monthly other loan expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3018,7 +3018,7 @@ id: more vehicle loans
 reconsider: vehicle_loans.total_monthly_self_payment
 question: Do you want to list any more vehicle loans?
 subquestion: |
-  The total for the monthly expensesis **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.
+  The total for the monthly vehicle loan expenses is **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }.**
   
   
   Tap Next if you don't have more to add.
@@ -3092,7 +3092,7 @@ id: want to add more credit_card_debt
 reconsider: credit_card_debt.total_monthly_self_payment
 question: Do you want to list any more credit card debt?
 subquestion:  |
-  The total for the monthly expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }**
+  The total for the monthly credit card debt expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3165,7 +3165,7 @@ id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
 question: Do you want to list any other debt?
 subquestion: |
-  The total for the monthly expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }**
+  The total for the monthly other debt expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3284,7 +3284,7 @@ review:
       ###About you
   - Edit: users[0].name.first
     button: |
-      ${ users[0].name.full() }
+      **Your name**: ${ users[0].name.full() }
   - Edit: users[0].address.address
     button: |
       **Address**: ${ users[0].address.on_one_line() }
@@ -3310,7 +3310,7 @@ review:
     - user_selected_county
     button: |
       
-      **Is in this county**: ${( user_selected_county )} County
+      **Is in family court in this county**: ${( user_selected_county )} County
 
   - Edit: docket_number
     button: |
@@ -3327,14 +3327,15 @@ review:
       ${ case_name }
   - Edit: user_ask_role
     button: |
-      **Role in court case**:
+      **Your role in court case**:
       ${ user_ask_role }
-  - Edit: other_parties[0].name.first
+  - Edit:
+      - other_parties[0].name.first
     button: |
       **Other party**: ${ other_parties[0].name.full() }
       
-      **Other party's birthdate**: ${ other_parties[0].birthdate }
-      
+      **Birthdate**: ${ other_parties[0].birthdate }
+ 
   - note: |
       ###Income
 
@@ -4678,8 +4679,8 @@ attachments:
           ${ round(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]),2) }
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
-          **${ currency(self_employed_net_income/12) }**  
+          ${ round(self_employed_net_income/12,2) }
           % else:
-          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
+          ${ round((self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),2) }
           % endif
 ---

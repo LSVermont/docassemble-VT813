@@ -1,4 +1,4 @@
-#SELF-EMPLOYMENT WORKSHEET FOR 813A
+#SELF-EMPLOYMENT QUESTIONS AND WORKSHEET FOR 813A
 
 
 
@@ -15,10 +15,6 @@ metadata:
     813A Self-employment
   description: |-
     This interview helps someone in Vermont fill in the self-employment worksheet part of the 813A financial affidavit in Vermont.
-  tags:
-    - "FA-04-00-00-00"
-    - "FA-05-00-00-00"
-    - "FA-06-00-00-00"
   authors:
     - VTCourtForms by Legal Services Vermont
   original_form:
@@ -122,9 +118,9 @@ code: |
 ---
 id: self employment worksheet
 question: |
-  Self-employment worksheet
+  Self-employment
 fields:
-  - Description of your self-empoyed business: self_employed_description
+  - Description of your self-employed business: self_employed_description
   - Do you have a copy of your IRS Schedule C tax form?: has_schedule_c
     datatype: yesnoradio
   - note: |
