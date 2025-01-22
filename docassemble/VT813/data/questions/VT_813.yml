@@ -652,18 +652,18 @@ fields:
     code: |
       times_per_year_list
     js hide if: |
-      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" || val("public_benefits[i].source") === "ssi"|| val("public_benefits[i].source") === "vhap"|| val("public_benefits[i].source") === "housing_assist"
+      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" 
   - Amount of income: public_benefits[i].value
     datatype: currency
     js hide if: |
-      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" || val("public_benefits[i].source") === "ssi"|| val("public_benefits[i].source") === "vhap"|| val("public_benefits[i].source") === "housing_assist"
+      val("public_benefits[i].source") === "medicaid" || val("public_benefits[i].source") === "medicare" || val("public_benefits[i].source") === "dynasaur" 
 validation code: |
   if public_benefits[i].source != "other":
     public_benefits[i].display_name = public_benefits.terms_ordered.get(public_benefits[i].source, public_benefits[i].source)
   else:
     public_benefits[i].display_name = public_benefits[i].source_other
 ---
-if: public_benefits[i].source in ["medicaid","medicare","dynasaur","ssi","vhap","housing_assist"]
+if: public_benefits[i].source in ["medicaid","medicare","dynasaur"]
 code: |
   public_benefits[i].value = 0
   public_benefits[i].times_per_year = 0
@@ -703,7 +703,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      "Varies" if row_item.source in ["medicaid","medicare","dynasaur","ssi","vhap","housing_assist"] else currency(row_item.total(times_per_year=12))
+      "Varies" if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
 edit:
   - source
   - value
@@ -1124,7 +1124,7 @@ if: j in ["full time","part time"]
 id: itemized job period pt and ft wages
 generic object: ALItemizedJob
 question: |
-  Details about ${ j } compensation for your ${ jobs[i].source } job
+  Details about ${ j } pay for your ${ jobs[i].source } job
 fields:
   - Paid hourly or salary?: jobs[i].to_add[j].is_hourly
     input type: radio
@@ -1252,12 +1252,14 @@ code: |
   jobs.deductions_other_monthly_amount
   single_jobs_attribute = True
 ---
+id: healthcare benefits
 question: Healthcare benefits
 fields:
   - Could you get insurance through this job -- even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
     datatype: yesnoradio
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
+    show if: jobs[i].healthcare_available
   - Total Monthly Family Health Insurance Cost to Employee: jobs[i].health_insurance_family_cost
     datatype: currency
     show if: jobs[i].healthcare_available
@@ -1360,7 +1362,7 @@ code: |
   if x.is_part_time:
     x.to_add.new_item_name = "part time"
   else:
-    x.to_add.new_item_name = "part time"
+    x.to_add.new_item_name = "full time"
   
 ---
 id: edit wages and other incomes from a job
@@ -1561,7 +1563,6 @@ id: paystub instructions
 question: |
   Important
 subquestion: |
-  Keep in mind
 
   If you got paychecks in the last 12 months, you will need to attach copies of the 4 most recent paystubs to this form.
 
@@ -1612,7 +1613,7 @@ fields:
   - note: |
       Choose the county court where you will file this form. 
       
-      If there's an existing court case, choose the division and county that the case is in. Look at the papers from the court.
+      If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
@@ -1634,6 +1635,21 @@ fields:
       **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
       
       If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+---
+id: docket number
+question: |
+  What is the case number used to track this case in court?
+subquestion: |
+  Look at your court papers to find the case number. It's usually in the upper-right corner.
+fields:
+  - I don't know the case number: dont_know_docket_number
+    datatype: yesno    
+  - Case number: docket_number
+    hide if: dont_know_docket_number
+validation code: |
+  # This should be safe too
+  if dont_know_docket_number:
+    docket_number = ''    
 ---
 ############################### USERS INFO ###############################
 ---

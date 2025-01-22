@@ -121,16 +121,12 @@ code: |
 id: self employment worksheet
 question: |
   Self-employment worksheet
-subquestion: |
-  This worksheet is on page 11 on the 813A paper form.
-  
-  Only complete these questions if you have a self-employed business and you can't include an IRS Schedule C.
 fields:
   - Description of your self-empoyed business: self_employed_description
   - Do you have a copy of your IRS Schedule C tax form?: has_schedule_c
     datatype: yesnoradio
   - note: |
-      Find the line on Schedule C for "net profit." That is your annual net profit. Enter that number here and we will calculate your monthly net income for this form. If you had a net loss, enter 0.
+      Find the line on Schedule C for "net profit." That is your annual net profit. Enter that number here and we will calculate your monthly net income for this form. If you had a net loss, enter the number as a negative number, like this: -5,000.00
     show if: has_schedule_c
   - Annual net profit: self_employed_net_income
     show if: has_schedule_c
