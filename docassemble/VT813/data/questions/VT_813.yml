@@ -141,7 +141,7 @@ code: |
   children_income_gathered
   other_children.gather()
   for child in supported_children:
-    child.name
+    child.name.first
   
   nav.set_section('case_info')
   set_progress(30)
@@ -356,10 +356,16 @@ fields:
   - Do you have minor children with ${ other_parties[0].name.full() }?: shared_children.there_are_any
     datatype: yesnoradio
 ---
+sets:
+  - shared_children[i].name.first
+  - shared_children[i].name.middle
+  - shared_children[i].name.last
+  - shared_children[i].name.suffix
 id: shared children
 question: ${ title_case(ordinal(i)) } Child with ${ other_parties[0].name.full() }
 fields:
-  - Name: shared_children[i].name
+  - code: |
+      shared_children[i].name_fields(person_or_business='person')
   - Date of Birth: shared_children[i].birthdate
     datatype: BirthDate
   - Previously entered address: shared_children[i].address
@@ -426,7 +432,7 @@ id: children income info for list
 #generic object: ALIncomeList
 reconsider: shared_children[i].income[j].display_name
 question: |
-  Tell us about ${ shared_children[i].income[j].display_name} for ${ shared_children[i].name } 
+  Tell us about ${ shared_children[i].income[j].display_name} for ${ shared_children[i].name.full() } 
 subquestion: |
   % if j > 1:
   You have already told us about your benefits from ${ comma_and_list(shared_children_income.display_name for shared_children_income in shared_children[i].income.complete_elements()) }.
@@ -476,10 +482,16 @@ comment: |
 code: |
   shared_children_income_other_display = "another source of income"
 ---
+sets:
+  - other_children[i].name.first
+  - other_children[i].name.middle
+  - other_children[i].name.last
+  - other_children[i].name.suffix
 id: other children
 question: ${ title_case(ordinal(i)) } Child whom you provide support
 fields:
-  - Name: other_children[i].name.first
+  - code: |
+      other_children[i].name_fields(person_or_business='person')
   - Date of Birth: other_children[i].birthdate
     datatype: BirthDate
   - Previously entered address: other_children[i].address
@@ -3841,31 +3853,31 @@ attachments:
       - "users1_benefits_housing_assistance": |
           ${ len(public_benefits.matches(source=['housing_assist'])) > 0 } 
       - "children1_name": |
-          ${ shared_children[0].name } 
+          ${ shared_children[0].name.full() } 
       - "children1_birthdate": |
           ${ shared_children[0].birthdate } 
       - "children1_address": |
           ${ shared_children[0].address } 
       - "children2_name": |
-          ${ shared_children[1].name } 
+          ${ shared_children[1].name.full() } 
       - "children2_birthdate": |
           ${ shared_children[1].birthdate } 
       - "children2_address": |
           ${ shared_children[1].address } 
       - "children3_name": |
-          ${ shared_children[2].name } 
+          ${ shared_children[2].name.full() } 
       - "children3_birthdate": |
           ${ shared_children[2].birthdate } 
       - "children3_address": |
           ${ shared_children[2].address } 
       - "children4_name": |
-          ${ shared_children[3].name } 
+          ${ shared_children[3].name.full() } 
       - "children4_birthdate": |
           ${ shared_children[3].birthdate } 
       - "children4_address": |
           ${ shared_children[3].address } 
       - "children_other1_name": |
-          ${ other_children[0].name } 
+          ${ other_children[0].name.full() } 
       - "children_other1_birthdate": |
           ${ other_children[0].birthdate } 
       - "children_other1_relationship_users1": |
@@ -3873,7 +3885,7 @@ attachments:
       - "children_other1_address": |
           ${ other_children[0].address.on_one_line() } 
       - "children_other2_name": |
-          ${ other_children[1].name } 
+          ${ other_children[1].name.full() } 
       - "children_other2_birthdate": |
           ${ other_children[1].birthdate } 
       - "children_other2_relationship_users1": |
@@ -3881,7 +3893,7 @@ attachments:
       - "children_other2_address": |
           ${ other_children[1].address.on_one_line() } 
       - "children_other3_name": |
-          ${ other_children[2].name } 
+          ${ other_children[2].name.full() } 
       - "children_other3_birthdate": |
           ${ other_children[2].birthdate } 
       - "children_other3_relationship_users1": |
@@ -3889,7 +3901,7 @@ attachments:
       - "children_other3_address": |
           ${ other_children[2].address.on_one_line() } 
       - "children_other4_name": |
-          ${ other_children[3].name } 
+          ${ other_children[3].name.full() } 
       - "children_other4_birthdate": |
           ${ other_children[3].birthdate } 
       - "children_other4_relationship_users1": |
@@ -3897,7 +3909,7 @@ attachments:
       - "children_other4_address": |
           ${ other_children[3].address.on_one_line() } 
       - "children_supported1_name": |
-          ${ supported_children[0].name } 
+          ${ supported_children[0].name.full() } 
       - "children_supported1_amount": |
           ${ supported_children[0].child_support_amount } 
       - "children_supported1_paid": |
