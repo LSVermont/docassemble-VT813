@@ -283,9 +283,9 @@ code: |
   set_progress(100)
   VT_813A_download
 ---
-id: other_children object
+id: other_parties object
 objects:
-  - other_party: ALPeopleList.using(complete_attribute='name.first',ask_number=True,target_number=1)
+  - other_parties: ALPeopleList.using(complete_attribute='name.first',ask_number=True,target_number=1)
 ---
 sets:
   - other_parties[0].name.first
@@ -396,10 +396,10 @@ fields:
   - Amount you currently pay each month for this child: shared_children[i].child_support_paid
     datatype: currency
     show if: shared_children[i].child_support
-  - State of Order: shared_children[i].child_support_state
+  - State of order: shared_children[i].child_support_state
     show if: shared_children[i].child_support
     code: states_list()
-  - County of Order:  shared_children[i].child_support_county
+  - County of order:  shared_children[i].child_support_county
     code: sorted(all_courts.unique_column_values('branch'))
     show if:
       variable: shared_children[i].child_support_state
@@ -1175,7 +1175,8 @@ fields:
       ---
       Look at a recent pay stub for the following information.
       
-      Withholding information on your pay stub (${ times_per_year(times_per_year_list, jobs[i].times_per_year) })
+      Withholding information on your pay stub
+      
   - Federal: jobs[i].deductions_federal_monthly_amount
     datatype: currency
     required: False
@@ -1286,10 +1287,10 @@ fields:
   - Are your kids enrolled?: jobs[i].kids_enrolled
     datatype: yesnoradio
     show if: jobs[i].healthcare_available
-  - How much do you pay for the healthcare during each pay period?: jobs[i].health_insurance_paid
+  - How much do you pay for the health insurance during each pay period?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does your employer pay during each pay period?: jobs[i].health_insurance_paid_by_employer
+  - How much does someone else pay for the health insurance during each pay period?: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -2749,7 +2750,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**
+  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -2992,7 +2993,7 @@ objects:
   - vehicle_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: are there vehicle loans
-question: Vehicle loans
+question: Car, truck and other vehicle loans
 fields:
   - Do you have any vehicle loans?: vehicle_loans.there_are_any
     datatype: yesnoradio
