@@ -257,7 +257,7 @@ code: |
   set_progress(90)
   
   trial_court.address.county
-  VT_fee_waiver_preview_question
+  VT_813A_preview_question
   
 
   nav.set_section('sign')
@@ -281,7 +281,7 @@ code: |
   )
   nav.set_section('get_docs')
   set_progress(100)
-  VT_fee_waiver_download
+  VT_813A_download
 ---
 id: other_children object
 objects:
@@ -309,7 +309,7 @@ id: other_children object
 objects:
   - other_children: ALPeopleList.using(complete_attribute='complete')
 ---
-id: other_children object
+id: supported_children object
 objects:
   - supported_children: ALPeopleList.using(auto_gather=False)
 ---
@@ -353,7 +353,7 @@ code: |
 id: are there shared children
 question: Minor children with ${ other_parties[0].name.full() }
 fields:
-  - Do you have minor children with ${ other_parties[0].name.full() }?: shared_children.there_are_any
+  - Do you have children under 18 years old with ${ other_parties[0].name.full() }?: shared_children.there_are_any
     datatype: yesnoradio
 ---
 sets:
@@ -362,7 +362,7 @@ sets:
   - shared_children[i].name.last
   - shared_children[i].name.suffix
 id: shared children
-question: ${ title_case(ordinal(i)) } Child with ${ other_parties[0].name.full() }
+question: ${ title_case(ordinal(i)) } child with ${ other_parties[0].name.full() }
 fields:
   - code: |
       shared_children[i].name_fields(person_or_business='person')
@@ -488,7 +488,7 @@ sets:
   - other_children[i].name.last
   - other_children[i].name.suffix
 id: other children
-question: ${ title_case(ordinal(i)) } Child whom you provide support
+question: ${ title_case(ordinal(i)) } child whom you provide support
 fields:
   - code: |
       other_children[i].name_fields(person_or_business='person')
@@ -542,9 +542,9 @@ fields:
     datatype: yesnoradio
 ---
 id: are there other children
-question: Other Minor Children
+question: Other minor children
 fields:
-  - Do you have other Minor Children for whom you provide support?: other_children.there_are_any
+  - Do you have other children under age 18 for whom you provide support?: other_children.there_are_any
     datatype: yesnoradio
 ---
 code: |
@@ -1093,6 +1093,7 @@ fields:
     required: False
   - City: x.employer.address.city
   - State: x.employer.address.state
+    default: VT
   - Zip or postal code: x.employer.address.zip
 
 ---
@@ -1104,7 +1105,7 @@ subquestion: |
   % if is_self_employed and len(x.complete_elements()) > 0:
   You've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % elif is_self_employed:
-  You've already told us about your self-employed income 
+  You've already told us about your self-employed income. 
   % elif len(x.complete_elements()) > 0:
   You've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % endif
@@ -1184,7 +1185,7 @@ fields:
     datatype: yesnoradio
   - note: |
       ---
-      Look at a recent pay stub for the following information
+      Look at a recent pay stub for the following information.
       
       Withholding information on your pay stub (${ times_per_year(times_per_year_list, jobs[i].times_per_year) })
   - Federal: jobs[i].deductions_federal_monthly_amount
@@ -1219,7 +1220,7 @@ fields:
     show if: jobs[i].pay_personal_expenses
   - note: |
       <hr>
-  - Does the job have other incomes, like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 code: |
@@ -1337,7 +1338,7 @@ fields:
     code: |
       times_per_year_list
     datatype: integer
-  - Does the job have any more incomes like tips, commissions or bonuses?: jobs[i].to_add.there_is_another
+  - Does the job have any more incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
     datatype: yesnoradio
 ---
 id: sets hourly to false if salary
@@ -1436,11 +1437,11 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  You said that you were self employed with an income of
+  **You said that you were self employed with a net income of**
   % if has_schedule_c:
-  ${ currency(self_employed_net_income) }
+  **${ currency(self_employed_net_income) } each month.**
   % elif do_self_employment_worksheet:
-  ${ currency(str(self_employed_net_income_monthly_amount)) }
+  **${ currency(str(self_employed_net_income_monthly_amount)) } each month.**
   % endif
   % endif
 
@@ -1454,7 +1455,7 @@ subquestion: |
 
 
 
-field: review_jobs
+continue button field: review_jobs
 ---
 id: jobs_table
 table: jobs_table
@@ -1839,7 +1840,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: household_expenses.selected_types
@@ -2000,7 +2001,7 @@ question: |
   What kind of vehicle expenses do you have?
 subquestion: | 
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.  This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
 
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2161,7 +2162,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 
   % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
-  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }.  Healh insurance is selected below and these amounts will be entered into the worksheet.  You can change these amounts in the table of insurance expenses.
+  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }. Health insurance is selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: insurance_expenses.selected_types
@@ -2351,9 +2352,9 @@ subquestion: |
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_debt.total_monthly_self_payment) }**
   % endif
    
-   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**
+   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }.**
     
-  "Monthly loan & debt payments" is selected below and this amount will be entered into the form. You will be able to edit it.
+  "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
 
   % endif
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
@@ -2481,15 +2482,15 @@ id: children_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: children_expenses.terms_ordered
 data: !!omap
-  - kids_clothes: "Clothing and Shoes"
+  - kids_clothes: "Clothing and shoes"
   - kids_diapers: "Diapers"
-  - kids_childcare: "Out-of-Pocket Childcare Costs"
+  - kids_childcare: "Out-of-pocket childcare costs"
   - kids_lunch: "School lunches"
   - kids_supplies: "School supplies"
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
-  - kids_camp: "Summer Camp"
-  - kids_tuition: "Private School Tuition"
-  - kids_medical: "Uninsured Medical/Dental Expenses"
+  - kids_camp: "Summer camp"
+  - kids_tuition: "Private school tuition"
+  - kids_medical: "Uninsured medical/dental expenses"
   - kids_childsupport: |
       Child Support you pay for children you share with ${ other_parties[0].name_full() }
   - kids_other: "Miscellaneous"
@@ -2530,9 +2531,9 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your out of pocket childcare costs is ${ currency(out_of_pocket_costs)} (the total childcare costs of ${currency(total_monthly_childcare_costs) } minus the subsidy ${ currency(childcare_subsidy) }).
+  You said earlier that your out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare costs of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
   
-  Because of this, "Out of Pocket Costs" is pre-selected below, and will have this amount.  You can still edit it after entering the information about all of the expenses.
+  Because of this, "Out-of-pocket costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -2637,11 +2638,11 @@ edit:
   - value
 ---
 id: childcare costs
-question: Your Child Care Costs For Children With ${ other_parties[0].name.full() }
+question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
   If monthly amounts change during the year, use total annual amount divided by 12.
 fields:
-  - Total Monthly Childcare Costs: total_monthly_childcare_costs
+  - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
   - Subsidy: childcare_subsidy
     datatype: currency
@@ -2651,8 +2652,8 @@ validation code: |
 code: |
   children_expenses
 ---
-id: extraordinatry expenses
-question: Your Extraordinary Expenses For Children With ${ other_parties[0].name.full() }
+id: extraordinary expenses
+question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 fields:
   - note: |
       **Child's Uninsured Medical Expenses**
@@ -2760,7 +2761,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount  you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**
+  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**
   
   Tap Next if you don't have more to add.
   
@@ -2887,7 +2888,7 @@ reconsider: other_loans.total_monthly_self_payment
 question: Do you want to list any other loans?
 subquestion: |
   
-  The total for the monthly expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay is **${ currency(other_loans.total_monthly_self_payment) }**
+  The total for the monthly other loan expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3030,7 +3031,7 @@ id: more vehicle loans
 reconsider: vehicle_loans.total_monthly_self_payment
 question: Do you want to list any more vehicle loans?
 subquestion: |
-  The total for the monthly expensesis **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**.
+  The total for the monthly vehicle loan expenses is **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }.**
   
   
   Tap Next if you don't have more to add.
@@ -3104,7 +3105,7 @@ id: want to add more credit_card_debt
 reconsider: credit_card_debt.total_monthly_self_payment
 question: Do you want to list any more credit card debt?
 subquestion:  |
-  The total for the monthly expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }**
+  The total for the monthly credit card debt expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3177,7 +3178,7 @@ id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
 question: Do you want to list any other debt?
 subquestion: |
-  The total for the monthly expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }**
+  The total for the monthly other debt expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3250,7 +3251,7 @@ continue button field: saw_signature_choice
 
 ##################### PREVIEW SCREEN #######################
 ---
-id: preview VT_fee_waiver
+id: preview VT_813A
 question: |
   Preview your form before you sign it
 subquestion: |
@@ -3266,7 +3267,7 @@ subquestion: |
   ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
   
   **Remember to come back to this window to continue and sign your form.**
-continue button field: VT_fee_waiver_preview_question    
+continue button field: VT_813A_preview_question    
 ---
 code: |
   signature_fields = ['users[0].signature']
@@ -3296,7 +3297,7 @@ review:
       ###About you
   - Edit: users[0].name.first
     button: |
-      ${ users[0].name.full() }
+      **Your name**: ${ users[0].name.full() }
   - Edit: users[0].address.address
     button: |
       **Address**: ${ users[0].address.on_one_line() }
@@ -3322,7 +3323,7 @@ review:
     - user_selected_county
     button: |
       
-      **Is in this county**: ${( user_selected_county )} County
+      **Is in family court in this county**: ${( user_selected_county )} County
 
   - Edit: docket_number
     button: |
@@ -3339,14 +3340,44 @@ review:
       ${ case_name }
   - Edit: user_ask_role
     button: |
-      **Role in court case**:
+      **Your role in court case**:
       ${ user_ask_role }
-  - Edit: other_parties[0].name.first
+  - Edit:
+      - other_parties[0].name.first
     button: |
       **Other party**: ${ other_parties[0].name.full() }
       
-      **Other party's birthdate**: ${ other_parties[0].birthdate }
+      **Birthdate**: ${ other_parties[0].birthdate }
+
+  - note: |
+      ###Children
+
+  - Edit: 
+      - shared_children[0].name
+    button: |
+      **Children from this relationship**:
       
+      % for child in shared_children:
+      * ${ child.name.full() } 
+      % endfor
+
+      % if not shared_children.there_are_any:
+      - None
+      % endif
+
+  - Edit: 
+      - other_children[0].name
+    button: |
+      **Other children that you support**:
+      
+      % for child in other_children:
+      * ${ child.name.full() } 
+      % endfor
+
+      % if not other_children.there_are_any:
+      - None
+      % endif
+
   - note: |
       ###Income
 
@@ -3381,11 +3412,12 @@ review:
         - single_jobs_attribute
         - jobs_order
     button: |
+      **Work**
+      
       % if employed:
-      I get income from working.
+      * I get income from working.
       % else:
-      I do not get income from working.
-      I am unemployed because ${ why_unemployed }
+      * I do not get income from working. I am unemployed because: ${ why_unemployed }.
       % endif
   - Edit: review_jobs
     button: |
@@ -3594,22 +3626,26 @@ review:
 ---
 ##################### DOWNLOAD SCREEN #####################
 ---
-id: download VT_fee_waiver
-event: VT_fee_waiver_download
+id: download VT_813A
+event: VT_813A_download
 question: |
   ${ download_screen_instructions_headline_one_form }
 subquestion: |
   
   ${ download_screen_instructions_one_form }
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
+
+  <hr>
   
+  <h4 style="margin-bottom: 18px;">Documents to download</h4>
   
   ${ al_user_bundle.download_list_html() }
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
+  <hr>
   
   ${ download_screen_bottom_instructions }
   
@@ -3622,27 +3658,21 @@ progress: 100
 ---
 id: vt813 attachment
 attachment:
-  variable name: VT_fee_waiver_attachment.addendum
-  docx template file: VT_fee_waiver_addendum.docx
+  variable name: VT_813A_attachment.addendum
+  docx template file: VT_813A_addendum.docx
 ---
 id: overflow fields
 code: |
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].label = "Other public assistance that is part of the reported monthly amount"
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].overflow_trigger = 3
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].headers = [
-    {'display_name': "Public assistance"},
-  ]  
-
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
   vt_financial_form_813A_attachment.overflow_fields["jobs"].overflow_trigger = 2
   vt_financial_form_813A_attachment.overflow_fields["jobs"].headers = [
-    {'employer': "Employer"},    
-    {'employer_name_address_phone()': "Employer address"},
+    {'employer.name.first': "Employer"},    
+    {'employer.address.city': "Employer address"},
   ]  
   
   vt_financial_form_813A_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
   vt_financial_form_813A_attachment.overflow_fields["vehicles"].overflow_trigger = 4
-  #VT_fee_waiver_attachment.overflow_fields["vehicles"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["vehicles"].headers = [
     #{'make': "Make"},
     #{'model': "Model"},
     #{'year': "Year"},
@@ -3652,7 +3682,7 @@ code: |
   
   vt_financial_form_813A_attachment.overflow_fields["real_estate"].label = "Additional real estate"
   vt_financial_form_813A_attachment.overflow_fields["real_estate"].overflow_trigger = 2
-  #VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["real_estate"].headers = [
     #{'display_name': "Description"},
     #{'market_value': "Fair market value"},
     #{'balance': "Amount owed"},
@@ -3660,34 +3690,32 @@ code: |
 
   vt_financial_form_813A_attachment.overflow_fields["other_assets"].label = "Additional assets"
   vt_financial_form_813A_attachment.overflow_fields["other_assets"].overflow_trigger = 2
-  #VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["other_assets"].headers = [
     #{'display_name': "Description"},
     #{'market_value': "Fair market value"},
   #]  
-  
-  vt_financial_form_813A_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 620
-  vt_financial_form_813A_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
+
   vt_financial_form_813A_attachment.overflow_fields.gathered = True
 ---
 ##################### ATTACHMENTS #####################
 ---
 id: attachment objects
 objects:
-  - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_813A_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - vt_financial_form_813A_attachment: ALDocument.using(title="Vermont financial form 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 id: al_user_bundle objects
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_financial_form_813a.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_financial_form_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
 ---
 id: attachments
 attachments:
   - name: VT financial form 813A post interview instructions
-    filename: VT_financial_form_813a_next_steps
+    filename: VT_813A_next_steps
     variable name: VT_financial_form_813a_post_interview_instructions[i]        
     skip undefined: True
-    docx template file: Vt_financial_form_813a_next_steps.docx
+    docx template file: VT_813A_next_steps.docx
     fields:
         - "address_county": ${ trial_court.address.county }
         - "court_division": ${ trial_court.division_abbr }
@@ -3746,13 +3774,13 @@ attachments:
       - "users1_employer_0_name": |
           ${ jobs[0].employer.name.first } 
       - "users1_employer_0_address_line_one": |
-          ${ jobs[0].employer.address.line_one() } 
+          ${ jobs[0].employer.address.on_one_line() } 
       - "users1_employer_0_address_line_two": |
           ${ jobs[0].employer.address.line_two() } 
       - "users1_employer_1_name": |
           ${ jobs[1].employer.name.first } 
       - "users1_employer_1_address_line_one": |
-          ${ jobs[1].employer.address.line_one() } 
+          ${ jobs[1].employer.address.on_one_line() } 
       - "users1_employer_1_address_line_two": |
           ${ jobs[1].employer.address.line_two() } 
       - "is_self_employed": ${ is_self_employed } 
@@ -3855,31 +3883,31 @@ attachments:
       - "children1_name": |
           ${ shared_children[0].name.full() } 
       - "children1_birthdate": |
-          ${ shared_children[0].birthdate } 
+          ${ format_date(shared_children[0].birthdate, format='M/d/yyyy') }
       - "children1_address": |
-          ${ shared_children[0].address } 
+          ${ shared_children[0].address.on_one_line() } 
       - "children2_name": |
           ${ shared_children[1].name.full() } 
       - "children2_birthdate": |
-          ${ shared_children[1].birthdate } 
+          ${ format_date(shared_children[1].birthdate, format='M/d/yyyy') }
       - "children2_address": |
-          ${ shared_children[1].address } 
+          ${ shared_children[1].address.on_one_line() } 
       - "children3_name": |
           ${ shared_children[2].name.full() } 
       - "children3_birthdate": |
-          ${ shared_children[2].birthdate } 
+          ${ format_date(shared_children[2].birthdate, format='M/d/yyyy') }
       - "children3_address": |
-          ${ shared_children[2].address } 
+          ${ shared_children[2].address.on_one_line() } 
       - "children4_name": |
           ${ shared_children[3].name.full() } 
       - "children4_birthdate": |
-          ${ shared_children[3].birthdate } 
+          ${ format_date(shared_children[3].birthdate, format='M/d/yyyy') }
       - "children4_address": |
-          ${ shared_children[3].address } 
+          ${ shared_children[3].address.on_one_line() } 
       - "children_other1_name": |
           ${ other_children[0].name.full() } 
       - "children_other1_birthdate": |
-          ${ other_children[0].birthdate } 
+          ${ format_date(other_children[0].birthdate, format='M/d/yyyy') }
       - "children_other1_relationship_users1": |
           ${ other_children[0].relationship } 
       - "children_other1_address": |
@@ -3887,7 +3915,7 @@ attachments:
       - "children_other2_name": |
           ${ other_children[1].name.full() } 
       - "children_other2_birthdate": |
-          ${ other_children[1].birthdate } 
+          ${ format_date(other_children[1].birthdate, format='M/d/yyyy') }
       - "children_other2_relationship_users1": |
           ${ other_children[1].relationship } 
       - "children_other2_address": |
@@ -3895,7 +3923,7 @@ attachments:
       - "children_other3_name": |
           ${ other_children[2].name.full() } 
       - "children_other3_birthdate": |
-          ${ other_children[2].birthdate } 
+          ${ format_date(other_children[2].birthdate, format='M/d/yyyy') }
       - "children_other3_relationship_users1": |
           ${ other_children[2].relationship } 
       - "children_other3_address": |
@@ -3903,7 +3931,7 @@ attachments:
       - "children_other4_name": |
           ${ other_children[3].name.full() } 
       - "children_other4_birthdate": |
-          ${ other_children[3].birthdate } 
+          ${ format_date(other_children[3].birthdate, format='M/d/yyyy') }
       - "children_other4_relationship_users1": |
           ${ other_children[3].relationship } 
       - "children_other4_address": |
@@ -3958,7 +3986,7 @@ attachments:
       - "users1_expenses_child_care_subsidy_monthly_amount": |
           ${ childcare_subsidy } 
       - "users1_expenses_child_care_net_monthly_amount": |
-          ${ currency(total_monthly_childcare_costs - childcare_subsidy) }
+          ${ round(total_monthly_childcare_costs - childcare_subsidy,2) }
       - "users1_expenses_kids_medical_description": |
           ${ uninsured_medical_expenses_type } 
       - "users1_expenses_kids_medical_monthly_amount": |
@@ -4690,8 +4718,8 @@ attachments:
           ${ round(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]),2) }
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
-          **${ currency(self_employed_net_income/12) }**  
+          ${ round(self_employed_net_income/12),2 }
           % else:
-          **${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }**
+          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % endif
 ---
