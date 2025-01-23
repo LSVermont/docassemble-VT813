@@ -257,7 +257,7 @@ code: |
   set_progress(90)
   
   trial_court.address.county
-  VT_fee_waiver_preview_question
+  VT_813A_preview_question
   
 
   nav.set_section('sign')
@@ -281,7 +281,7 @@ code: |
   )
   nav.set_section('get_docs')
   set_progress(100)
-  VT_fee_waiver_download
+  VT_813A_download
 ---
 id: other_children object
 objects:
@@ -479,7 +479,7 @@ code: |
 id: other children
 question: ${ title_case(ordinal(i)) } child whom you provide support
 fields:
-  - Name: other_children[i].name.first
+  - Name: other_children[i].name
   - Date of Birth: other_children[i].birthdate
     datatype: BirthDate
   - Previously entered address: other_children[i].address
@@ -1081,6 +1081,7 @@ fields:
     required: False
   - City: x.employer.address.city
   - State: x.employer.address.state
+    default: VT
   - Zip or postal code: x.employer.address.zip
 
 ---
@@ -1442,7 +1443,7 @@ subquestion: |
 
 
 
-field: review_jobs
+continue button field: review_jobs
 ---
 id: jobs_table
 table: jobs_table
@@ -3238,7 +3239,7 @@ continue button field: saw_signature_choice
 
 ##################### PREVIEW SCREEN #######################
 ---
-id: preview VT_fee_waiver
+id: preview VT_813A
 question: |
   Preview your form before you sign it
 subquestion: |
@@ -3254,7 +3255,7 @@ subquestion: |
   ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
   
   **Remember to come back to this window to continue and sign your form.**
-continue button field: VT_fee_waiver_preview_question    
+continue button field: VT_813A_preview_question    
 ---
 code: |
   signature_fields = ['users[0].signature']
@@ -3613,22 +3614,26 @@ review:
 ---
 ##################### DOWNLOAD SCREEN #####################
 ---
-id: download VT_fee_waiver
-event: VT_fee_waiver_download
+id: download VT_813A
+event: VT_813A_download
 question: |
   ${ download_screen_instructions_headline_one_form }
 subquestion: |
   
   ${ download_screen_instructions_one_form }
 
-  ${ action_button_html(url_action('review_VT_fee_waiver'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
+
+  <hr>
   
+  <h4 style="margin-bottom: 18px;">Documents to download</h4>
   
   ${ al_user_bundle.download_list_html() }
   
 
   ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
 
+  <hr>
   
   ${ download_screen_bottom_instructions }
   
@@ -3641,21 +3646,21 @@ progress: 100
 ---
 id: vt813 attachment
 attachment:
-  variable name: VT_fee_waiver_attachment.addendum
-  docx template file: VT_fee_waiver_addendum.docx
+  variable name: VT_813A_attachment.addendum
+  docx template file: VT_813A_addendum.docx
 ---
 id: overflow fields
 code: |
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
   vt_financial_form_813A_attachment.overflow_fields["jobs"].overflow_trigger = 2
   vt_financial_form_813A_attachment.overflow_fields["jobs"].headers = [
-    {'employer': "Employer"},    
-    {'employer_name_address_phone()': "Employer address"},
+    {'employer.name.first': "Employer"},    
+    {'employer.address.city': "Employer address"},
   ]  
   
   vt_financial_form_813A_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
   vt_financial_form_813A_attachment.overflow_fields["vehicles"].overflow_trigger = 4
-  #VT_fee_waiver_attachment.overflow_fields["vehicles"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["vehicles"].headers = [
     #{'make': "Make"},
     #{'model': "Model"},
     #{'year': "Year"},
@@ -3665,7 +3670,7 @@ code: |
   
   vt_financial_form_813A_attachment.overflow_fields["real_estate"].label = "Additional real estate"
   vt_financial_form_813A_attachment.overflow_fields["real_estate"].overflow_trigger = 2
-  #VT_fee_waiver_attachment.overflow_fields["real_estate"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["real_estate"].headers = [
     #{'display_name': "Description"},
     #{'market_value': "Fair market value"},
     #{'balance': "Amount owed"},
@@ -3673,7 +3678,7 @@ code: |
 
   vt_financial_form_813A_attachment.overflow_fields["other_assets"].label = "Additional assets"
   vt_financial_form_813A_attachment.overflow_fields["other_assets"].overflow_trigger = 2
-  #VT_fee_waiver_attachment.overflow_fields["other_assets"].headers = [
+  #vt_financial_form_813A_attachment.overflow_fields["other_assets"].headers = [
     #{'display_name': "Description"},
     #{'market_value': "Fair market value"},
   #]  
@@ -3684,21 +3689,21 @@ code: |
 ---
 id: attachment objects
 objects:
-  - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_fee_waiver_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_813A_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
   - vt_financial_form_813A_attachment: ALDocument.using(title="Vermont financial form 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 id: al_user_bundle objects
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_fee_waiver.pdf_package.pdf", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_financial_form_813a.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_financial_form_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
 ---
 id: attachments
 attachments:
   - name: VT financial form 813A post interview instructions
-    filename: VT_financial_form_813a_next_steps
+    filename: VT_813A_next_steps
     variable name: VT_financial_form_813a_post_interview_instructions[i]        
     skip undefined: True
-    docx template file: Vt_financial_form_813a_next_steps.docx
+    docx template file: VT_813A_next_steps.docx
     fields:
         - "address_county": ${ trial_court.address.county }
         - "court_division": ${ trial_court.division_abbr }
