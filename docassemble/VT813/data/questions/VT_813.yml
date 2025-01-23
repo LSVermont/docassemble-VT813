@@ -1156,7 +1156,7 @@ fields:
     show if: 
       variable: jobs[i].to_add[j].is_hourly
       is: False
-  - How often  are you paid?: jobs[i].to_add[j].times_per_year
+  - How often are you paid?: jobs[i].to_add[j].times_per_year
     input type: radio
     code: |
       times_per_year_list
@@ -1173,9 +1173,9 @@ fields:
     datatype: yesnoradio
   - note: |
       ---
-      Look at a recent pay stub for the following information.
+      Look at a recent pay stub to figure the following information.
       
-      Withholding information on your pay stub
+      Withholding **each month**
       
   - Federal: jobs[i].deductions_federal_monthly_amount
     datatype: currency
@@ -1201,7 +1201,7 @@ fields:
   - How much does your employer pay in personal expenses?: jobs[i].to_add['expenses'].value
     datatype: currency
     show if: jobs[i].pay_personal_expenses
-  - How often  are you paid this?: jobs[i].to_add['expenses'].times_per_year
+  - How often are you paid this?: jobs[i].to_add['expenses'].times_per_year
     input type: radio
     code: |
       times_per_year_list
@@ -1272,13 +1272,13 @@ fields:
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
     show if: jobs[i].healthcare_available
-  - Total Monthly Family Health Insurance Cost to Employee: jobs[i].health_insurance_family_cost
+  - Total monthly family health insurance cost to employee: jobs[i].health_insurance_family_cost
     datatype: currency
     show if: jobs[i].healthcare_available
-  - Total Monthly Two Person Cost to Employee: jobs[i].health_insurance_2_person_cost
+  - Total monthly two person cost to employee: jobs[i].health_insurance_2_person_cost
     datatype: currency
     show if: jobs[i].healthcare_available
-  - Total Monthly Cost for Single Person Coverave to Employee: jobs[i].health_insurance_single_person_cost
+  - Total monthly cost for single person coverage to employee: jobs[i].health_insurance_single_person_cost
     datatype: currency
     show if: jobs[i].healthcare_available
   - Are you enrolled in your employer's insurance?: jobs[i].enrolled
@@ -1287,10 +1287,10 @@ fields:
   - Are your kids enrolled?: jobs[i].kids_enrolled
     datatype: yesnoradio
     show if: jobs[i].healthcare_available
-  - How much do you pay for the health insurance during each pay period?: jobs[i].health_insurance_paid
+  - How much do you pay for the health insurance **each month**?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does someone else pay for the health insurance during each pay period?: jobs[i].health_insurance_paid_by_employer
+  - How much does someone else pay for the health insurance each month?: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -1322,7 +1322,7 @@ fields:
       Amount
     field: jobs[i].to_add[j].value
     datatype: currency
-  - How often  are you paid this?: jobs[i].to_add[j].times_per_year
+  - How often are you paid this?: jobs[i].to_add[j].times_per_year
     input type: radio
     code: |
       times_per_year_list
@@ -1335,7 +1335,7 @@ code: |
   if j not in ["full time","part time"]:
     jobs[i].to_add[j].is_hourly = False
 ---
-id: are the more non-wage income
+id: are there more non-wage income
 question: Are there more types of non-wage income for your job  as a ${ x.source }?
 subquestion: |
   You have already mentioned:
@@ -1964,10 +1964,10 @@ id: vehicle_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: vehicle_expenses.terms_ordered
 data: !!omap
-  - auto_loans: "Total Vehicle Loans"
-  - auto_insur: "Car Insurance"
+  - auto_loans: "Total vehicle loans"
+  - auto_insur: "Car insurance"
   - auto_gas: "Gas"
-  - auto_maint: "Maintenance/Repairs"
+  - auto_maint: "Maintenance/repairs"
   - auto_reg: "Registration"
 
 --- 
@@ -1987,7 +1987,7 @@ objects:
 #expenses
 id: vehicle expenses types
 question: |
-  What kind of vehicle expenses do you have?
+  What kind of car, truck and other vehicle expenses do you have?
 subquestion: | 
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
   You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
@@ -2115,10 +2115,10 @@ id: insurance_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: insurance_expenses.terms_ordered
 data: !!omap
-  - insur_life: "Life Insurance"
-  - insur_disab: "Disability Insurance"
-  - insur_health: "Health Insurance"
-  - insur_dentvis: "Dental/Vision"
+  - insur_life: "Life insurance"
+  - insur_disab: "Disability insurance"
+  - insur_health: "Health insurance"
+  - insur_dentvis: "Dental/vision insurance"
 ---
 id: insurance_expenses_other_display
 code: |
@@ -2151,7 +2151,7 @@ subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 
   % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
-  You said that you pay $ ${health_insurance_paid_total} for health insurance and your employer pays ${ health_insurance_paid_by_employer_total }. Health insurance is selected below. This amount will be entered into the form. You will be able to edit it.
+  You said that you pay ${ currency(health_insurance_paid_total) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer_total) }. Health insurance is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: insurance_expenses.selected_types
@@ -2335,13 +2335,13 @@ subquestion: |
     - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
   % endif
   % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
-    - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+    - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
-    - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(other_debt.total_monthly_self_payment) }**
+    - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_debt.total_monthly_self_payment) }**
   % endif
    
-   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }.**
+   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
     
   "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
 
@@ -2515,14 +2515,14 @@ objects:
 #expenses
 id: children expenses types
 question: |
-  What kind of children expenses do you have?
+  What kind of child expenses do you have?
 subquestion: |
   Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare costs of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
   
-  Because of this, "Out-of-pocket costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -2633,7 +2633,7 @@ subquestion: |
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
-  - Subsidy: childcare_subsidy
+  - Any subsidy you get from state to help pay each month: childcare_subsidy
     datatype: currency
 validation code: |
   out_of_pocket_costs = total_monthly_childcare_costs - childcare_subsidy
@@ -2645,21 +2645,21 @@ id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 fields:
   - note: |
-      **Child's Uninsured Medical Expenses**
+      **Uninsured medical expenses for kids**
   - Type: uninsured_medical_expenses_type
     required: False
   - Cost per month: uninsured_medical_expenses_amount
     required: False
     datatype: currency
   - note: |
-      **Child's Educational Expenses**
+      **Educational expenses for kids**
   - Type: educational_expenses_type
     required: False
   - Cost per month: educational_expenses_amount
     required: False
     datatype: currency
   - note: |
-      **Child's Special Needs Expenses**
+      **Special needs expenses for kids**
   - Type: special_needs_expenses_type
     required: False
   - Cost per month: special_needs_expenses_amount
@@ -3007,7 +3007,7 @@ id: info for each vehicle loans
 question: |
   About your ${ ordinal(i) } vehicle loan
 fields:
-  - Type of Vehicle (Year, Make, Model): vehicle_loans[i].source
+  - Type of vehicle (Year, Make, Model): vehicle_loans[i].source
   - Lender: vehicle_loans[i].lender
   - Balance owed: vehicle_loans[i].balance
     datatype: currency
@@ -3079,7 +3079,7 @@ code: |
 ---
 id: info for each credit_card_debt loans
 question: |
-  About your ${ ordinal(i) } credit_card_debt
+  About your ${ ordinal(i) } credit card debt
 fields:
   - Card Holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
