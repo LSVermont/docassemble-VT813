@@ -309,7 +309,7 @@ id: other_children object
 objects:
   - other_children: ALPeopleList.using(complete_attribute='complete')
 ---
-id: other_children object
+id: supported_children object
 objects:
   - supported_children: ALPeopleList.using(auto_gather=False)
 ---
@@ -2469,15 +2469,15 @@ id: children_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: children_expenses.terms_ordered
 data: !!omap
-  - kids_clothes: "Clothing and Shoes"
+  - kids_clothes: "Clothing and shoes"
   - kids_diapers: "Diapers"
-  - kids_childcare: "Out-of-Pocket Childcare Costs"
+  - kids_childcare: "Out-of-pocket childcare costs"
   - kids_lunch: "School lunches"
   - kids_supplies: "School supplies"
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
-  - kids_camp: "Summer Camp"
-  - kids_tuition: "Private School Tuition"
-  - kids_medical: "Uninsured Medical/Dental Expenses"
+  - kids_camp: "Summer camp"
+  - kids_tuition: "Private school tuition"
+  - kids_medical: "Uninsured medical/dental expenses"
   - kids_childsupport: |
       Child Support you pay for children you share with ${ other_parties[0].name_full() }
   - kids_other: "Miscellaneous"
@@ -3335,7 +3335,36 @@ review:
       **Other party**: ${ other_parties[0].name.full() }
       
       **Birthdate**: ${ other_parties[0].birthdate }
- 
+
+  - note: |
+      ###Children
+
+  - Edit: 
+      - shared_children[0].name
+    button: |
+      **Children from this relationship**:
+      
+      % for child in shared_children:
+      * ${ child.name.full() } 
+      % endfor
+
+      % if not shared_children.there_are_any:
+      - None
+      % endif
+
+  - Edit: 
+      - other_children[0].name
+    button: |
+      **Other children that you support**:
+      
+      % for child in other_children:
+      * ${ child.name.full() } 
+      % endfor
+
+      % if not other_children.there_are_any:
+      - None
+      % endif
+
   - note: |
       ###Income
 
@@ -3370,11 +3399,12 @@ review:
         - single_jobs_attribute
         - jobs_order
     button: |
+      **Work**
+      
       % if employed:
-      I get income from working.
+      * I get income from working.
       % else:
-      I do not get income from working.
-      I am unemployed because ${ why_unemployed }
+      * I do not get income from working. I am unemployed because: ${ why_unemployed }.
       % endif
   - Edit: review_jobs
     button: |
@@ -3616,12 +3646,6 @@ attachment:
 ---
 id: overflow fields
 code: |
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].label = "Other public assistance that is part of the reported monthly amount"
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].overflow_trigger = 3
-  vt_financial_form_813A_attachment.overflow_fields["public_benefits"].headers = [
-    {'display_name': "Public assistance"},
-  ]  
-
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
   vt_financial_form_813A_attachment.overflow_fields["jobs"].overflow_trigger = 2
   vt_financial_form_813A_attachment.overflow_fields["jobs"].headers = [
@@ -3653,9 +3677,7 @@ code: |
     #{'display_name': "Description"},
     #{'market_value': "Fair market value"},
   #]  
-  
-  vt_financial_form_813A_attachment.overflow_fields["other_reasons_why_cannot_afford"].overflow_trigger = 620
-  vt_financial_form_813A_attachment.overflow_fields["other_reasons_why_cannot_afford"].label = "Additional reasons why I cannot afford the fees"
+
   vt_financial_form_813A_attachment.overflow_fields.gathered = True
 ---
 ##################### ATTACHMENTS #####################
@@ -3735,13 +3757,13 @@ attachments:
       - "users1_employer_0_name": |
           ${ jobs[0].employer.name.first } 
       - "users1_employer_0_address_line_one": |
-          ${ jobs[0].employer.address.line_one() } 
+          ${ jobs[0].employer.address.on_one_line() } 
       - "users1_employer_0_address_line_two": |
           ${ jobs[0].employer.address.line_two() } 
       - "users1_employer_1_name": |
           ${ jobs[1].employer.name.first } 
       - "users1_employer_1_address_line_one": |
-          ${ jobs[1].employer.address.line_one() } 
+          ${ jobs[1].employer.address.on_one_line() } 
       - "users1_employer_1_address_line_two": |
           ${ jobs[1].employer.address.line_two() } 
       - "is_self_employed": ${ is_self_employed } 
@@ -3844,31 +3866,31 @@ attachments:
       - "children1_name": |
           ${ shared_children[0].name } 
       - "children1_birthdate": |
-          ${ shared_children[0].birthdate } 
+          ${ format_date(shared_children[0].birthdate, format='M/d/yyyy') }
       - "children1_address": |
-          ${ shared_children[0].address } 
+          ${ shared_children[0].address.on_one_line() } 
       - "children2_name": |
           ${ shared_children[1].name } 
       - "children2_birthdate": |
-          ${ shared_children[1].birthdate } 
+          ${ format_date(shared_children[1].birthdate, format='M/d/yyyy') }
       - "children2_address": |
-          ${ shared_children[1].address } 
+          ${ shared_children[1].address.on_one_line() } 
       - "children3_name": |
           ${ shared_children[2].name } 
       - "children3_birthdate": |
-          ${ shared_children[2].birthdate } 
+          ${ format_date(shared_children[2].birthdate, format='M/d/yyyy') }
       - "children3_address": |
-          ${ shared_children[2].address } 
+          ${ shared_children[2].address.on_one_line() } 
       - "children4_name": |
           ${ shared_children[3].name } 
       - "children4_birthdate": |
-          ${ shared_children[3].birthdate } 
+          ${ format_date(shared_children[3].birthdate, format='M/d/yyyy') }
       - "children4_address": |
-          ${ shared_children[3].address } 
+          ${ shared_children[3].address.on_one_line() } 
       - "children_other1_name": |
           ${ other_children[0].name } 
       - "children_other1_birthdate": |
-          ${ other_children[0].birthdate } 
+          ${ format_date(other_children[0].birthdate, format='M/d/yyyy') }
       - "children_other1_relationship_users1": |
           ${ other_children[0].relationship } 
       - "children_other1_address": |
@@ -3876,7 +3898,7 @@ attachments:
       - "children_other2_name": |
           ${ other_children[1].name } 
       - "children_other2_birthdate": |
-          ${ other_children[1].birthdate } 
+          ${ format_date(other_children[1].birthdate, format='M/d/yyyy') }
       - "children_other2_relationship_users1": |
           ${ other_children[1].relationship } 
       - "children_other2_address": |
@@ -3884,7 +3906,7 @@ attachments:
       - "children_other3_name": |
           ${ other_children[2].name } 
       - "children_other3_birthdate": |
-          ${ other_children[2].birthdate } 
+          ${ format_date(other_children[2].birthdate, format='M/d/yyyy') }
       - "children_other3_relationship_users1": |
           ${ other_children[2].relationship } 
       - "children_other3_address": |
@@ -3892,7 +3914,7 @@ attachments:
       - "children_other4_name": |
           ${ other_children[3].name } 
       - "children_other4_birthdate": |
-          ${ other_children[3].birthdate } 
+          ${ format_date(other_children[3].birthdate, format='M/d/yyyy') }
       - "children_other4_relationship_users1": |
           ${ other_children[3].relationship } 
       - "children_other4_address": |
@@ -3947,7 +3969,7 @@ attachments:
       - "users1_expenses_child_care_subsidy_monthly_amount": |
           ${ childcare_subsidy } 
       - "users1_expenses_child_care_net_monthly_amount": |
-          ${ currency(total_monthly_childcare_costs - childcare_subsidy) }
+          ${ round(total_monthly_childcare_costs - childcare_subsidy,2) }
       - "users1_expenses_kids_medical_description": |
           ${ uninsured_medical_expenses_type } 
       - "users1_expenses_kids_medical_monthly_amount": |
@@ -4679,8 +4701,8 @@ attachments:
           ${ round(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]),2) }
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
-          ${ round(self_employed_net_income/12,2) }
+          ${ round(self_employed_net_income/12),2 }
           % else:
-          ${ round((self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),2) }
+          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % endif
 ---
