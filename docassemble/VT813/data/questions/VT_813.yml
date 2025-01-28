@@ -2330,7 +2330,7 @@ depends on:
 ---
 code: |
   total_monthly_debt_payment = real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) + other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) + other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)
-depend on:
+depends on:
   - real_estate_loans
   - other_loans
   - other_debt
