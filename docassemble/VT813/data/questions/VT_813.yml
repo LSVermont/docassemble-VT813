@@ -4043,7 +4043,7 @@ attachments:
           ${ round(primary_residence_loans.total_other_attribute(source='home_equity', attribute='balance'),2) } 
       - "users1_assets_real_estate_home_eq_loan_payment": |
           ${ round(primary_residence_loans.total_other_attribute(source='home_equity', attribute='monthly_payment'),2) } 
-      - "users1_assets_real_estate_2nd_mortgage_self_paid": |
+      - "users1_assets_real_estate_home_eq_loan_self_paid": |
           ${ primary_residence_loans.matches(source=['home_equity'])[0].self_payment } 
       - "users1_assets_real_estate_home_loans_total_lender": ""
       - "users1_assets_real_estate_home_loans_total_amount_owed": |
