@@ -1509,7 +1509,9 @@ subquestion: |
   
   <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed Financial Affidavit form 400-813A for Vermont courts. It is used in family court cases.
   
-    <i class="fas fa-clock fa-2x"></i>  It may take you between 45 minutes and 2 hours to complete this. There are a lot of questions. If you want, you can create an account and save your work to return to later.
+  <i class="fas fa-clock fa-2x"></i>  It may take you between 45 minutes and 2 hours to complete this. There are a lot of questions.
+
+  **Make an account**: We suggest that you create a free account. It will save your work along the way. You will be able to come back later to finish it. Go to the Menu at the top of the screen to make an account. Your information will be kept private.
 
   <i class="fas fa-circle-info fa-2x"></i> It is free to use this tool. This site is not a lawyer.
   
@@ -1531,13 +1533,9 @@ subquestion: |
   You need to complete and file the 813A if:
   
   - You are a party in a newly filed divorce, civil union dissolution, legal separation, annulment or parentage action and you and the other party have minor children; OR
-  
   - You or the other party are seeking to change a previously issued order for child support or spousal maintenance (alimony); OR
-  
   - You are required to pay support and an enforcement action has been filed against you; OR
-  
   - Your child is in the custody of the Department of Children and Families and support has been requested of you; OR
-  
   - You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.
 
   If you aren't sure if you should fill it out, call the court.
@@ -1547,7 +1545,7 @@ subquestion: |
   You will need to know:
   
   * birthdates of you, the other party and any children
-  * any disability or Social Security income received by your kids
+  * any Social Security or disability income received by your kids
   * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.)
   * the name and address of any employer you might have
