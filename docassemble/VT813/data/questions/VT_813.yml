@@ -546,6 +546,8 @@ question: Other minor children
 fields:
   - Do you have other children under age 18 for whom you provide support?: other_children.there_are_any
     datatype: yesnoradio
+  - note: |
+      Examples: A step-child – or a child with another person – who you pay child support for or spend money on their daily needs.
 ---
 code: |
   for child in shared_children:
@@ -638,6 +640,8 @@ fields:
     datatype: checkboxes
     code: |
       public_benefits_ordered
+  - note: |
+      If you get SSDI, we will ask about that income later.
 ---
 id: ALIncome complete
 generic object: ALIncome
@@ -723,7 +727,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      "Varies" if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
+      "Varies. Exact amount not needed for form." if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
 edit:
   - source
   - value
@@ -736,12 +740,12 @@ data: !!omap
   - rental income: "Rental income"
   - pension: "Retirement/Pension"
   - unemployment income: "Unemployment benefits"
-  - worker comp: "Worker's Compensation and/or Disability Insurance)"
-  - social security: "Social Security Benefits"
-  - veteran: "Veteran's Benefits (VA)"
-  - interest: "Interest or Dividend Income"
-  - trust: "Trust or Annuity Income"
-  - gift: "Gifts or Prize Money (include lottery winnings)"
+  - worker comp: "Workers compensation and/or disability insurance (SSDI)"
+  - social security: "Social Security benefits"
+  - veteran: "Veteran's benefits (VA)"
+  - interest: "Interest or dividend Income"
+  - trust: "Trust or annuity income"
+  - gift: "Gifts or prize money (include lottery winnings)"
   - alimony: |
       Spousal Maintenance (Alimony) from ${ other_parties[0].name_full() }
   - alimony other: |
@@ -1547,12 +1551,12 @@ subquestion: |
   * birthdates of you, the other party and any children
   * any Social Security or disability income received by your kids
   * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
-  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.)
+  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have the income amount and expenses on hand.
+  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
   * taxes taken out of your paycheck
   * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer -- whether you enroll in that insurance or not (Ask the human resources folks.)
-  * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, other child expenses, etc.)
+  * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
   * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
 
 ---
@@ -1644,24 +1648,24 @@ id: court case information
 question: |
   What is the name of the court case you are involved in?
 subquestion: |
-  Example: Joanna Kramer vs. Ted Kramer
+  Example: Joanna Kramer v. Ted Kramer
   
   The plaintiff is listed first, then the defendant.
 fields:
   - "Case name, as seen on your court papers": case_name
     maxlength: 80
   - note: |
-      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
+      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "v." the first and last name of the other party / defendant(s).
       
-      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+      If you are a defendant in a case, type in the plaintiff's first and last name(s) "v." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
 ---
 id: docket number
 question: |
   What is the case number used to track this case in court?
 subquestion: |
-  Look at your court papers to find the case number. It's usually in the upper-right corner.
+  If you have papers from the court, find the case number. It's usually in the upper-right corner.
 fields:
-  - I don't know the case number: dont_know_docket_number
+  - I don’t know the case number, or I don't have a case number yet: dont_know_docket_number
     datatype: yesno    
   - Case number: docket_number
     hide if: dont_know_docket_number
