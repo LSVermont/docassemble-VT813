@@ -170,14 +170,17 @@ code: |
 
   
   nav.set_section('your_loans')
+  loan_intro_screen
   set_progress(50)
 
-  if own_or_rent == "user_owns_home":
-    if len(primary_residence_loans) > 0:
-      primary_residence_loans.review_items
-  set_progress(52)
-  if len(real_estate_loans) > 0:
-    real_estate_loans.review_items
+  if real_estate_user_owned:
+    if real_estate_owned == "user_owns_home_re":
+      if len(primary_residence_loans) > 0:
+        primary_residence_loans.review_items
+    if real_estate_owned == "user_owns_other_re":
+      if len(real_estate_loans) > 0:
+        real_estate_loans.review_items
+  
   set_progress(55)
   if len(vehicle_loans) > 0:
     vehicle_loans.review_items
@@ -2711,16 +2714,40 @@ code: |
   else:
     x.there_are_any = False
 ---
-id: does user own home or rent
+#id: real_estate object
+#objects:
+  #- real_estate: ALAssetList.using(complete_attribute='complete',there_is_another=False)
+---
+id: loan intro screen
+continue button field: loan_intro_screen
 question: |
-  Do you own your home or do you rent?
+  Loans and debts
+subquestion: |
+  Now we'll ask you about about loans on things you own, as well as debts.
+---
+id: does user own home or real estate
+question: |
+  Real estate
+subquestion: |
+  Do you own your home or other real estate?
+
+  Say "yes" whether you own it outright or have a mortgage or loan.
 fields: 
-  - no label: own_or_rent
-    datatype: radio
+  - no label: real_estate_user_owned
+    datatype: yesnoradio
+---
+id: what real estate does user own
+question: |
+  Real estate
+subquestion: |
+  What do you own?
+fields:
+  - no label: real_estate_owned
+    datatype: checkboxes
     choices:
-      - I own my home: user_owns_home
-      - I rent: user_is_tenant
-      - None of the above: other
+      - I own the home I live in.: user_owns_home_re
+      - I own commercial real estate.: user_owns_commercial_re
+      - I own other real estate or land.: user_owns_other_re
 ---
 id: are there primary loans
 question: |
