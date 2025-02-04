@@ -156,6 +156,8 @@ code: |
   
   nav.set_section('your_income')
   set_progress(40)
+  income_intro_screen
+  
   if len(public_benefits) > 0:
     public_benefits.review_items
   set_progress(42)
@@ -174,10 +176,10 @@ code: |
   set_progress(50)
 
   if real_estate_user_owned:
-    if real_estate_owned == "user_owns_home_re":
+    if real_estate_owned["user_owns_home_re"] == True:
       if len(primary_residence_loans) > 0:
         primary_residence_loans.review_items
-    if real_estate_owned == "user_owns_other_re":
+    if real_estate_owned["user_owns_other_re"] == True:
       if len(real_estate_loans) > 0:
         real_estate_loans.review_items
   
@@ -199,7 +201,7 @@ code: |
 
   nav.set_section('your_expenses')
   set_progress(70)
-  expenses_intro
+  expenses_intro_screen
   
   if shared_children.there_are_any:
     if len(children_expenses) > 0:
@@ -424,8 +426,8 @@ fields:
 id: children income
 variable name: shared_children[i].income.terms_ordered
 data: !!omap
-  - disability: "Disability Benefits"
-  - social security: "Social Security Benefits"
+  - disability: "Disability benefits"
+  - social security: "Social Security benefits"
   - other: "Other"
 ---
 id: children income ordered object for checkboxes
@@ -562,6 +564,13 @@ code: |
       supported_children.append(child)
   supported_children.gathered = True
       
+---
+id: income intro screen
+continue button field: income_intro_screen
+question: |
+  Income
+subquestion: |
+  Now we'll review any income you get.
 ---
 ################################# PUBLIC BENEFITS ##############################
 comment: |
@@ -742,12 +751,12 @@ id: other_incomes.terms_ordered
 variable name: other_incomes.terms_ordered
 data: !!omap
   - rental income: "Rental income"
-  - pension: "Retirement/Pension"
+  - pension: "Retirement/pension"
   - unemployment income: "Unemployment benefits"
   - worker comp: "Workers compensation and/or disability insurance (SSDI)"
   - social security: "Social Security benefits"
   - veteran: "Veteran's benefits (VA)"
-  - interest: "Interest or dividend Income"
+  - interest: "Interest or dividend income"
   - trust: "Trust or annuity income"
   - gift: "Gifts or prize money (include lottery winnings)"
   - alimony: |
@@ -847,17 +856,17 @@ code: |
 id: rental_expenses.terms_ordered
 variable name: rental_expenses.terms_ordered
 data: !!omap
-  - cleaning: "Cleaning and Maintenance"
+  - cleaning: "Cleaning and maintenance"
   - commissions: "Commissions"
   - insurance: "Insurance"
-  - legal: "Legal and Other Professional Fees"
-  - mortgage: "Mortgage Interest Paid to Banks"
-  - other_interest: "Other Interest"
+  - legal: "Legal and other professional fees"
+  - mortgage: "Mortgage interest paid to banks"
+  - other_interest: "Other interest"
   - repairs: "Repairs"
   - supplies: "Supplies"
   - taxes: "Taxes"
   - utilities: "Utilities"
-  - wages: "Wages and Salaries"
+  - wages: "Wages and salaries"
   - other: "Other"
 ---
 id: rental income and expenses
@@ -1783,9 +1792,9 @@ confirm: True
 ---
 ############################# EXPENSES #############################
 ---
-id: expenses intro
+id: expenses intro screen
 mandatory: True
-continue button field: expenses_intro
+continue button field: expenses_intro_screen
 question: |
   Expenses
 subquestion: |
@@ -2723,7 +2732,7 @@ continue button field: loan_intro_screen
 question: |
   Loans and debts
 subquestion: |
-  Now we'll ask you about about loans on things you own, as well as debts.
+  Now we'll review any loans on things you own, as well as debts.
 ---
 id: does user own home or real estate
 question: |
@@ -2746,13 +2755,15 @@ fields:
     datatype: checkboxes
     choices:
       - I own the home I live in.: user_owns_home_re
-      - I own commercial real estate.: user_owns_commercial_re
+      - I own business or rental properties.: user_owns_commercial_re
       - I own other real estate or land.: user_owns_other_re
 ---
 id: are there primary loans
 question: |
-  Do you have any loans on your primary residence?
+  Loans on the home you live in
 subquestion: |
+   Do you have any loans on your primary residence (the home you live in)?
+   
    Check any that apply to you. Otherwise, choose none of the above.
 fields:
   - no label: primary_residence_loans.selected_types
@@ -2853,8 +2864,8 @@ edit:
 id: other_loans.terms_ordered
 variable name: other_loans.terms_ordered
 data: !!omap
-  - personal: "Personal Loan"
-  - school: "School/College Loan"
+  - personal: "Personal loan"
+  - school: "School/college Loan"
   - other: "Other"
 ---
 id: other loans display default
@@ -2928,7 +2939,7 @@ reconsider: other_loans.total_monthly_self_payment
 question: Do you want to list any other loans?
 subquestion: |
   
-  The total for the monthly other loan expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
+  The total for the monthly loan expenses below is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -2971,12 +2982,12 @@ id: real_estate_loans object
 objects:
   - real_estate_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
-id: are the real estate loans
-question: Other real estate loans
+id: are there real estate loans
+question: Loans on other real estate
 subquestion: |
-  DO NOT include business or rental property loans.
+  Note: Do not include business or rental property loans or your primary mortgage here.
 fields:
-  - Do you have other real estate loans?: real_estate_loans.there_are_any
+  - Do you have loans on other pieces of real estate?: real_estate_loans.there_are_any
     datatype: yesnoradio
 ---
 id: real_estate_loans complete
@@ -3044,7 +3055,7 @@ objects:
   - vehicle_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: are there vehicle loans
-question: Car, truck and other vehicle loans
+question: Loans on cars, trucks and other vehicles
 fields:
   - Do you have any vehicle loans?: vehicle_loans.there_are_any
     datatype: yesnoradio
@@ -3121,7 +3132,7 @@ fields:
   - Do you have any credit card debt?: credit_card_debt.there_are_any
     datatype: yesnoradio
   - note: |
-      If you are keeping up with your regular monthly credit card bills, you can say No.
+      If you are paying the full balance of credit card bills every month, you can say No.
 ---
 id: credit_card_debt complete
 code: |
@@ -3130,7 +3141,7 @@ code: |
 ---
 id: info for each credit_card_debt loans
 question: |
-  About your ${ ordinal(i) } credit card debt
+  About your credit card debt
 fields:
   - Card Holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
@@ -3218,7 +3229,7 @@ id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
 question: Do you want to list any other debt?
 subquestion: |
-  The total for the monthly other debt expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
+  The total for the monthly debt expenses below is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
