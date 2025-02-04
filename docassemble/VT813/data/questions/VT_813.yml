@@ -171,9 +171,10 @@ code: |
   
   nav.set_section('your_loans')
   set_progress(50)
-  
-  if len(primary_residence_loans) > 0:
-    primary_residence_loans.review_items
+
+  if own_or_rent == "user_owns_home":
+    if len(primary_residence_loans) > 0:
+      primary_residence_loans.review_items
   set_progress(52)
   if len(real_estate_loans) > 0:
     real_estate_loans.review_items
@@ -1185,6 +1186,8 @@ fields:
     validation messages:
       number: |
         Enter a number, like 40. If you don't know, enter your best guess.
+  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
+    datatype: yesnoradio
   - Have you included overtime income?: jobs[i].overtime_info
     datatype: yesnoradio
   - note: |
@@ -1223,10 +1226,6 @@ fields:
       times_per_year_list
     datatype: integer
     show if: jobs[i].pay_personal_expenses
-  - note: |
-      <hr>
-  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
-    datatype: yesnoradio
 ---
 code: |
   overtime_included_any_job = False
@@ -1306,7 +1305,7 @@ fields:
   - How much do you pay for the health insurance **each month**?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does someone else pay for the health insurance each month?: jobs[i].health_insurance_paid_by_employer
+  - How much does someone else pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -1367,7 +1366,7 @@ question: |
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
 fields:
-  - What kind of additional income do you get from this job?: x.to_add.new_item_name
+  - What kind of additional income do you get from this job? We will collect these one at a time.: x.to_add.new_item_name
     datatype: radio
     choices:
       - Tips
@@ -2712,11 +2711,22 @@ code: |
   else:
     x.there_are_any = False
 ---
+id: does user own home or rent
+question: |
+  Do you own your home or do you rent?
+fields: 
+  - no label: own_or_rent
+    datatype: radio
+    choices:
+      - I own my home: user_owns_home
+      - I rent: user_is_tenant
+      - None of the above: other
+---
 id: are there primary loans
 question: |
   Do you have any loans on your primary residence?
 subquestion: |
-   If you own your home, check any that apply to you. Otherwise, choose none of the above.
+   Check any that apply to you. Otherwise, choose none of the above.
 fields:
   - no label: primary_residence_loans.selected_types
     datatype: checkboxes
