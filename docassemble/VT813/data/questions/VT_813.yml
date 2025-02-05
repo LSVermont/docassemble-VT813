@@ -1827,7 +1827,7 @@ data: !!omap
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, plowing, trash"
+  - mowplowtrash: "Mowing, plowing, trash and/or HOA fees"
   - food: "Groceries"
   - cableinternet: "Cable/internet"
   - laundry: "Laundry/dry cleaning"
@@ -1922,9 +1922,9 @@ code: |
   
 ---
 id: household expenses paid by others
-question:  Other payments for ${ household_expenses[i].display_name }
+question:  Other payments for ${ household_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
+  You said your ${ household_expenses[i].display_name.lower() } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: household_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -1989,7 +1989,7 @@ id: vehicle_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: vehicle_expenses.terms_ordered
 data: !!omap
-  - auto_loans: "Total vehicle loans"
+  - auto_loans: "Vehicle loans"
   - auto_insur: "Car insurance"
   - auto_gas: "Gas"
   - auto_maint: "Maintenance/repairs"
@@ -2078,9 +2078,9 @@ code: |
     vehicle_expenses[i].paid_by_other_monthly = 0
 ---
 id: vehicle expenses paid by others
-question:  Other payments for ${ vehicle_expenses[i].display_name }
+question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
+  You said your ${ vehicle_expenses[i].display_name.lower() } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: vehicle_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2104,7 +2104,7 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ vehicle_expenses_table }
-  **Total vehicle expenses:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
+  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
   
   ${ vehicle_expenses.add_action() }
 continue button field: vehicle_expenses.review_items
@@ -2317,7 +2317,7 @@ data: !!omap
   - loans: "Monthly loan and debt payments"
   - other_kids: |
       Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court-ordered child support you pay for children of another relationship."
+  - child_support: "Court-ordered child support you pay for children of another relationship"
   - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
@@ -2354,6 +2354,8 @@ question: |
   What kind of personal expenses do you have?
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+
+  If you have kids and already answered questions about expenses for children of your relationship with ${ other_party[0] }, do **not** include those child expenses here.
   
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
@@ -2433,9 +2435,9 @@ code: |
     personal_expenses[i].paid_by_other_monthly = 0
 ---
 id: personal expenses paid by others question
-question:  Other payments for ${ personal_expenses[i].display_name }
+question:  Other payments for ${ personal_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) } per month.
+  You said your ${ personal_expenses[i].source } expense is ${ currency(personal_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: personal_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2462,7 +2464,7 @@ subquestion: |
   
   ${ personal_expenses_table }
   
-  **Total personal expenses:** ${ currency(personal_expenses.total(times_per_year=12)) }
+  **Total personal expenses above:** ${ currency(personal_expenses.total(times_per_year=12)) }
   
   ${ personal_expenses.add_action() }
 continue button field: personal_expenses.review_items
@@ -2593,9 +2595,9 @@ code: |
   children_expenses[i].times_per_year = 12   
 ---
 id: children expense paid by others question
-question:  ${ children_expenses[i].display_name }
+question:  ${ children_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ children_expenses[i].display_name } expense is ${ currency(children_expenses[i].total(times_per_year=12)) }
+  You said your ${ children_expenses[i].display_name.lower() } expense is ${ currency(children_expenses[i].total(times_per_year=12)) }
 fields: 
   - How much does somebody else pay for that expense per month?: children_expenses[i].paid_by_other_monthly
     datatype: currency
