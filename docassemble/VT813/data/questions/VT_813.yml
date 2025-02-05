@@ -1851,7 +1851,7 @@ id: household expenses types
 question: |
   What kind of household expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
   You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
@@ -2014,11 +2014,11 @@ id: vehicle expenses types
 question: |
   What kind of car, truck and other vehicle expenses do you have?
 subquestion: | 
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+  
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
   You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
-
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 fields:
   - no label: vehicle_expenses.selected_types
     datatype: checkboxes
@@ -2173,7 +2173,7 @@ id: insurance expenses types
 question: |
   What kind of insurance expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
   % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
   You said that you pay ${ currency(health_insurance_paid_total) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer_total) }. Health insurance is pre-selected below. This amount will be entered into the form. You will be able to edit it.
@@ -2353,6 +2353,8 @@ id: personal expenses types
 question: |
   What kind of personal expenses do you have?
 subquestion: |
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+  
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
 
@@ -2371,7 +2373,7 @@ subquestion: |
   "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
 
   % endif
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
@@ -2502,7 +2504,7 @@ data: !!omap
   - kids_lunch: "School lunches"
   - kids_supplies: "School supplies"
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
-  - kids_camp: "Summer camp"
+  - kids_camp: "Summer camp/school vacation camp"
   - kids_tuition: "Private school tuition"
   - kids_medical: "Uninsured medical/dental expenses"
   - kids_childsupport: |
@@ -2542,12 +2544,10 @@ id: children expenses types
 question: |
   What kind of child expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
-  
-  Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -2624,7 +2624,7 @@ subquestion: |
   
   ${ children_expenses_table }
 
-  **Total Children Expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
+  **Total of above expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
  
   
   ${ children_expenses.add_action() }
@@ -2654,11 +2654,11 @@ edit:
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
-  If monthly amounts change during the year, use total annual amount divided by 12.
+  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps -- we'll collect that information later.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
-  - Any subsidy you get from state to help pay each month: childcare_subsidy
+  - Any subsidy you get from the state to help pay each month: childcare_subsidy
     datatype: currency
 validation code: |
   out_of_pocket_costs = total_monthly_childcare_costs - childcare_subsidy
@@ -2668,6 +2668,10 @@ code: |
 ---
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
+subquestion: |
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+  
+  Leave these blank if they don't apply to you.
 fields:
   - note: |
       **Uninsured medical expenses for kids**
