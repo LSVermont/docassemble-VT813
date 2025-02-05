@@ -1850,7 +1850,7 @@ fields:
       household_expenses_ordered
     default:
       code: | 
-        {'rent': len(primary_residence_loans) == 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
+        {'rent': len(primary_residence_loans) > 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2347,7 +2347,13 @@ subquestion: |
     - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
   % endif
   % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
-    - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+    - Other - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+  % for loan in other_loans:
+  % if loan.self_payment and loan.monthly_payment > 0:
+      - ${ loan.display_name }
+  % endif
+  % endfor
+
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_debt.total_monthly_self_payment) }**
