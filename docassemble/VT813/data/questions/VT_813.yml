@@ -2372,7 +2372,7 @@ fields:
       personal_expenses_ordered
     default:
       code: |
-        {'loans': total_monthly_debt_payment > 0}
+        {'loans': monthly_debt_payment > 0}
 ---
 id: personal expense information
 reconsider: personal_expenses[i].display_name
