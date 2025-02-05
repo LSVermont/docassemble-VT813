@@ -111,8 +111,6 @@ comment: |
 id: interview_order_VT_813
 code: |
   
-  # Below sets the user_role by asking a question.
-  # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
   set_progress(5)
 
@@ -1617,8 +1615,7 @@ comment: |
   used by the Plaintiff or Defendant, set `user_ask_role = 'plaintiff'` or
   `user_ask_role='defendant'` in your code.
 question: |
-  Did you start this case, or are you responding to a case
-  that someone else started?
+  Did you start this case, or are you responding to a case that someone else started?
 subquestion: |
   ${ collapse_template(help_user_ask_role_template) }
 fields: 
@@ -1648,6 +1645,8 @@ fields:
       Choose the county court where you will file this form. 
       
       If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
+
+      Otherwise ......
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
@@ -1655,20 +1654,21 @@ fields:
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
 ---
-id: court case information
-question: |
-  What is the name of the court case you are involved in?
-subquestion: |
-  Example: Joanna Kramer v. Ted Kramer
-  
-  The plaintiff is listed first, then the defendant.
-fields:
-  - "Case name, as seen on your court papers": case_name
-    maxlength: 80
-  - note: |
-      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "v." the first and last name of the other party / defendant(s).
-      
-      If you are a defendant in a case, type in the plaintiff's first and last name(s) "v." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+#id: court case information
+#question: |
+#  What is the name of the court case you are involved in?
+#subquestion: |
+#  Example: Joanna Kramer v. Ted Kramer
+#  
+#  The plaintiff is listed first, then the defendant.
+#fields:
+#  - "Case name, as seen on your court papers": case_name
+#    maxlength: 80
+#  - note: |
+#      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "v." the first and last name of the other party / defendant(s).
+#      
+#      If you are a defendant in a case, type in the plaintiff's first and last name(s) "v." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+#
 ---
 id: docket number
 question: |
@@ -3390,13 +3390,16 @@ review:
       % else:
       ${ showifdef("docket_number") }
       % endif
-      
-  - Edit: case_name
-    button: |
-      **Case name**:
-      ${ case_name }
+
   - Edit: user_ask_role
     button: |
+      **Case name**:
+      % if user_ask_role == "plaintiff":
+      ${ users[0] } v. ${ other_parties[0] }
+      % else:
+      ${ other_parties[0] } v. ${ users[0] }
+      % endif
+      
       **Your role in court case**:
       ${ user_ask_role }
   - Edit:
@@ -3794,7 +3797,12 @@ attachments:
     fields:
       - "trial_court_county": ${ trial_court.address.county } 
       - "docket_number": ${ docket_number } 
-      - "case_name": ${ case_name } 
+      - "case_name": |
+          % if user_ask_role == "plaintiff":
+          ${ users[0] } v. ${ other_parties[0] }
+          % else:
+          ${ other_parties[0] } v. ${ users[0] }
+          % endif
       - "users1_name": |
           ${ users[0].name } 
       - "users1_birthdate": |
