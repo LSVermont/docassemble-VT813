@@ -3622,7 +3622,7 @@ review:
       **Children expenses**
 
       % for item in children_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if children_expenses.number_gathered() == 0:
       - None
@@ -3633,7 +3633,7 @@ review:
       **Household expenses**
 
       % for item in household_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if household_expenses.number_gathered() == 0:
       - None
@@ -3644,7 +3644,7 @@ review:
       **Vehicle expenses**
 
       % for item in vehicle_expenses:
-      * ${ item.make } ${ item.model } ${ item.year }
+      * ${ item.display_name.lower()  }
       % endfor
       % if vehicle_expenses.number_gathered() == 0:
       - None
@@ -3655,7 +3655,7 @@ review:
       **Insurance expenses**
 
       % for item in insurance_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if insurance_expenses.number_gathered() == 0:
       - None
@@ -3666,7 +3666,7 @@ review:
       **Personal expenses**
 
       % for item in personal_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if personal_expenses.number_gathered() == 0:
       - None
