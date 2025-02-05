@@ -1481,6 +1481,14 @@ columns:
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
   - Monthly gross income: |
       currency(row_item.gross_total(times_per_year=12)) 
+  - Health insurance offered: |
+      word(yesno(row_item.healthcare_available)) if defined("row_item.healthcare_available") else ""
+  - You are enrolled: |
+      word(yesno(row_item.enrolled)) if defined("row_item.enrolled") else ""
+  - Kids are enrolled: |
+      word(yesno(row_item.kids_enrolled)) if defined("row_item.kids_enrolled") else ""
+  - Amount you pay for it: |
+      currency(row_item.health_insurance_paid) if defined("row_item.health_insurance_paid") else ""
 
 edit:
   - revisit
@@ -3484,12 +3492,16 @@ review:
       **Jobs**
 
       % for item in jobs:
-      * ${ item.source }, ${ item.employer.name.first }
+      **${ item.source }**, ${ item.employer.name.first }
+      
+      * Health insurance is offered by this job: ${ word(yesno(item.healthcare_available)) }
+      
       % endfor
       % if len(jobs) == 0:
       - None
 
       % endif
+
   - Edit:
       - invalidate:
           - is_self_employed
@@ -3529,7 +3541,7 @@ review:
       
       % else:
       I am not self employed.
-      % endif      
+      % endif   
   - Edit: 
       - other_incomes.revisit
       - recompute:
@@ -4037,8 +4049,14 @@ attachments:
           % else:
           ${ supported_children[2].child_support_state }
           % endif
+
+          
       - "health_insurance_family_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_family_cost'),2) } 
+          % for job in jobs:
+          ${ round(job.health_insurance_family_cost,2) }
+          % endfor
+
+
       - "health_insurance_2_person_cost": |
           ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_2_person_cost'),2) } 
       - "health_insurance_single_person_cost": |
