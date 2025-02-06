@@ -2362,7 +2362,7 @@ question: |
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
-  If you have kids and already answered questions about expenses for children of your relationship with ${ other_party[0] }, do **not** include those child expenses here.
+  If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
   
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
@@ -4065,14 +4065,22 @@ attachments:
           
       - "health_insurance_family_cost": |
           % for job in jobs:
+          % if job.healthcare_available:
           ${ round(job.health_insurance_family_cost,2) }
+          % endif
           % endfor
-
-
       - "health_insurance_2_person_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_2_person_cost'),2) } 
+          % for job in jobs:
+          % if job.healthcare_available:
+          ${ round(job.health_insurance_2_person_cost,2) }
+          % endif
+          % endfor
       - "health_insurance_single_person_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_single_person_cost'),2) } 
+          % for job in jobs:
+          % if job.healthcare_available:
+          ${ round(job.health_insurance_2_person_cost,2) }
+          % endif
+          % endfor
       - "health_insurance_kids_enrolled_yes": |
           ${ jobs.kids_enrolled } 
       - "health_insurance_kids_enrolled_no": |
