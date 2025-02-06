@@ -201,12 +201,11 @@ code: |
   expenses_intro_screen
   
   if shared_children.there_are_any:
-    if len(children_expenses) > 0:
-      total_monthly_childcare_costs
-      children_expenses.review_items
-    set_progress(72)
     total_monthly_childcare_costs
     extraordinary_expenses
+    if len(children_expenses) > 0:
+      children_expenses.review_items
+
   set_progress(74)
       
   if len(household_expenses) > 0:
@@ -1809,7 +1808,9 @@ subquestion: |
   
   We will have screens for:
   
+  % if shared_children.there_are_any or other_children.there_are_any:
   - child-related expenses
+  %endif
   
   - household expenses
   
@@ -2362,7 +2363,7 @@ question: |
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
-  If you have kids and already answered questions about expenses for children of your relationship with ${ other_party[0] }, do **not** include those child expenses here.
+  If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
   
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
@@ -2559,8 +2560,10 @@ objects:
 #expenses
 id: children expenses types
 question: |
-  What kind of child expenses do you have?
+  What kind of child expenses do you have for children with ${ other_parties[0].name_full() }?
 subquestion: |
+  What expenses do you have for children of this relationship?
+  
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if out_of_pocket_costs > 0:
@@ -2634,7 +2637,7 @@ code: |
     children_expenses[i].display_name = children_expenses_other_display
 ---
 id: want to add more expenses
-question: Do you want to list any more children expenses?
+question: Do you want to list any more child expenses?
 subquestion: |
 
   Tap Next if you don't have more to add.
@@ -2671,7 +2674,9 @@ edit:
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
-  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps — we'll collect that information later.
+  How much do you pay for daycare or child care for children of this relationship?
+  
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps — we'll collect that information later.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
@@ -2686,30 +2691,34 @@ code: |
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 subquestion: |
-  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+  Do you have these expenses for children of this relationship?
   
-  Leave these blank if they don't apply to you.
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+
 fields:
-  - note: |
-      **Uninsured medical expenses for kids**
+  - Uninsured medical expenses for kids: uninsured_medical_expenses_kids
+    datatype: yesno
   - Type: uninsured_medical_expenses_type
-    required: False
-  - Cost per month: uninsured_medical_expenses_amount
-    required: False
+    show if: uninsured_medical_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: uninsured_medical_expenses_amount
+    show if: uninsured_medical_expenses_kids
     datatype: currency
-  - note: |
-      **Educational expenses for kids**
+  - Educational expenses for kids: educational_expenses_kids
+    datatype: yesno
   - Type: educational_expenses_type
-    required: False
-  - Cost per month: educational_expenses_amount
-    required: False
+    show if: educational_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: educational_expenses_amount
+    show if: educational_expenses_kids
     datatype: currency
-  - note: |
-      **Special needs expenses for kids**
+  - Special needs expenses for kids: specialneeds_expenses_kids
+    datatype: yesno
   - Type: special_needs_expenses_type
-    required: False
-  - Cost per month: special_needs_expenses_amount
-    required: False
+    show if: specialneeds_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: special_needs_expenses_amount
+    show if: specialneeds_expenses_kids
     datatype: currency
 continue button field: extraordinary_expenses
 ---
