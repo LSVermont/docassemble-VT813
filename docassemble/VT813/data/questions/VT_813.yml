@@ -111,8 +111,6 @@ comment: |
 id: interview_order_VT_813
 code: |
   
-  # Below sets the user_role by asking a question.
-  # You can set user_role directly instead to either 'plaintiff' or 'defendant'
   nav.set_section('intro')
   set_progress(5)
 
@@ -156,6 +154,8 @@ code: |
   
   nav.set_section('your_income')
   set_progress(40)
+  income_intro_screen
+  
   if len(public_benefits) > 0:
     public_benefits.review_items
   set_progress(42)
@@ -170,13 +170,17 @@ code: |
 
   
   nav.set_section('your_loans')
+  loan_intro_screen
   set_progress(50)
+
+  if real_estate_user_owned:
+    if real_estate_owned["user_owns_home_re"] == True:
+      if len(primary_residence_loans) > 0:
+        primary_residence_loans.review_items
+    if real_estate_owned["user_owns_other_re"] == True:
+      if len(real_estate_loans) > 0:
+        real_estate_loans.review_items
   
-  if len(primary_residence_loans) > 0:
-    primary_residence_loans.review_items
-  set_progress(52)
-  if len(real_estate_loans) > 0:
-    real_estate_loans.review_items
   set_progress(55)
   if len(vehicle_loans) > 0:
     vehicle_loans.review_items
@@ -195,7 +199,7 @@ code: |
 
   nav.set_section('your_expenses')
   set_progress(70)
-  expenses_intro
+  expenses_intro_screen
   
   if shared_children.there_are_any:
     if len(children_expenses) > 0:
@@ -420,8 +424,8 @@ fields:
 id: children income
 variable name: shared_children[i].income.terms_ordered
 data: !!omap
-  - disability: "Disability Benefits"
-  - social security: "Social Security Benefits"
+  - disability: "Disability benefits"
+  - social security: "Social Security benefits"
   - other: "Other"
 ---
 id: children income ordered object for checkboxes
@@ -546,6 +550,8 @@ question: Other minor children
 fields:
   - Do you have other children under age 18 for whom you provide support?: other_children.there_are_any
     datatype: yesnoradio
+  - note: |
+      Examples: A step-child – or a child with another person – who you pay child support for or spend money on their daily needs.
 ---
 code: |
   for child in shared_children:
@@ -556,6 +562,13 @@ code: |
       supported_children.append(child)
   supported_children.gathered = True
       
+---
+id: income intro screen
+continue button field: income_intro_screen
+question: |
+  Income
+subquestion: |
+  Now we'll review any income you get.
 ---
 ################################# PUBLIC BENEFITS ##############################
 comment: |
@@ -638,6 +651,8 @@ fields:
     datatype: checkboxes
     code: |
       public_benefits_ordered
+  - note: |
+      If you get SSDI, we will ask about that income later.
 ---
 id: ALIncome complete
 generic object: ALIncome
@@ -723,7 +738,7 @@ columns:
   - Source: |
       row_item.display_name if defined("row_item.source") else ""
   - Public assistance per month: |
-      "Varies" if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
+      "Varies. Exact amount not needed for form." if row_item.source in ["medicaid","medicare","dynasaur"] else currency(row_item.total(times_per_year=12))
 edit:
   - source
   - value
@@ -734,14 +749,14 @@ id: other_incomes.terms_ordered
 variable name: other_incomes.terms_ordered
 data: !!omap
   - rental income: "Rental income"
-  - pension: "Retirement/Pension"
+  - pension: "Retirement/pension"
   - unemployment income: "Unemployment benefits"
-  - worker comp: "Worker's Compensation and/or Disability Insurance)"
-  - social security: "Social Security Benefits"
-  - veteran: "Veteran's Benefits (VA)"
-  - interest: "Interest or Dividend Income"
-  - trust: "Trust or Annuity Income"
-  - gift: "Gifts or Prize Money (include lottery winnings)"
+  - worker comp: "Workers compensation and/or disability insurance (SSDI)"
+  - social security: "Social Security benefits"
+  - veteran: "Veteran's benefits (VA)"
+  - interest: "Interest or dividend income"
+  - trust: "Trust or annuity income"
+  - gift: "Gifts or prize money (include lottery winnings)"
   - alimony: |
       Spousal Maintenance (Alimony) from ${ other_parties[0].name_full() }
   - alimony other: |
@@ -839,17 +854,17 @@ code: |
 id: rental_expenses.terms_ordered
 variable name: rental_expenses.terms_ordered
 data: !!omap
-  - cleaning: "Cleaning and Maintenance"
+  - cleaning: "Cleaning and maintenance"
   - commissions: "Commissions"
   - insurance: "Insurance"
-  - legal: "Legal and Other Professional Fees"
-  - mortgage: "Mortgage Interest Paid to Banks"
-  - other_interest: "Other Interest"
+  - legal: "Legal and other professional fees"
+  - mortgage: "Mortgage interest paid to banks"
+  - other_interest: "Other interest"
   - repairs: "Repairs"
   - supplies: "Supplies"
   - taxes: "Taxes"
   - utilities: "Utilities"
-  - wages: "Wages and Salaries"
+  - wages: "Wages and salaries"
   - other: "Other"
 ---
 id: rental income and expenses
@@ -1181,6 +1196,8 @@ fields:
     validation messages:
       number: |
         Enter a number, like 40. If you don't know, enter your best guess.
+  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
+    datatype: yesnoradio
   - Have you included overtime income?: jobs[i].overtime_info
     datatype: yesnoradio
   - note: |
@@ -1219,10 +1236,6 @@ fields:
       times_per_year_list
     datatype: integer
     show if: jobs[i].pay_personal_expenses
-  - note: |
-      <hr>
-  - Does the job have other incomes, like tips, commissions, royalties or bonuses?: jobs[i].to_add.there_is_another
-    datatype: yesnoradio
 ---
 code: |
   overtime_included_any_job = False
@@ -1302,7 +1315,7 @@ fields:
   - How much do you pay for the health insurance **each month**?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does someone else pay for the health insurance each month?: jobs[i].health_insurance_paid_by_employer
+  - How much does someone else pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -1363,7 +1376,7 @@ question: |
 subquestion: |
   You have already told us about your income from **${comma_and_list( [job_items_names.get(key, key).lower() for key in x.to_add.complete_elements().keys()] )}**.
 fields:
-  - What kind of additional income do you get from this job?: x.to_add.new_item_name
+  - What kind of additional income do you get from this job? We will collect these one at a time.: x.to_add.new_item_name
     datatype: radio
     choices:
       - Tips
@@ -1509,7 +1522,9 @@ subquestion: |
   
   <i class="fas fa-file-text fa-2x"></i> This guided interview will produce a completed Financial Affidavit form 400-813A for Vermont courts. It is used in family court cases.
   
-    <i class="fas fa-clock fa-2x"></i>  It may take you between 45 minutes and 2 hours to complete this. There are a lot of questions. If you want, you can create an account and save your work to return to later.
+  <i class="fas fa-clock fa-2x"></i>  It may take you between 45 minutes and 2 hours to complete this. There are a lot of questions.
+
+  **Make an account**: We suggest that you create a free account. It will save your work along the way. You will be able to come back later to finish it. Go to the Menu at the top of the screen to make an account. Your information will be kept private.
 
   <i class="fas fa-circle-info fa-2x"></i> It is free to use this tool. This site is not a lawyer.
   
@@ -1531,13 +1546,9 @@ subquestion: |
   You need to complete and file the 813A if:
   
   - You are a party in a newly filed divorce, civil union dissolution, legal separation, annulment or parentage action and you and the other party have minor children; OR
-  
   - You or the other party are seeking to change a previously issued order for child support or spousal maintenance (alimony); OR
-  
   - You are required to pay support and an enforcement action has been filed against you; OR
-  
   - Your child is in the custody of the Department of Children and Families and support has been requested of you; OR
-  
   - You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.
 
   If you aren't sure if you should fill it out, call the court.
@@ -1547,14 +1558,14 @@ subquestion: |
   You will need to know:
   
   * birthdates of you, the other party and any children
-  * any disability or Social Security income received by your kids
+  * any Social Security or disability income received by your kids
   * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
-  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSDI, etc.)
+  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have the income amount and expenses on hand.
+  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
   * taxes taken out of your paycheck
   * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer -- whether you enroll in that insurance or not (Ask the human resources folks.)
-  * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, other child expenses, etc.)
+  * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
   * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
 
 ---
@@ -1604,8 +1615,7 @@ comment: |
   used by the Plaintiff or Defendant, set `user_ask_role = 'plaintiff'` or
   `user_ask_role='defendant'` in your code.
 question: |
-  Did you start this case, or are you responding to a case
-  that someone else started?
+  Did you start this case, or are you responding to a case that someone else started?
 subquestion: |
   ${ collapse_template(help_user_ask_role_template) }
 fields: 
@@ -1635,6 +1645,8 @@ fields:
       Choose the county court where you will file this form. 
       
       If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
+
+      Otherwise ......
       
       Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
 
@@ -1642,28 +1654,29 @@ fields:
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
 ---
-id: court case information
-question: |
-  What is the name of the court case you are involved in?
-subquestion: |
-  Example: Joanna Kramer vs. Ted Kramer
-  
-  The plaintiff is listed first, then the defendant.
-fields:
-  - "Case name, as seen on your court papers": case_name
-    maxlength: 80
-  - note: |
-      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "vs." the first and last name of the other party / defendant(s).
-      
-      If you are a defendant in a case, type in the plaintiff's first and last name(s) "vs." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+#id: court case information
+#question: |
+#  What is the name of the court case you are involved in?
+#subquestion: |
+#  Example: Joanna Kramer v. Ted Kramer
+#  
+#  The plaintiff is listed first, then the defendant.
+#fields:
+#  - "Case name, as seen on your court papers": case_name
+#    maxlength: 80
+#  - note: |
+#      **Note**: If you are starting a case, you are the plaintiff. Type in your first and last name "v." the first and last name of the other party / defendant(s).
+#      
+#      If you are a defendant in a case, type in the plaintiff's first and last name(s) "v." your first and last name. If you are filing a counterclaim, you remain the defendant. Use the plaintiff and defendant names as seen on the original court papers you got.
+#
 ---
 id: docket number
 question: |
   What is the case number used to track this case in court?
 subquestion: |
-  Look at your court papers to find the case number. It's usually in the upper-right corner.
+  If you have papers from the court, find the case number. It's usually in the upper-right corner.
 fields:
-  - I don't know the case number: dont_know_docket_number
+  - I don’t know the case number, or I don't have a case number yet: dont_know_docket_number
     datatype: yesno    
   - Case number: docket_number
     hide if: dont_know_docket_number
@@ -1779,9 +1792,9 @@ confirm: True
 ---
 ############################# EXPENSES #############################
 ---
-id: expenses intro
+id: expenses intro screen
 mandatory: True
-continue button field: expenses_intro
+continue button field: expenses_intro_screen
 question: |
   Expenses
 subquestion: |
@@ -1814,7 +1827,7 @@ data: !!omap
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, plowing, trash"
+  - mowplowtrash: "Mowing, plowing, trash and/or HOA fees"
   - food: "Groceries"
   - cableinternet: "Cable/internet"
   - laundry: "Laundry/dry cleaning"
@@ -1838,7 +1851,7 @@ id: household expenses types
 question: |
   What kind of household expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
   You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
@@ -1909,9 +1922,9 @@ code: |
   
 ---
 id: household expenses paid by others
-question:  Other payments for ${ household_expenses[i].display_name }
+question:  Other payments for ${ household_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ household_expenses[i].display_name } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
+  You said your ${ household_expenses[i].display_name.lower() } expense is ${ currency(household_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: household_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -1976,7 +1989,7 @@ id: vehicle_expenses.terms_ordered
 # their order here will be their same order when shown to users.
 variable name: vehicle_expenses.terms_ordered
 data: !!omap
-  - auto_loans: "Total vehicle loans"
+  - auto_loans: "Vehicle loans"
   - auto_insur: "Car insurance"
   - auto_gas: "Gas"
   - auto_maint: "Maintenance/repairs"
@@ -2001,11 +2014,11 @@ id: vehicle expenses types
 question: |
   What kind of car, truck and other vehicle expenses do you have?
 subquestion: | 
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+  
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
   You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
-
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
 fields:
   - no label: vehicle_expenses.selected_types
     datatype: checkboxes
@@ -2065,9 +2078,9 @@ code: |
     vehicle_expenses[i].paid_by_other_monthly = 0
 ---
 id: vehicle expenses paid by others
-question:  Other payments for ${ vehicle_expenses[i].display_name }
+question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ vehicle_expenses[i].display_name } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
+  You said your ${ vehicle_expenses[i].display_name.lower() } expense is ${ currency(vehicle_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: vehicle_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2091,7 +2104,7 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ vehicle_expenses_table }
-  **Total vehicle expenses:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
+  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
   
   ${ vehicle_expenses.add_action() }
 continue button field: vehicle_expenses.review_items
@@ -2160,7 +2173,7 @@ id: insurance expenses types
 question: |
   What kind of insurance expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
   % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
   You said that you pay ${ currency(health_insurance_paid_total) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer_total) }. Health insurance is pre-selected below. This amount will be entered into the form. You will be able to edit it.
@@ -2304,7 +2317,7 @@ data: !!omap
   - loans: "Monthly loan and debt payments"
   - other_kids: |
       Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court-ordered child support you pay for children of another relationship."
+  - child_support: "Court-ordered child support you pay for children of another relationship"
   - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
@@ -2340,6 +2353,10 @@ id: personal expenses types
 question: |
   What kind of personal expenses do you have?
 subquestion: |
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+
+  If you have kids and already answered questions about expenses for children of your relationship with ${ other_party[0] }, do **not** include those child expenses here.
+  
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
 
@@ -2366,7 +2383,7 @@ subquestion: |
   "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
 
   % endif
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
@@ -2426,9 +2443,9 @@ code: |
     personal_expenses[i].paid_by_other_monthly = 0
 ---
 id: personal expenses paid by others question
-question:  Other payments for ${ personal_expenses[i].display_name }
+question:  Other payments for ${ personal_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ personal_expenses[i].source } expense is ${ personal_expenses[i].total(times_per_year=12) } per month.
+  You said your ${ personal_expenses[i].source } expense is ${ currency(personal_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: personal_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2455,7 +2472,7 @@ subquestion: |
   
   ${ personal_expenses_table }
   
-  **Total personal expenses:** ${ currency(personal_expenses.total(times_per_year=12)) }
+  **Total personal expenses above:** ${ currency(personal_expenses.total(times_per_year=12)) }
   
   ${ personal_expenses.add_action() }
 continue button field: personal_expenses.review_items
@@ -2497,7 +2514,7 @@ data: !!omap
   - kids_lunch: "School lunches"
   - kids_supplies: "School supplies"
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
-  - kids_camp: "Summer camp"
+  - kids_camp: "Summer camp/school vacation camp"
   - kids_tuition: "Private school tuition"
   - kids_medical: "Uninsured medical/dental expenses"
   - kids_childsupport: |
@@ -2537,12 +2554,10 @@ id: children expenses types
 question: |
   What kind of child expenses do you have?
 subquestion: |
-  Be sure to look back over the last 12 months. Maybe you didn't have the expense last month, but you had it earlier in the year.
+  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).
-  
-  Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -2588,9 +2603,9 @@ code: |
   children_expenses[i].times_per_year = 12   
 ---
 id: children expense paid by others question
-question:  ${ children_expenses[i].display_name }
+question:  ${ children_expenses[i].display_name.lower() }
 subquestion: |
-  You said your ${ children_expenses[i].display_name } expense is ${ currency(children_expenses[i].total(times_per_year=12)) }
+  You said your ${ children_expenses[i].display_name.lower() } expense is ${ currency(children_expenses[i].total(times_per_year=12)) }
 fields: 
   - How much does somebody else pay for that expense per month?: children_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -2619,7 +2634,7 @@ subquestion: |
   
   ${ children_expenses_table }
 
-  **Total Children Expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
+  **Total of above expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
  
   
   ${ children_expenses.add_action() }
@@ -2649,11 +2664,11 @@ edit:
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
-  If monthly amounts change during the year, use total annual amount divided by 12.
+  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps -- we'll collect that information later.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
-  - Any subsidy you get from state to help pay each month: childcare_subsidy
+  - Any subsidy you get from the state to help pay each month: childcare_subsidy
     datatype: currency
 validation code: |
   out_of_pocket_costs = total_monthly_childcare_costs - childcare_subsidy
@@ -2663,6 +2678,10 @@ code: |
 ---
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
+subquestion: |
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+  
+  Leave these blank if they don't apply to you.
 fields:
   - note: |
       **Uninsured medical expenses for kids**
@@ -2718,11 +2737,48 @@ code: |
   else:
     x.there_are_any = False
 ---
+#id: real_estate object
+#objects:
+  #- real_estate: ALAssetList.using(complete_attribute='complete',there_is_another=False)
+---
+id: loan intro screen
+continue button field: loan_intro_screen
+question: |
+  Loans and debts
+subquestion: |
+  Now we'll review any loans on things you own, as well as debts.
+---
+id: does user own home or real estate
+question: |
+  Real estate
+subquestion: |
+  Do you own your home or other real estate?
+
+  Say "yes" whether you own it outright or have a mortgage or loan.
+fields: 
+  - no label: real_estate_user_owned
+    datatype: yesnoradio
+---
+id: what real estate does user own
+question: |
+  Real estate
+subquestion: |
+  What do you own?
+fields:
+  - no label: real_estate_owned
+    datatype: checkboxes
+    choices:
+      - I own the home I live in.: user_owns_home_re
+      - I own business or rental properties.: user_owns_commercial_re
+      - I own other real estate or land.: user_owns_other_re
+---
 id: are there primary loans
 question: |
-  Do you have any loans on your primary residence?
+  Loans on the home you live in
 subquestion: |
-   If you own your home, check any that apply to you. Otherwise, choose none of the above.
+   Do you have any loans on your primary residence (the home you live in)?
+   
+   Check any that apply to you. Otherwise, choose none of the above.
 fields:
   - no label: primary_residence_loans.selected_types
     datatype: checkboxes
@@ -2822,9 +2878,9 @@ edit:
 id: other_loans.terms_ordered
 variable name: other_loans.terms_ordered
 data: !!omap
-  - personal: "Personal Loan"
-  - school: "School/College Loan"
-  - other: "Other Loan"
+  - personal: "Personal loan"
+  - school: "School/college Loan"
+  - other: "Other loan"
 ---
 id: other loans display default
 comment: |
@@ -2902,7 +2958,7 @@ reconsider: other_loans.total_monthly_self_payment
 question: Do you want to list any other loans?
 subquestion: |
   
-  The total for the monthly other loan expenses is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
+  The total for the monthly loan expenses below is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -2945,12 +3001,12 @@ id: real_estate_loans object
 objects:
   - real_estate_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
-id: are the real estate loans
-question: Other real estate loans
+id: are there real estate loans
+question: Loans on other real estate
 subquestion: |
-  DO NOT include business or rental property loans.
+  Note: Do not include business or rental property loans or your primary mortgage here.
 fields:
-  - Do you have other real estate loans?: real_estate_loans.there_are_any
+  - Do you have loans on other pieces of real estate?: real_estate_loans.there_are_any
     datatype: yesnoradio
 ---
 id: real_estate_loans complete
@@ -3018,7 +3074,7 @@ objects:
   - vehicle_loans: ALAssetList.using(complete_attribute='complete',there_is_another=False)
 ---
 id: are there vehicle loans
-question: Car, truck and other vehicle loans
+question: Loans on cars, trucks and other vehicles
 fields:
   - Do you have any vehicle loans?: vehicle_loans.there_are_any
     datatype: yesnoradio
@@ -3095,7 +3151,7 @@ fields:
   - Do you have any credit card debt?: credit_card_debt.there_are_any
     datatype: yesnoradio
   - note: |
-      If you are keeping up with your regular monthly credit card bills, you can say No.
+      If you are paying the full balance of credit card bills every month, you can say No.
 ---
 id: credit_card_debt complete
 code: |
@@ -3104,7 +3160,7 @@ code: |
 ---
 id: info for each credit_card_debt loans
 question: |
-  About your ${ ordinal(i) } credit card debt
+  About your credit card debt
 fields:
   - Card Holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
@@ -3192,7 +3248,7 @@ id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
 question: Do you want to list any other debt?
 subquestion: |
-  The total for the monthly other debt expenses is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
+  The total for the monthly debt expenses below is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3347,13 +3403,16 @@ review:
       % else:
       ${ showifdef("docket_number") }
       % endif
-      
-  - Edit: case_name
-    button: |
-      **Case name**:
-      ${ case_name }
+
   - Edit: user_ask_role
     button: |
+      **Case name**:
+      % if user_ask_role == "plaintiff":
+      ${ users[0] } v. ${ other_parties[0] }
+      % else:
+      ${ other_parties[0] } v. ${ users[0] }
+      % endif
+      
       **Your role in court case**:
       ${ user_ask_role }
   - Edit:
@@ -3579,7 +3638,7 @@ review:
       **Children expenses**
 
       % for item in children_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if children_expenses.number_gathered() == 0:
       - None
@@ -3590,7 +3649,7 @@ review:
       **Household expenses**
 
       % for item in household_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if household_expenses.number_gathered() == 0:
       - None
@@ -3601,7 +3660,7 @@ review:
       **Vehicle expenses**
 
       % for item in vehicle_expenses:
-      * ${ item.make } ${ item.model } ${ item.year }
+      * ${ item.display_name.lower()  }
       % endfor
       % if vehicle_expenses.number_gathered() == 0:
       - None
@@ -3612,7 +3671,7 @@ review:
       **Insurance expenses**
 
       % for item in insurance_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if insurance_expenses.number_gathered() == 0:
       - None
@@ -3623,7 +3682,7 @@ review:
       **Personal expenses**
 
       % for item in personal_expenses:
-      * ${ item.source }
+      * ${ item.display_name.lower()  }
       % endfor
       % if personal_expenses.number_gathered() == 0:
       - None
@@ -3751,7 +3810,12 @@ attachments:
     fields:
       - "trial_court_county": ${ trial_court.address.county } 
       - "docket_number": ${ docket_number } 
-      - "case_name": ${ case_name } 
+      - "case_name": |
+          % if user_ask_role == "plaintiff":
+          ${ users[0] } v. ${ other_parties[0] }
+          % else:
+          ${ other_parties[0] } v. ${ users[0] }
+          % endif
       - "users1_name": |
           ${ users[0].name } 
       - "users1_birthdate": |
