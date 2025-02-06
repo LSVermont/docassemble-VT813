@@ -201,12 +201,11 @@ code: |
   expenses_intro_screen
   
   if shared_children.there_are_any:
-    if len(children_expenses) > 0:
-      total_monthly_childcare_costs
-      children_expenses.review_items
-    set_progress(72)
     total_monthly_childcare_costs
     extraordinary_expenses
+    if len(children_expenses) > 0:
+      children_expenses.review_items
+
   set_progress(74)
       
   if len(household_expenses) > 0:
@@ -764,7 +763,7 @@ data: !!omap
 ---
 variable name: help_text
 data: !!omap
-  - unemployment income help: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - unemployment income help: "Enter gross amount of unemployment income — before taxes were taken out."
   - default: " "
 ---
 id: other income display default
@@ -1154,7 +1153,7 @@ fields:
     datatype: integer
     show if:
       code: x.is_hourly is True
-  #- Do you have other additional income from this job? (Examples -- Tips, commissions, bonuses): x.to_add.there_is_another
+  #- Do you have other additional income from this job? (Examples — Tips, commissions, bonuses): x.to_add.there_is_another
     #datatype: yesnoradio
 ---
 if: j in ["full time","part time"]
@@ -1291,7 +1290,7 @@ code: |
 id: healthcare benefits
 question: Healthcare benefits
 fields:
-  - Could you get insurance through this job -- even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
+  - Could you get insurance through this job — even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
     datatype: yesnoradio
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
@@ -1311,10 +1310,10 @@ fields:
   - Are your kids enrolled?: jobs[i].kids_enrolled
     datatype: yesnoradio
     show if: jobs[i].healthcare_available
-  - How much do you pay for the health insurance **each month**?: jobs[i].health_insurance_paid
+  - How much do **you** pay for the health insurance each month?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does someone else pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
+  - How much does **someone else** pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -1450,7 +1449,7 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  **You said that you were self employed with a net income of**
+  **You said that you were self-employed with a net income of**
   % if has_schedule_c:
   **${ currency(self_employed_net_income) } each month.**
   % elif do_self_employment_worksheet:
@@ -1569,9 +1568,9 @@ subquestion: |
   * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
+  * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
   * taxes taken out of your paycheck
-  * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer -- whether you enroll in that insurance or not (Ask the human resources folks.)
+  * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer — whether you enroll in that insurance or not (Ask the human resources folks.)
   * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
   * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
 
@@ -1605,7 +1604,7 @@ subquestion: |
 
   If you got paychecks in the last 12 months, you will need to attach copies of the 4 most recent paystubs to this form.
 
-  If you had self-employed income, you will need to attach a copy of your most recent IRS Schedule C -- only if you filed one.
+  If you had self-employed income, you will need to attach a copy of your most recent IRS Schedule C — only if you filed one.
 
   We'll remind you about this at the end in the Next Steps document.
 continue button field: paystub_instructions
@@ -1805,11 +1804,13 @@ continue button field: expenses_intro_screen
 question: |
   Expenses
 subquestion: |
-  Now we will review your expenses -- the things you pay for.
+  Now we'll review your expenses — the things you pay for.
   
   We will have screens for:
   
+  % if shared_children.there_are_any or other_children.there_are_any:
   - child-related expenses
+  %endif
   
   - household expenses
   
@@ -1834,7 +1835,7 @@ data: !!omap
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, plowing, trash and/or HOA fees"
+  - mowplowtrash: "Mowing, plowing, trash and/or homeowner association fees"
   - food: "Groceries"
   - cableinternet: "Cable/internet"
   - laundry: "Laundry/dry cleaning"
@@ -2559,8 +2560,10 @@ objects:
 #expenses
 id: children expenses types
 question: |
-  What kind of child expenses do you have?
+  What kind of child expenses do you have for children with ${ other_parties[0].name_full() }?
 subquestion: |
+  What expenses do you have for children of this relationship?
+  
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if out_of_pocket_costs > 0:
@@ -2634,7 +2637,7 @@ code: |
     children_expenses[i].display_name = children_expenses_other_display
 ---
 id: want to add more expenses
-question: Do you want to list any more children expenses?
+question: Do you want to list any more child expenses?
 subquestion: |
 
   Tap Next if you don't have more to add.
@@ -2671,7 +2674,9 @@ edit:
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
-  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps -- we'll collect that information later.
+  How much do you pay for daycare or child care for children of this relationship?
+  
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps — we'll collect that information later.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
@@ -2686,30 +2691,34 @@ code: |
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 subquestion: |
-  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+  Do you have these expenses for children of this relationship?
   
-  Leave these blank if they don't apply to you.
+  Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
+
 fields:
-  - note: |
-      **Uninsured medical expenses for kids**
+  - Uninsured medical expenses for kids: uninsured_medical_expenses_kids
+    datatype: yesno
   - Type: uninsured_medical_expenses_type
-    required: False
-  - Cost per month: uninsured_medical_expenses_amount
-    required: False
+    show if: uninsured_medical_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: uninsured_medical_expenses_amount
+    show if: uninsured_medical_expenses_kids
     datatype: currency
-  - note: |
-      **Educational expenses for kids**
+  - Educational expenses for kids: educational_expenses_kids
+    datatype: yesno
   - Type: educational_expenses_type
-    required: False
-  - Cost per month: educational_expenses_amount
-    required: False
+    show if: educational_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: educational_expenses_amount
+    show if: educational_expenses_kids
     datatype: currency
-  - note: |
-      **Special needs expenses for kids**
+  - Special needs expenses for kids: specialneeds_expenses_kids
+    datatype: yesno
   - Type: special_needs_expenses_type
-    required: False
-  - Cost per month: special_needs_expenses_amount
-    required: False
+    show if: specialneeds_expenses_kids
+    maxlength: 36
+  - Cost paid by you each month: special_needs_expenses_amount
+    show if: specialneeds_expenses_kids
     datatype: currency
 continue button field: extraordinary_expenses
 ---
@@ -2833,7 +2842,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
+  The total for these loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3011,7 +3020,7 @@ objects:
 id: are there real estate loans
 question: Loans on other real estate
 subquestion: |
-  Note: Do not include business or rental property loans or your primary mortgage here.
+  Note: Do not include business or rental property loans. Do not include mortgages or loans on the home you live in.
 fields:
   - Do you have loans on other pieces of real estate?: real_estate_loans.there_are_any
     datatype: yesnoradio
@@ -3025,7 +3034,7 @@ id: info for each real estate loans
 question: |
   About your ${ ordinal(i) } real estate loan
 fields:
-  - Property Description: real_estate_loans[i].source
+  - Property description: real_estate_loans[i].source
   - Lender: real_estate_loans[i].lender
   - Balance owed: real_estate_loans[i].balance
     datatype: currency
@@ -3037,7 +3046,7 @@ fields:
 id: want to add more real_estate_loans
 question: Do you want to list any more real estate loans?
 subquestion: |
-  The total for the monthly expenses you pay is **${ currency(real_estate_loans.total_monthly_self_payment) }**
+  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total_monthly_self_payment) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3059,13 +3068,13 @@ id: real_estate_loans_table
 table: real_estate_loans_table
 rows: real_estate_loans
 columns:
-  - Property Description: |
+  - Property description: |
       row_item.source
   - Lender: |
       row_item.lender
   - Balance owed: |
       currency(row_item.balance) if defined("row_item.balance") else ""
-  - Monthly Payment: |
+  - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
   - YOU are making this payment: |
       row_item.self_payment
@@ -3204,13 +3213,13 @@ id: credit_card_debt_table
 table: credit_card_debt_table
 rows: credit_card_debt
 columns:
-  - Card Holder: |
+  - Card holder: |
       row_item.source
   - Company: |
       row_item.lender
   - Balance owed: |
       currency(row_item.balance) if defined("row_item.balance") else ""
-  - Monthly Payment: |
+  - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
   - YOU are making this payment: |
       row_item.self_payment
@@ -3577,7 +3586,7 @@ review:
       **Primary residence loans**
 
       % for item in primary_residence_loans:
-      * ${ item.source }
+      * ${ item.display_name.lower() }
       % endfor
       % if primary_residence_loans.number_gathered() == 0:
       - None
@@ -3585,7 +3594,7 @@ review:
       % endif
   - Edit: real_estate_loans.revisit
     button: |
-      **Other Real Estate Loans**
+      **Other real estate loans**
 
       % for item in real_estate_loans:
       * ${ item.source }
@@ -3624,7 +3633,7 @@ review:
       **Credit card debt**
 
       % for item in credit_card_debt:
-      * ${ item.source }
+      * ${ item.lender }
       % endfor
       % if credit_card_debt.number_gathered() == 0:
       - None
@@ -4153,17 +4162,17 @@ attachments:
       - "users1_assets_real_estate_home_loans_total_payment": |
           ${ round(primary_residence_loans.total_other_attribute(attribute='monthly_payment'),2) } 
       - "users1_assets_real_estate_other_loan1_description": |
-          ${ real_estate_loans[0].source_other } 
+          ${ real_estate_loans[0].source } 
       - "users1_assets_real_estate_other_loan1_lender": |
           ${ real_estate_loans[0].lender } 
       - "users1_assets_real_estate_other_loan1_amount_owed": |
           ${ real_estate_loans[0].balance } 
       - "users1_assets_real_estate_other_loan1_payment": |
           ${ real_estate_loans[0].monthly_payment } 
-      - "users1_assets_real_estate_2nd_mortgage_self_paid": |
+      - "users1_assets_real_estate_other_loan1_self_paid": |
           ${ real_estate_loans[0].self_payment } 
       - "users1_assets_real_estate_other_loan2_description": |
-          ${ real_estate_loans[1].source_other } 
+          ${ real_estate_loans[1].source } 
       - "users1_assets_real_estate_other_loan2_lender": |
           ${ real_estate_loans[1].lender } 
       - "users1_assets_real_estate_other_loan2_amount_owed": |

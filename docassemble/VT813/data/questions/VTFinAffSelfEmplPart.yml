@@ -144,6 +144,8 @@ continue button field: selfemployment_worksheet
 id: Your monthly gross sales or receipts
 question: |
   Your monthly gross sales or receipts from self-employment
+subquestion: |
+  **Tip**: For these self-employment questions, you can look back 12 months. Then divide by 12 to get the monthly amount.
 fields:
   - "Gross sales": self_empl_gross_sales_monthly_amount
     datatype: currency
@@ -445,13 +447,13 @@ id: Another expense
 question: |
   List of other expenses
 subquestion: |
-  You have told us about these:
+  You have told us about:
   
   % for item in self_empl_other_expenses:
     * ${ item.source }
   % endfor
 fields:
-  - Are there any other business expenses?: self_empl_other_expenses.there_is_another
+  - Are there any other business expenses to list?: self_empl_other_expenses.there_is_another
     input type: radio
     choices:
       - Yes: True
