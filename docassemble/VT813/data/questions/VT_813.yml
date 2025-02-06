@@ -144,7 +144,6 @@ code: |
   nav.set_section('case_info')
   set_progress(30)
   user_ask_role
-  case_name
   docket_number
   
   #This is where we collect the desired court county and the exact court is determined.
@@ -1481,6 +1480,14 @@ columns:
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
   - Monthly gross income: |
       currency(row_item.gross_total(times_per_year=12)) 
+  - Health insurance offered: |
+      word(yesno(row_item.healthcare_available)) if defined("row_item.healthcare_available") else ""
+  - You are enrolled: |
+      word(yesno(row_item.enrolled)) if defined("row_item.enrolled") else ""
+  - Kids are enrolled: |
+      word(yesno(row_item.kids_enrolled)) if defined("row_item.kids_enrolled") else ""
+  - Amount you pay for it: |
+      currency(row_item.health_insurance_paid) if defined("row_item.health_insurance_paid") else ""
 
 edit:
   - revisit
@@ -2355,7 +2362,7 @@ question: |
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
-  If you have kids and already answered questions about expenses for children of your relationship with ${ other_party[0] }, do **not** include those child expenses here.
+  If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
   
   % if monthly_debt_payment > 0:
   You said that you make these monthly debt payments:
@@ -3497,12 +3504,16 @@ review:
       **Jobs**
 
       % for item in jobs:
-      * ${ item.source }, ${ item.employer.name.first }
+      **${ item.source }**, ${ item.employer.name.first }
+      
+      * Health insurance is offered by this job: ${ word(yesno(item.healthcare_available)) }
+      
       % endfor
       % if len(jobs) == 0:
       - None
 
       % endif
+
   - Edit:
       - invalidate:
           - is_self_employed
@@ -3542,7 +3553,7 @@ review:
       
       % else:
       I am not self employed.
-      % endif      
+      % endif   
   - Edit: 
       - other_incomes.revisit
       - recompute:
@@ -4050,12 +4061,26 @@ attachments:
           % else:
           ${ supported_children[2].child_support_state }
           % endif
+
+          
       - "health_insurance_family_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_family_cost'),2) } 
+          % for job in jobs:
+          % if job.healthcare_available:
+          ${ round(job.health_insurance_family_cost,2) }
+          % endif
+          % endfor
       - "health_insurance_2_person_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_2_person_cost'),2) } 
+          % for job in jobs:
+          % if job.healthcare_available:
+          ${ round(job.health_insurance_2_person_cost,2) }
+          % endif
+          % endfor
       - "health_insurance_single_person_cost": |
-          ${ round(jobs.total_other_attribute(source='', attribute='health_insurance_single_person_cost'),2) } 
+          % for job in jobs:
+          % if job.healthcare_available:
+          ${ round(job.health_insurance_2_person_cost,2) }
+          % endif
+          % endfor
       - "health_insurance_kids_enrolled_yes": |
           ${ jobs.kids_enrolled } 
       - "health_insurance_kids_enrolled_no": |
