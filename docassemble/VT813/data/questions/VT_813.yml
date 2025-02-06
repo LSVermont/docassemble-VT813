@@ -764,7 +764,7 @@ data: !!omap
 ---
 variable name: help_text
 data: !!omap
-  - unemployment income help: "Enter gross amount of unemployment income -- before taxes were taken out."
+  - unemployment income help: "Enter gross amount of unemployment income — before taxes were taken out."
   - default: " "
 ---
 id: other income display default
@@ -1154,7 +1154,7 @@ fields:
     datatype: integer
     show if:
       code: x.is_hourly is True
-  #- Do you have other additional income from this job? (Examples -- Tips, commissions, bonuses): x.to_add.there_is_another
+  #- Do you have other additional income from this job? (Examples — Tips, commissions, bonuses): x.to_add.there_is_another
     #datatype: yesnoradio
 ---
 if: j in ["full time","part time"]
@@ -1291,7 +1291,7 @@ code: |
 id: healthcare benefits
 question: Healthcare benefits
 fields:
-  - Could you get insurance through this job -- even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
+  - Could you get insurance through this job — even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
     datatype: yesnoradio
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
@@ -1311,10 +1311,10 @@ fields:
   - Are your kids enrolled?: jobs[i].kids_enrolled
     datatype: yesnoradio
     show if: jobs[i].healthcare_available
-  - How much do you pay for the health insurance **each month**?: jobs[i].health_insurance_paid
+  - How much do **you** pay for the health insurance each month?: jobs[i].health_insurance_paid
     show if: jobs[i].enrolled
     datatype: currency
-  - How much does someone else pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
+  - How much does **someone else** pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
     show if: jobs[i].enrolled
     datatype: currency
 ---
@@ -1450,7 +1450,7 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  **You said that you were self employed with a net income of**
+  **You said that you were self-employed with a net income of**
   % if has_schedule_c:
   **${ currency(self_employed_net_income) } each month.**
   % elif do_self_employment_worksheet:
@@ -1569,9 +1569,9 @@ subquestion: |
   * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
-  * your income -- If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
+  * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
   * taxes taken out of your paycheck
-  * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer -- whether you enroll in that insurance or not (Ask the human resources folks.)
+  * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer — whether you enroll in that insurance or not (Ask the human resources folks.)
   * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
   * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
 
@@ -1605,7 +1605,7 @@ subquestion: |
 
   If you got paychecks in the last 12 months, you will need to attach copies of the 4 most recent paystubs to this form.
 
-  If you had self-employed income, you will need to attach a copy of your most recent IRS Schedule C -- only if you filed one.
+  If you had self-employed income, you will need to attach a copy of your most recent IRS Schedule C — only if you filed one.
 
   We'll remind you about this at the end in the Next Steps document.
 continue button field: paystub_instructions
@@ -1805,7 +1805,7 @@ continue button field: expenses_intro_screen
 question: |
   Expenses
 subquestion: |
-  Now we will review your expenses -- the things you pay for.
+  Now we'll review your expenses — the things you pay for.
   
   We will have screens for:
   
@@ -2671,7 +2671,7 @@ edit:
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
-  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps -- we'll collect that information later.
+  How much do you pay for daycare or child care? Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps — we'll collect that information later.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
@@ -2833,7 +2833,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly housing loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
+  The total for these loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3011,7 +3011,7 @@ objects:
 id: are there real estate loans
 question: Loans on other real estate
 subquestion: |
-  Note: Do not include business or rental property loans or your primary mortgage here.
+  Note: Do not include business or rental property loans. Do not include mortgages or loans on the home you live in.
 fields:
   - Do you have loans on other pieces of real estate?: real_estate_loans.there_are_any
     datatype: yesnoradio
@@ -3037,7 +3037,7 @@ fields:
 id: want to add more real_estate_loans
 question: Do you want to list any more real estate loans?
 subquestion: |
-  The total for the monthly expenses you pay is **${ currency(real_estate_loans.total_monthly_self_payment) }**
+  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total_monthly_self_payment) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
