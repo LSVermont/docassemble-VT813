@@ -144,7 +144,6 @@ code: |
   nav.set_section('case_info')
   set_progress(30)
   user_ask_role
-  case_name
   docket_number
   
   #This is where we collect the desired court county and the exact court is determined.
@@ -1871,7 +1870,7 @@ fields:
       household_expenses_ordered
     default:
       code: | 
-        {'rent': len(primary_residence_loans) == 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
+        {'rent': len(primary_residence_loans) > 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2372,7 +2371,15 @@ subquestion: |
     - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
   % endif
   % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
-    - Other loans - Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+    - Other 
+  % for loan_type in ["personal","school","other"]:
+  % if len(other_loans.matches(source=[loan_type])) > 0:
+      - ${ quantity_noun(len(other_loans.matches(source=[loan_type])), other_loans.terms_ordered.get(loan_type, loan_type)).lower() }
+  % endif
+  % endfor
+  
+  Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
+
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
     - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_debt.total_monthly_self_payment) }**
@@ -2391,7 +2398,7 @@ fields:
       personal_expenses_ordered
     default:
       code: |
-        {'loans': total_monthly_debt_payment > 0}
+        {'loans': monthly_debt_payment > 0}
 ---
 id: personal expense information
 reconsider: personal_expenses[i].display_name
@@ -2880,7 +2887,7 @@ variable name: other_loans.terms_ordered
 data: !!omap
   - personal: "Personal loan"
   - school: "School/college Loan"
-  - other: "Other"
+  - other: "Other loan"
 ---
 id: other loans display default
 comment: |
@@ -2938,6 +2945,11 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_loans[i].self_payment
     datatype: yesnoradio
+validation code: |
+  if other_loans[i].source != "other":
+    other_loans[i].display_name = other_loans.terms_ordered.get(other_loans[i].source, other_loans[i].source)
+  else:
+    other_loans[i].display_name = other_loans_other_display
 ---
 id: other loans display name
 code: |
