@@ -1835,7 +1835,7 @@ data: !!omap
   - water: "Water"
   - gas: "Gas for home"
   - fuel: "Oil, Wood or other fuel not listed above"
-  - mowplowtrash: "Mowing, plowing, trash and/or HOA fees"
+  - mowplowtrash: "Mowing, plowing, trash and/or homeowner association fees"
   - food: "Groceries"
   - cableinternet: "Cable/internet"
   - laundry: "Laundry/dry cleaning"
@@ -3034,7 +3034,7 @@ id: info for each real estate loans
 question: |
   About your ${ ordinal(i) } real estate loan
 fields:
-  - Property Description: real_estate_loans[i].source
+  - Property description: real_estate_loans[i].source
   - Lender: real_estate_loans[i].lender
   - Balance owed: real_estate_loans[i].balance
     datatype: currency
@@ -3068,13 +3068,13 @@ id: real_estate_loans_table
 table: real_estate_loans_table
 rows: real_estate_loans
 columns:
-  - Property Description: |
+  - Property description: |
       row_item.source
   - Lender: |
       row_item.lender
   - Balance owed: |
       currency(row_item.balance) if defined("row_item.balance") else ""
-  - Monthly Payment: |
+  - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
   - YOU are making this payment: |
       row_item.self_payment
@@ -3213,13 +3213,13 @@ id: credit_card_debt_table
 table: credit_card_debt_table
 rows: credit_card_debt
 columns:
-  - Card Holder: |
+  - Card holder: |
       row_item.source
   - Company: |
       row_item.lender
   - Balance owed: |
       currency(row_item.balance) if defined("row_item.balance") else ""
-  - Monthly Payment: |
+  - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
   - YOU are making this payment: |
       row_item.self_payment
@@ -3586,7 +3586,7 @@ review:
       **Primary residence loans**
 
       % for item in primary_residence_loans:
-      * ${ item.source }
+      * ${ item.display_name.lower() }
       % endfor
       % if primary_residence_loans.number_gathered() == 0:
       - None
@@ -3594,7 +3594,7 @@ review:
       % endif
   - Edit: real_estate_loans.revisit
     button: |
-      **Other Real Estate Loans**
+      **Other real estate loans**
 
       % for item in real_estate_loans:
       * ${ item.source }
@@ -3633,7 +3633,7 @@ review:
       **Credit card debt**
 
       % for item in credit_card_debt:
-      * ${ item.source }
+      * ${ item.lender }
       % endfor
       % if credit_card_debt.number_gathered() == 0:
       - None
@@ -4154,17 +4154,17 @@ attachments:
       - "users1_assets_real_estate_home_loans_total_payment": |
           ${ round(primary_residence_loans.total_other_attribute(attribute='monthly_payment'),2) } 
       - "users1_assets_real_estate_other_loan1_description": |
-          ${ real_estate_loans[0].source_other } 
+          ${ real_estate_loans[0].source } 
       - "users1_assets_real_estate_other_loan1_lender": |
           ${ real_estate_loans[0].lender } 
       - "users1_assets_real_estate_other_loan1_amount_owed": |
           ${ real_estate_loans[0].balance } 
       - "users1_assets_real_estate_other_loan1_payment": |
           ${ real_estate_loans[0].monthly_payment } 
-      - "users1_assets_real_estate_2nd_mortgage_self_paid": |
+      - "users1_assets_real_estate_other_loan1_self_paid": |
           ${ real_estate_loans[0].self_payment } 
       - "users1_assets_real_estate_other_loan2_description": |
-          ${ real_estate_loans[1].source_other } 
+          ${ real_estate_loans[1].source } 
       - "users1_assets_real_estate_other_loan2_lender": |
           ${ real_estate_loans[1].lender } 
       - "users1_assets_real_estate_other_loan2_amount_owed": |
