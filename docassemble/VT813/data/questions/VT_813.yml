@@ -890,7 +890,7 @@ id: rental_expenses_ordered object
 objects:
   - rental_expenses_ordered: DAOrderedDict.using(elements=rental_expenses.terms_ordered, auto_gather=False, gathered=True)
 ---
-id: expense information
+id: rental expense information
 reconsider: rental_expenses[i].display_name
 question: |
   Tell us about your ${ rental_expenses[i].display_name.lower() } expense
@@ -1530,7 +1530,7 @@ subquestion: |
   
   <i class="fas fa-clock fa-2x"></i>  It may take you between 45 minutes and 2 hours to complete this. There are a lot of questions.
 
-  **Make an account**: We suggest that you create a free account. It will save your work along the way. You will be able to come back later to finish it. Go to the Menu at the top of the screen to make an account. Your information will be kept private.
+  **Make an account**: We suggest that you create a free account. It will save your work along the way. You will be able to come back later to finish it. Tap "register" below to make an account. Your information will be kept private.
 
   <i class="fas fa-circle-info fa-2x"></i> It is free to use this tool. This site is not a lawyer.
   
@@ -1559,7 +1559,7 @@ subquestion: |
 
   If you aren't sure if you should fill it out, call the court.
   
-  <h4>What you will need to know</h4>
+  <h4>What you will need</h4>
   
   You will need to know:
   
@@ -1569,9 +1569,9 @@ subquestion: |
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
   * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
-  * taxes taken out of your paycheck
+  * amount of taxes taken out of your paycheck
   * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer — whether you enroll in that insurance or not (Ask the human resources folks.)
-  * all your expenses (including rent, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
+  * all your expenses (including rent/mortgage, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
   * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
 
 ---
@@ -1879,7 +1879,7 @@ code: |
   x.value
   x.complete = True
 ---
-id: expense information
+id: household expense information
 reconsider: household_expenses[i].display_name
 question: |
   Tell us about your ${ household_expenses[i].display_name.lower() }
@@ -1900,7 +1900,7 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - Does anybody else pay all or part of this expense?: household_expenses[i].paid_by_other
+  - Does **anyone else** pay all or part of this expense?: household_expenses[i].paid_by_other
     datatype: yesnoradio
 
 validation code: |
@@ -2057,7 +2057,7 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - Does anybody else pay all or part of this expense?: vehicle_expenses[i].paid_by_other
+  - Does **anyone else** pay all or part of this expense?: vehicle_expenses[i].paid_by_other
     datatype: yesnoradio
 
 validation code: |
@@ -2216,7 +2216,7 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - Does anybody else pay all or part of this expense?: insurance_expenses[i].paid_by_other
+  - Does **anyone else** pay all or part of this expense?: insurance_expenses[i].paid_by_other
     datatype: yesnoradio
 
 validation code: |
@@ -2361,35 +2361,35 @@ id: personal expenses types
 question: |
   What kind of personal expenses do you have?
 subquestion: |
-  You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
+  You can look back 12 months for these expenses listed below. That will give an accurate picture of how much the expenses really are.
 
   If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
   
   % if monthly_debt_payment > 0:
-  You said that you make these monthly debt payments:
+  <hr>
+  You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-    - Other real estate loans - Total: **${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** You pay: **${ currency(real_estate_loans.total_monthly_self_payment) }** 
+    - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) }. 
   % endif
   % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
-    - Other 
+    - Other loans: Total of ${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_loans.total_monthly_self_payment) }. They include:
   % for loan_type in ["personal","school","other"]:
   % if len(other_loans.matches(source=[loan_type])) > 0:
       - ${ quantity_noun(len(other_loans.matches(source=[loan_type])), other_loans.terms_ordered.get(loan_type, loan_type)).lower() }
   % endif
   % endfor
-  
-  Total: **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_loans.total_monthly_self_payment) }**
 
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
-    - Other debt - Total: **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }**; You pay: **${ currency(other_debt.total_monthly_self_payment) }**
+    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
   % endif
    
-   For a total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
-    
-  "Monthly loan and debt payments" is selected below. This amount will be entered into the form. You will be able to edit it.
+   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
 
+  "Monthly loan and debt payments" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  
+  <hr>
   % endif
 
 fields:
@@ -2422,7 +2422,7 @@ fields:
     default: 12
     code: |
       times_per_year_for_expenses
-  - Does anybody else pay all or part of this expense?: personal_expenses[i].paid_by_other
+  - Does **anyone else** pay all or part of this expense?: personal_expenses[i].paid_by_other
     datatype: yesnoradio
 
 validation code: |
@@ -3444,7 +3444,7 @@ review:
   - Edit: 
       - shared_children[0].name
     button: |
-      **Children from this relationship**:
+      **Children from this relationship**
       
       % for child in shared_children:
       * ${ child.name.full() } 
@@ -3457,7 +3457,7 @@ review:
   - Edit: 
       - other_children[0].name
     button: |
-      **Other children that you support**:
+      **Other children that you support**
       
       % for child in other_children:
       * ${ child.name.full() } 
@@ -4087,7 +4087,7 @@ attachments:
       - "health_insurance_single_person_cost": |
           % for job in jobs:
           % if job.healthcare_available:
-          ${ round(job.health_insurance_2_person_cost,2) }
+          ${ round(job.health_insurance_single_person_cost,2) }
           % endif
           % endfor
       - "health_insurance_kids_enrolled_yes": |
