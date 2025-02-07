@@ -2601,7 +2601,7 @@ fields:
       times_per_year_for_expenses
 
 validation code: |
-  if children_expenses[i].source != "other":
+  if children_expenses[i].source != "kids_other":
     children_expenses[i].display_name = children_expenses.terms_ordered.get(children_expenses[i].source, children_expenses[i].source)
   else:
     children_expenses[i].display_name = children_expenses[i].source_other
@@ -4666,19 +4666,19 @@ attachments:
       - "users1_kids_expenses_other1_description": |
           ${ children_expenses.matches(source=['kids_other'])[0].source_other } 
       - "users1_kids_expenses_other1_monthly_amount": |
-          ${ round(children_expenses[0].matches(source=['kids_other'])[0].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[0].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other2_description": |
-          ${ children_expenses[1].source_other } 
+          ${ children_expenses.matches(source=['kids_other'])[1].source_other } 
       - "users1_kids_expenses_other2_monthly_amount": |
-          ${ round(children_expenses[1].matches(source=['kids_other'])[1].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[1].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other3_description": |
-          ${ children_expenses[2].source_other } 
+          ${ children_expenses.matches(source=['kids_other'])[2].source_other } 
       - "users1_kids_expenses_other3_monthly_amount": |
-          ${ round(children_expenses[2].matches(source=['kids_other'])[2].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[2].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other4_description": |
-          ${ children_expenses[3].source_other } 
+          ${ children_expenses.matches(source=['kids_other'])[3].source_other } 
       - "users1_kids_expenses_other4_monthly_amount": |
-          ${ round(children_expenses[3].matches(source=['kids_other'])[3].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[3].total(times_per_year=12),2) } 
       - "users1_kids_expenses_total_monthly_amount": |
           ${ round(children_expenses.total(times_per_year = 12),2) } 
       - "rental_income_amount": ${ round(annual_rental_income,2) } 
