@@ -4469,7 +4469,7 @@ attachments:
       - "users1_expenses_auto_total_other_paid": |
           ${ round(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_auto_total_monthly_amount": |
-          ${ round(vehicle_expenses.total(source=['insur_life'],times_per_year = 12),2) } 
+          ${ round(vehicle_expenses.total(times_per_year = 12),2) } 
       - "users1_expenses_insur_life_self_paid": |
           ${ round(insurance_expenses.total(source=['insur_life'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_other_paid": |
