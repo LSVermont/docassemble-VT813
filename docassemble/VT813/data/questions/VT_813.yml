@@ -87,7 +87,7 @@ code: |
 ---
 id: sections
 sections:
-  - intro: Is this interview right for you
+  - intro: Is this tool right for you
   - about_you: About you
   - other_party: The other party
   - children: About kids
@@ -1543,7 +1543,7 @@ continue button field: al_intro_screen
 id: VT 813 intro
 continue button field: VT_813A_intro
 question: |
-  Is this interview right for you?
+  Is this tool right for you?
 subquestion: |
   <h4>Do you need to fill out financial form 813A?</h4>
 
