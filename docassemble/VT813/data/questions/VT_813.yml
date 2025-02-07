@@ -368,9 +368,9 @@ question: ${ title_case(ordinal(i)) } child with ${ other_parties[0].name.full()
 fields:
   - code: |
       shared_children[i].name_fields(person_or_business='person')
-  - Date of Birth: shared_children[i].birthdate
+  - Date of birth: shared_children[i].birthdate
     datatype: BirthDate
-  - Previously entered address: shared_children[i].address
+  - Their address: shared_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
@@ -494,9 +494,9 @@ question: ${ title_case(ordinal(i)) } child whom you provide support
 fields:
   - code: |
       other_children[i].name_fields(person_or_business='person')
-  - Date of Birth: other_children[i].birthdate
+  - Date of birth: other_children[i].birthdate
     datatype: BirthDate
-  - Previously entered address: other_children[i].address
+  - Their address: other_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
