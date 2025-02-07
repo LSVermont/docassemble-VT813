@@ -176,9 +176,16 @@ code: |
     if real_estate_owned["user_owns_home_re"] == True:
       if len(primary_residence_loans) > 0:
         primary_residence_loans.review_items
+    else:
+      primary_residence_loans.there_are_any = False
     if real_estate_owned["user_owns_other_re"] == True:
       if len(real_estate_loans) > 0:
         real_estate_loans.review_items
+    else:
+      real_estate_loans.there_are_any = False
+  else:
+    primary_residence_loans.there_are_any = False
+    real_estate_loans.there_are_any = False
   
   set_progress(55)
   if len(vehicle_loans) > 0:
