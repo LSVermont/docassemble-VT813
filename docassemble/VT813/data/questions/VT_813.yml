@@ -1014,9 +1014,13 @@ fields:
 id: how many itemized jobs
 question: |
   Income from working
+subquestion: |
+  Note: If you get income from long-term or short-term rentals, don't include that here. We will collect that income separately.
 fields:
   - Do you have self-employed income?: is_self_employed
     datatype: yesnoradio
+  - note: |
+      Self-employed income includes some gig work such as driving for Uber or Door Dash, where you usually get an IRS form 1099 from the company.
   - Do you have other jobs?: has_jobs
     datatype: yesnoradio
   - field: jobs.target_number
