@@ -4469,7 +4469,7 @@ attachments:
       - "users1_expenses_auto_total_other_paid": |
           ${ round(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_auto_total_monthly_amount": |
-          ${ round(vehicle_expenses.total(source=['insur_life'],times_per_year = 12),2) } 
+          ${ round(vehicle_expenses.total(times_per_year = 12),2) } 
       - "users1_expenses_insur_life_self_paid": |
           ${ round(insurance_expenses.total(source=['insur_life'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_other_paid": |
@@ -4683,45 +4683,45 @@ attachments:
           ${ round(children_expenses.total(times_per_year = 12),2) } 
       - "rental_income_amount": ${ round(annual_rental_income,2) } 
       - "rental_cleaning_amount": |
-          ${ round(rental_expenses.total(source=['cleaning'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['cleaning'], times_per_year=1),2) } 
       - "rental_commiss_amount": |
-          ${ round(rental_expenses.total(source=['commissions'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['commissions'], times_per_year=1),2) } 
       - "rental_insur_amount": |
-          ${ round(rental_expenses.total(source=['insurance'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['insurance'], times_per_year=1),2) } 
       - "rental_legal_amount": |
-          ${ round(rental_expenses.total(source=['legal'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['legal'], times_per_year=1),2) } 
       - "rental_mortgint_amount": |
-          ${ round(rental_expenses.total(source=['mortgage'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['mortgage'], times_per_year=1),2) } 
       - "rental_interest_amount": |
-          ${ round(rental_expenses.total(source=['other_interest'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['other_interest'], times_per_year=1),2) } 
       - "rental_repairs_amount": |
-          ${ round(rental_expenses.total(source=['repairs'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['repairs'], times_per_year=1),2) } 
       - "rental_supplies_amount": |
-          ${ round(rental_expenses.total(source=['supplies'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['supplies'], times_per_year=1),2) } 
       - "rental_taxes_amount": |
-          ${ round(rental_expenses.total(source=['taxes'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['taxes'], times_per_year=1),2) } 
       - "rental_utilities_amount": |
-          ${ round(rental_expenses.total(source=['utilities'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['utilities'], times_per_year=1),2) } 
       - "rental_wages_amount": |
-          ${ round(rental_expenses.total(source=['wages'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['wages'], times_per_year=1),2) } 
       - "rental_other_exp1_description": |
           ${ rental_expenses.matches(source=['other'])[0].source_other } 
       - "rental_other_exp1_amount": |
-          ${ round(rental_expenses.matches(source=['other'])[0].total(times_per_year=12),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[0].total(times_per_year=1),2) } 
       - "rental_other_exp2_description": |
           ${ rental_expenses.matches(source=['other'])[1].source_other } 
       - "rental_other_exp2_amount": |
-          ${ round(rental_expenses.matches(source=['other'])[1].total(times_per_year=12),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[1].total(times_per_year=1),2) } 
       - "rental_other_exp3_description": |
           ${ rental_expenses.matches(source=['other'])[2].source_other } 
       - "rental_other_exp3_amount": |
-          ${ round(rental_expenses.matches(source=['other'])[2].total(times_per_year=12),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[2].total(times_per_year=1),2) } 
       - "rental_other_exp4_description": |
           ${ rental_expenses.matches(source=['other'])[3].source_other } 
       - "rental_other_exp4_amount": |
-          ${ round(rental_expenses.matches(source=['other'])[3].total(times_per_year=12),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[3].total(times_per_year=1),2) } 
       - "rental_depreciation_amount": |
-          ${ round(rental_expenses.total(source=['depreciation'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['depreciation'], times_per_year=1),2) } 
       - "rental_total_expenses_amount": |
           ${ round(rental_expenses.total(times_per_year = 1),2) } 
       - "rental_net_income_amount": |
