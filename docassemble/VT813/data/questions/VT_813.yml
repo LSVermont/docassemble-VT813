@@ -2364,9 +2364,9 @@ subquestion: |
   You can look back 12 months for these expenses listed below. That will give an accurate picture of how much the expenses really are.
 
   If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
-  <hr>
   
   % if monthly_debt_payment > 0:
+  <hr>
   You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
@@ -2388,9 +2388,10 @@ subquestion: |
    Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
 
   "Monthly loan and debt payments" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
-
-  % endif
+  
   <hr>
+  % endif
+
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
