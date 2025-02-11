@@ -1568,7 +1568,7 @@ subquestion: |
   - Your child is in the custody of the Department of Children and Families and support has been requested of you; OR
   - You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.
 
-  If you aren't sure if you should fill it out, call the court.
+  If you aren't sure if you should fill it out, [contact the court.](https://www.vermontjudiciary.org/court-locations?f%5B0%5D=court_division%3A4)
   
   <h4>What you will need</h4>
   
@@ -1576,7 +1576,7 @@ subquestion: |
   
   * birthdates of you, the other party and any children
   * any Social Security or disability income received by your kids
-  * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
+  * information about your court case like a case number (You can find this information on other court papers you have about this case. If you are starting a new case, you won't have a case number yet.)
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
   * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
@@ -1639,20 +1639,28 @@ fields:
   - no label: user_ask_role
     datatype: radio
     choices:
-      - Started the case: plaintiff
-      - Responding to a case: defendant
+      - Started the case (plaintiff): plaintiff
+      - Responding to a case (defendant): defendant
   - note: |
-      Okay, you are the **Plaintiff** or Petitioner in this case. The other 
-      side is the **Defendant** or Respondent.
+      Okay, you are the **Plaintiff** in this case. The other side is the **Defendant**.
     show if:
       variable: user_ask_role
       is: "plaintiff"
   - note: |
-      Okay, you are the **Defendant** or Respondent in this case. The other 
-      side is the **Plaintiff** or Petitioner.
+      Okay, you are the **Defendant** in this case. The other side is the **Plaintiff**.
     show if:
       variable: user_ask_role
       is: "defendant"
+---
+template: help_user_ask_role_template
+subject: |
+  How do I know?  
+content: |
+  Look at any papers you have from the court.
+  
+  If you were the first person to file a form in this case, you started the case and you are the "Plaintiff."
+
+  If you are responding to a case or court papers someone else filed, you are the "Defendant."
 ---
 id: choose a court
 question: |
@@ -1661,12 +1669,9 @@ fields:
   - note: |
       Choose the county court where you will file this form. 
       
-      If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
+      ${ collapse_template(family_court_which_county) }
 
-      Otherwise ......
-      
-      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
-
+      ${ collapse_template(in_which_county) }
     
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
