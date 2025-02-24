@@ -18,7 +18,7 @@ modules:
 ---
 id: trial_court_index
 code: |
-  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string='civil')[0][0]
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string='family')[0][0]
 ---
 id: users and jobs objects
 objects:
@@ -303,7 +303,7 @@ sets:
   - other_parties[0].name.suffix
 id: names of opposing parties
 question: |
-  Name of the other party
+  Name of the other party in this court case
 fields:
   - code: |
       other_parties[0].name_fields(person_or_business='person')
@@ -944,7 +944,7 @@ code: |
 id: rental net income
 question:  Rental income
 fields:
-  - Do you have a copy of your IRS Schedule E tax form?: has_schedule_e
+  - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
   - note: |
       If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
@@ -954,6 +954,11 @@ fields:
   - Annual rental net income: schedule_e_income
     datatype: currency
     show if: has_schedule_e
+  - note: |
+      Note: If you have a Schedule E to share with the court, you do not have to fill out the rental income worksheet on page 10 of this form.
+    show if:
+      variable: has_schedule_e
+      is: True
   - note: |
       Many people don't file a Schedule E. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete this worksheet if you can’t include an IRS Schedule E.
     show if:
@@ -1016,11 +1021,10 @@ fields:
     show if:
       variable: employed
       is: False
-
 ---
-id: how many itemized jobs
+id: self employed income
 question: |
-  Income from working
+  Income from self-employment
 subquestion: |
   Note: If you get income from long-term or short-term rentals, don't include that here. We will collect that income separately.
 fields:
@@ -1028,23 +1032,30 @@ fields:
     datatype: yesnoradio
   - note: |
       Self-employed income includes some gig work such as driving for Uber or Door Dash, where you usually get an IRS form 1099 from the company.
+---
+id: regular income
+question: |
+  Income from jobs
+subquestion: |
+  % if is_self_employed:
+  You said you have self-employment income. Do you also have jobs where you work for an employer?
+  % else:
+  You said you do not have self-employment income. Do you have jobs where you work for an employer? 
+  % endif
+  
+fields:
   - Do you have other jobs?: has_jobs
     datatype: yesnoradio
-  - field: jobs.target_number
-    label: |
-      How many jobs do you have?
+
+  - How many of these jobs do you have?: jobs.target_number
     datatype: integer
-    js show if: 
-      val("has_jobs") === true && val("is_self_employed") === false
-  - field: jobs.target_number
-    label: |
-      How many other jobs do you have? 
-    datatype: integer
-    js show if: 
-      val("has_jobs") === true && val("is_self_employed") === true
+    js show if: |
+      val("has_jobs") == true
+
 validation code: |
   if has_jobs == False:
     jobs.target_number = 0
+
 ---
 id: sets jobs.target_number
 code: |
@@ -1127,11 +1138,11 @@ question: |
   What is your job title for your ${ordinal(i)} job?
 subquestion: |
   % if is_self_employed and len(x.complete_elements()) > 0:
-  You've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
+  Remember, you've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % elif is_self_employed:
-  You've already told us about your self-employed income. 
+  Remember, you've already told us about your self-employed income. 
   % elif len(x.complete_elements()) > 0:
-  You've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
+  Remember, you've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % endif
 fields:
   - Job title: x[i].source
@@ -1460,18 +1471,25 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  **You said that you were self-employed with a net income of**
-  % if has_schedule_c:
-  **${ currency(self_employed_net_income) } each month.**
-  % elif do_self_employment_worksheet:
-  **${ currency(str(self_employed_net_income_monthly_amount)) } each month.**
-  % endif
-  % endif
+  **Self-employment**
 
-  Here is what you've told us about your jobs. You can add more or continue
-  to the next question.
+  You said that you were self-employed with a net income of
+  % if has_schedule_c:
+  ${ currency(self_employed_net_income/12) } each month. (You can update this later if needed.)
+  % elif do_self_employment_worksheet:
+  ${ currency(str(self_employed_net_income_monthly_amount)) } each month. (You can update this later if needed.)
+  % endif
+  % endif
 
   **Jobs**
+
+  % if is_self_employed:
+  Here is what you've told us about your other jobs. You can add more or continue
+  to the next question.
+  % else:
+  Here is what you've told us about your other jobs. You can add more or continue
+  to the next question.
+  % endif
   ${ jobs_table } 
   
   ${ jobs.add_action() }  
@@ -1568,7 +1586,7 @@ subquestion: |
   - Your child is in the custody of the Department of Children and Families and support has been requested of you; OR
   - You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.
 
-  If you aren't sure if you should fill it out, call the court.
+  If you aren't sure if you should fill it out, [contact the court.](https://www.vermontjudiciary.org/court-locations?f%5B0%5D=court_division%3A4)
   
   <h4>What you will need</h4>
   
@@ -1576,7 +1594,7 @@ subquestion: |
   
   * birthdates of you, the other party and any children
   * any Social Security or disability income received by your kids
-  * information about your court case like a docket number (You can find this information on other court papers you have about this case.)
+  * information about your court case like a case number (You can find this information on other court papers you have about this case. If you are starting a new case, you won't have a case number yet.)
   * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
   * the name and address of any employer you might have
   * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
@@ -1639,20 +1657,28 @@ fields:
   - no label: user_ask_role
     datatype: radio
     choices:
-      - Started the case: plaintiff
-      - Responding to a case: defendant
+      - Started the case (plaintiff): plaintiff
+      - Responding to a case (defendant): defendant
   - note: |
-      Okay, you are the **Plaintiff** or Petitioner in this case. The other 
-      side is the **Defendant** or Respondent.
+      Okay, you are the **Plaintiff** in this case. The other side is the **Defendant**.
     show if:
       variable: user_ask_role
       is: "plaintiff"
   - note: |
-      Okay, you are the **Defendant** or Respondent in this case. The other 
-      side is the **Plaintiff** or Petitioner.
+      Okay, you are the **Defendant** in this case. The other side is the **Plaintiff**.
     show if:
       variable: user_ask_role
       is: "defendant"
+---
+template: help_user_ask_role_template
+subject: |
+  How do I know?  
+content: |
+  Look at any papers you have from the court.
+  
+  If you were the first person to file a form in this case, you started the case and you are the "Plaintiff."
+
+  If you are responding to a case or court papers someone else filed, you are the "Defendant."
 ---
 id: choose a court
 question: |
@@ -1661,12 +1687,9 @@ fields:
   - note: |
       Choose the county court where you will file this form. 
       
-      If there's an existing court case, choose the county that the case is in. Look at the papers from the court. The county is usually in the upper-left corner.
+      ${ collapse_template(family_court_which_county) }
 
-      Otherwise ......
-      
-      Not sure what county you are in? [Check this list of cities and towns to find the county.](https://en.m.wikipedia.org/wiki/List_of_municipalities_in_Vermont#Cities)
-
+      ${ collapse_template(in_which_county) }
     
   - County: user_selected_county
     code: sorted(all_courts.unique_column_values('branch'))
@@ -1972,8 +1995,8 @@ subquestion: |
   
   ${ household_expenses.add_action() }
   
-  Total: 
-  ${ household_expenses.total_other_attribute(attribute='paid_by_other_monthly') }
+  **Total household expenses above:**
+  ${ currency(household_expenses.total(times_per_year=12)) }
 
 continue button field: household_expenses.review_items
 ---
@@ -2123,19 +2146,23 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ vehicle_expenses_table }
-  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
   
   ${ vehicle_expenses.add_action() }
+
+  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
 continue button field: vehicle_expenses.review_items
 ---
 id: vehicle_expenses.revisit
 continue button field: vehicle_expenses.revisit
 question: |
-  Edit expenses
+  Edit vehicle expenses
 subquestion: |
   ${ vehicle_expenses_table }
 
   ${ vehicle_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(vehicle_expenses.total(times_per_year=12)) }
 ---
 id: vehicle_expenses_table
 table: vehicle_expenses_table
@@ -2286,16 +2313,21 @@ subquestion: |
   ${ insurance_expenses_table }
   
   ${ insurance_expenses.add_action() }
+
+  **Total insurance expenses above:** ${ currency(insurance_expenses.total(times_per_year=12)) }
 continue button field: insurance_expenses.review_items
 ---
 id: insurance_expenses.revisit
 continue button field: insurance_expenses.revisit
 question: |
-  Edit expenses
+  Edit insurance expenses
 subquestion: |
   ${ insurance_expenses_table }
 
   ${ insurance_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(insurance_expenses.total(times_per_year=12)) }
 ---
 id: insurance_expenses_table
 table: insurance_expenses_table
@@ -2490,21 +2522,24 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ personal_expenses_table }
+
+  ${ personal_expenses.add_action() }
   
   **Total personal expenses above:** ${ currency(personal_expenses.total(times_per_year=12)) }
-  
-  ${ personal_expenses.add_action() }
+
 continue button field: personal_expenses.review_items
 ---
 id: personal_expenses.revisit
 continue button field: personal_expenses.revisit
 question: |
-  Edit expenses
+  Edit personal expenses
 subquestion: |
   ${ personal_expenses_table }
   
-
   ${ personal_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(personal_expenses.total(times_per_year=12)) }
 ---
 id: personal_expenses_table
 table: personal_expenses_table
@@ -2655,10 +2690,10 @@ subquestion: |
   
   ${ children_expenses_table }
 
+  ${ children_expenses.add_action() }
+
   **Total of above expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
  
-  
-  ${ children_expenses.add_action() }
 continue button field: children_expenses.review_items
 ---
 id: children_expenses.revisit
@@ -2853,7 +2888,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for these loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
+  The total for the monthly loan expenses below is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -2861,7 +2896,6 @@ subquestion: |
   
   ${ primary_residence_loans.add_action() }
   
-
 continue button field: primary_residence_loans.review_items
 ---
 generic object: ALIncomeList
@@ -3823,7 +3857,7 @@ attachments:
     fields:
         - "address_county": ${ trial_court.address.county }
         - "court_division": ${ trial_court.division_abbr }
-        - "name": ${ trial_court }
+        - "court_name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
         - "address_city": ${ trial_court.address.city }
