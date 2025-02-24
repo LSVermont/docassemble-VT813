@@ -3857,7 +3857,7 @@ attachments:
     fields:
         - "address_county": ${ trial_court.address.county }
         - "court_division": ${ trial_court.division_abbr }
-        - "name": ${ trial_court }
+        - "court_name": ${ trial_court }
         - "address_address": ${ trial_court.address.address }
         - "address_unit": ${ trial_court.address.unit }
         - "address_city": ${ trial_court.address.city }
