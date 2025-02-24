@@ -944,7 +944,7 @@ code: |
 id: rental net income
 question:  Rental income
 fields:
-  - Do you have a copy of your IRS Schedule E tax form?: has_schedule_e
+  - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
   - note: |
       If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
@@ -954,6 +954,11 @@ fields:
   - Annual rental net income: schedule_e_income
     datatype: currency
     show if: has_schedule_e
+  - note: |
+      Note: If you have a Schedule E to share with the court, you do not have to fill out the rental income worksheet on page 10 of this form.
+    show if:
+      variable: has_schedule_e
+      is: True
   - note: |
       Many people don't file a Schedule E. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete this worksheet if you can’t include an IRS Schedule E.
     show if:

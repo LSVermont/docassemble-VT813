@@ -130,6 +130,11 @@ fields:
     show if: has_schedule_c
     datatype: currency
   - note: |
+      Note: If you have a Schedule C to share with the court, you do not have to fill out the self-employment worksheet on page 11 of this form.
+    show if: 
+      variable: has_schedule_c
+      is: True
+  - note: |
       Many people don't file a Schedule C. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly net income from self-employment. Only complete this worksheet if you can’t include an IRS Schedule C.
     show if: 
       variable: has_schedule_c
