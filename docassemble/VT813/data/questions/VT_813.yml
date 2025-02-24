@@ -1995,8 +1995,8 @@ subquestion: |
   
   ${ household_expenses.add_action() }
   
-  Total: 
-  ${ currency(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) }
+  **Total household expenses above:**
+  ${ currency(household_expenses.total(times_per_year=12)) }
 
 continue button field: household_expenses.review_items
 ---
@@ -2146,19 +2146,23 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ vehicle_expenses_table }
-  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
   
   ${ vehicle_expenses.add_action() }
+
+  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
 continue button field: vehicle_expenses.review_items
 ---
 id: vehicle_expenses.revisit
 continue button field: vehicle_expenses.revisit
 question: |
-  Edit expenses
+  Edit vehicle expenses
 subquestion: |
   ${ vehicle_expenses_table }
 
   ${ vehicle_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(vehicle_expenses.total(times_per_year=12)) }
 ---
 id: vehicle_expenses_table
 table: vehicle_expenses_table
@@ -2309,16 +2313,21 @@ subquestion: |
   ${ insurance_expenses_table }
   
   ${ insurance_expenses.add_action() }
+
+  **Total insurance expenses above:** ${ currency(insurance_expenses.total(times_per_year=12)) }
 continue button field: insurance_expenses.review_items
 ---
 id: insurance_expenses.revisit
 continue button field: insurance_expenses.revisit
 question: |
-  Edit expenses
+  Edit insurance expenses
 subquestion: |
   ${ insurance_expenses_table }
 
   ${ insurance_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(insurance_expenses.total(times_per_year=12)) }
 ---
 id: insurance_expenses_table
 table: insurance_expenses_table
@@ -2513,21 +2522,24 @@ subquestion: |
   Tap Next if you don't have more to add.
   
   ${ personal_expenses_table }
+
+  ${ personal_expenses.add_action() }
   
   **Total personal expenses above:** ${ currency(personal_expenses.total(times_per_year=12)) }
-  
-  ${ personal_expenses.add_action() }
+
 continue button field: personal_expenses.review_items
 ---
 id: personal_expenses.revisit
 continue button field: personal_expenses.revisit
 question: |
-  Edit expenses
+  Edit personal expenses
 subquestion: |
   ${ personal_expenses_table }
   
-
   ${ personal_expenses.add_action() }
+
+  Total of expenses: 
+  ${ currency(personal_expenses.total(times_per_year=12)) }
 ---
 id: personal_expenses_table
 table: personal_expenses_table
@@ -2678,10 +2690,10 @@ subquestion: |
   
   ${ children_expenses_table }
 
+  ${ children_expenses.add_action() }
+
   **Total of above expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
  
-  
-  ${ children_expenses.add_action() }
 continue button field: children_expenses.review_items
 ---
 id: children_expenses.revisit
@@ -2876,7 +2888,7 @@ id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for these loan expenses is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
+  The total for the monthly loan expenses below is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -2884,7 +2896,6 @@ subquestion: |
   
   ${ primary_residence_loans.add_action() }
   
-
 continue button field: primary_residence_loans.review_items
 ---
 generic object: ALIncomeList
