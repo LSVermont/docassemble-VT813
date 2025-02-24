@@ -18,7 +18,7 @@ modules:
 ---
 id: trial_court_index
 code: |
-  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string='civil')[0][0]
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string='family')[0][0]
 ---
 id: users and jobs objects
 objects:
@@ -303,7 +303,7 @@ sets:
   - other_parties[0].name.suffix
 id: names of opposing parties
 question: |
-  Name of the other party
+  Name of the other party in this court case
 fields:
   - code: |
       other_parties[0].name_fields(person_or_business='person')
@@ -1016,11 +1016,10 @@ fields:
     show if:
       variable: employed
       is: False
-
 ---
-id: how many itemized jobs
+id: self employed income
 question: |
-  Income from working
+  Income from self-employment
 subquestion: |
   Note: If you get income from long-term or short-term rentals, don't include that here. We will collect that income separately.
 fields:
@@ -1028,23 +1027,30 @@ fields:
     datatype: yesnoradio
   - note: |
       Self-employed income includes some gig work such as driving for Uber or Door Dash, where you usually get an IRS form 1099 from the company.
+---
+id: regular income
+question: |
+  Income from jobs
+subquestion: |
+  % if is_self_employed:
+  You said you have self-employment income. Do you also have jobs where you work for an employer?
+  % else:
+  You said you do not have self-employment income. Do you have jobs where you work for an employer? 
+  % endif
+  
+fields:
   - Do you have other jobs?: has_jobs
     datatype: yesnoradio
-  - field: jobs.target_number
-    label: |
-      How many jobs do you have?
+
+  - How many of these jobs do you have?: jobs.target_number
     datatype: integer
-    js show if: 
-      val("has_jobs") === true && val("is_self_employed") === false
-  - field: jobs.target_number
-    label: |
-      How many other jobs do you have? 
-    datatype: integer
-    js show if: 
-      val("has_jobs") === true && val("is_self_employed") === true
+    js show if: |
+      val("has_jobs") == true
+
 validation code: |
   if has_jobs == False:
     jobs.target_number = 0
+
 ---
 id: sets jobs.target_number
 code: |
@@ -1127,11 +1133,11 @@ question: |
   What is your job title for your ${ordinal(i)} job?
 subquestion: |
   % if is_self_employed and len(x.complete_elements()) > 0:
-  You've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
+  Remember, you've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % elif is_self_employed:
-  You've already told us about your self-employed income. 
+  Remember, you've already told us about your self-employed income. 
   % elif len(x.complete_elements()) > 0:
-  You've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
+  Remember, you've already told us about being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
   % endif
 fields:
   - Job title: x[i].source
@@ -1460,18 +1466,25 @@ question: |
 subquestion: |
 
   % if is_self_employed:
-  **You said that you were self-employed with a net income of**
-  % if has_schedule_c:
-  **${ currency(self_employed_net_income) } each month.**
-  % elif do_self_employment_worksheet:
-  **${ currency(str(self_employed_net_income_monthly_amount)) } each month.**
-  % endif
-  % endif
+  **Self-employment**
 
-  Here is what you've told us about your jobs. You can add more or continue
-  to the next question.
+  You said that you were self-employed with a net income of
+  % if has_schedule_c:
+  ${ currency(self_employed_net_income/12) } each month. (You can update this later if needed.)
+  % elif do_self_employment_worksheet:
+  ${ currency(str(self_employed_net_income_monthly_amount)) } each month. (You can update this later if needed.)
+  % endif
+  % endif
 
   **Jobs**
+
+  % if is_self_employed:
+  Here is what you've told us about your other jobs. You can add more or continue
+  to the next question.
+  % else:
+  Here is what you've told us about your other jobs. You can add more or continue
+  to the next question.
+  % endif
   ${ jobs_table } 
   
   ${ jobs.add_action() }  
@@ -1978,7 +1991,7 @@ subquestion: |
   ${ household_expenses.add_action() }
   
   Total: 
-  ${ household_expenses.total_other_attribute(attribute='paid_by_other_monthly') }
+  ${ currency(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) }
 
 continue button field: household_expenses.review_items
 ---
