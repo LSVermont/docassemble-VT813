@@ -9,7 +9,7 @@ include:
 ---
 id: all_courts object
 objects:
-  - all_courts: ALCourtLoader.using(file_name='courts_list_full.xlsx')
+  - all_courts: ALCourtLoader.using(file_name='docassemble.VTSharedYMLFile:data/sources/courts_list_full.xlsx')
 ---
 id: modules
 modules:
@@ -18,7 +18,7 @@ modules:
 ---
 id: trial_court_index
 code: |
-  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string='family')[0][0]
+  trial_court_index = all_courts.matching_courts_in_county(county_name=user_selected_county,search_columns=['division_abbr'],search_string="Family")[0][0]
 ---
 id: users and jobs objects
 objects:
@@ -145,11 +145,9 @@ code: |
   set_progress(30)
   user_ask_role
   docket_number
-  
-  #This is where we collect the desired court county and the exact court is determined.
+
   user_selected_county
   trial_court.address.county
-  
   
   nav.set_section('your_income')
   set_progress(40)
@@ -290,6 +288,7 @@ code: |
   )
   nav.set_section('get_docs')
   set_progress(100)
+  trial_court.address.county
   VT_813A_download
 ---
 id: other_parties object
@@ -1692,7 +1691,7 @@ fields:
       ${ collapse_template(in_which_county) }
     
   - County: user_selected_county
-    code: sorted(all_courts.unique_column_values('branch'))
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
 ---
 #id: court case information
 #question: |
@@ -3452,9 +3451,12 @@ review:
      ###Your court case      
   - Edit: 
     - user_selected_county
+    - recompute:
+      - trial_court_index
+      - trial_court
     button: |
       
-      **Is in family court in this county**: ${( user_selected_county )} County
+      **Is in family court in this county**: ${( trial_court.address.county )} County
 
   - Edit: docket_number
     button: |
