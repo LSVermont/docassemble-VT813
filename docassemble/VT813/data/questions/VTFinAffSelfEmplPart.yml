@@ -3,64 +3,11 @@
 
 
 ---
-include:
-  - docassemble.AssemblyLine:assembly_line.yml
-  - docassemble.ALToolbox:al_income.yml
-  - docassemble.VTSharedYMLFile:VTSharedYMLFile.yml
----
-metadata:
-  title: >-
-    813A Self-employment worksheet
-  short title: >-
-    813A Self-employment
-  description: |-
-    This interview helps someone in Vermont fill in the self-employment worksheet part of the 813A financial affidavit in Vermont.
-  authors:
-    - VTCourtForms by Legal Services Vermont
-  original_form:
-    - https://vtlawhelp.org/cfp/fill-out-form-813a-financial-affidavit-income-and-expenses
-  help_page_url: >-
-    https://vtlawhelp.org/cfp/fill-out-form-813a-financial-affidavit-income-and-expenses
-  help_page_title: >-
-    VTLawHelp.org website
-  allowed_courts: []
-  typical_role: "plaintiff"
-  al_weaver_version: "1.10.1"
-  generated_on: "2023-08-05"
----
-code: |
-  # This controls the default country and list of states in address field questions
-  AL_DEFAULT_COUNTRY = "US"
----
-code: |
-  # This controls the default state in address field questions
-  AL_DEFAULT_STATE = "VT"
----
-code: |
-  github_repo_name =  'docassemble-VTFinAffSelfEmplPart'
----
-code: |
-  interview_short_title = "813A Self-employment"
----
-code: |
-  al_form_type = "existing_case" 
----
-objects:
-  - users: ALPeopleList.using(there_are_any=True)
----
-sections:
-  - review_vtfinaffselfemplpart: Review your answers
----
 #################### Interview order #####################
 comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_vtfinaffselfemplpart
 code: |
-  # Set the allowed courts for this interview
-  #allowed_courts = []
-  #nav.set_section("review_vtfinaffselfemplpart")
-  #user_role = "plaintiff"
-  #user_ask_role = "plaintiff"
   do_self_employment_worksheet
   self_empl_gross_sales_monthly_amount
   self_empl_cgs[0].value
@@ -102,19 +49,7 @@ comment: |
   Delete mandatory: True to include in another interview
 mandatory: False
 code: |
-  #al_intro_screen
-  #vtfinaffselfemplpart_intro
   interview_order_vtfinaffselfemplpart
-  #signature_date
-  # Store anonymous data for analytics / statistics
-  #store_variables_snapshot(
-      #persistent=True,
-      #data={
-          #"zip": showifdef("users[0].address.zip"),
-          #"reached_interview_end": True,
-      #},
-  #)
-  vtfinaffselfemplpart_download
 ---
 id: self employment worksheet
 question: |
@@ -535,13 +470,6 @@ continue button field: vtfinaffselfemplpart_preview_question
 ---
 code: |
   signature_fields = []
----
-code: |
-  # This is a placeholder for the addresses that will be searched
-  # for matching address to court. Edit if court venue is based on 
-  # a different address than the user's
-  #[user.address.address for user in users.complete_elements()]
-  #addresses_to_search = [user.address for user in users.complete_elements()]
 ---
 id: vtfinaffselfemplpart review screen
 event: review_vtfinaffselfemplpart
