@@ -2998,6 +2998,8 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_loans[i].self_payment
     datatype: yesnoradio
+  - note: |
+      Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
 validation code: |
   if other_loans[i].source != "other":
     other_loans[i].display_name = other_loans.terms_ordered.get(other_loans[i].source, other_loans[i].source)
@@ -3030,7 +3032,7 @@ continue button field: other_loans.review_items
 id: other_loans.revisit
 continue button field: other_loans.revisit
 question: |
-  Edit other_loans
+  Edit your other loans
 subquestion: |
   ${ other_loans_table }
 
