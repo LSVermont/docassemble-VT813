@@ -2442,6 +2442,8 @@ fields:
     default:
       code: |
         {'loans': monthly_debt_payment > 0}
+  - note: |
+      After you enter any personal expenses, it will take a moment to generate your draft form so you can review it!
 ---
 id: personal expense information
 reconsider: personal_expenses[i].display_name
@@ -2908,7 +2910,7 @@ code: |
 id: primary_residence_loans.revisit
 continue button field: primary_residence_loans.revisit
 question: |
-  Edit primary_residence_loans
+  Edit your primary residence loans
 subquestion: |
   ${ primary_residence_loans_table }
 
@@ -2998,6 +3000,8 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_loans[i].self_payment
     datatype: yesnoradio
+  - note: |
+      Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
 validation code: |
   if other_loans[i].source != "other":
     other_loans[i].display_name = other_loans.terms_ordered.get(other_loans[i].source, other_loans[i].source)
@@ -3030,7 +3034,7 @@ continue button field: other_loans.review_items
 id: other_loans.revisit
 continue button field: other_loans.revisit
 question: |
-  Edit other_loans
+  Edit your other loans
 subquestion: |
   ${ other_loans_table }
 
@@ -3303,6 +3307,8 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_debt[i].self_payment
     datatype: yesnoradio
+  - note: |
+      Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
 ---
 id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
@@ -3320,7 +3326,7 @@ continue button field: other_debt.review_items
 id: other_debt.revisit
 continue button field: other_debt.revisit
 question: |
-  Edit other_debt
+  Edit your other debt
 subquestion: |
   ${ other_debt_table }
 
