@@ -309,6 +309,8 @@ fields:
   - Date of birth: other_parties[0].birthdate
     datatype: BirthDate
 ---
+#################### CHILDREN ####################
+---
 id: shared_children object
 objects:
   - shared_children: ALPeopleList.using(complete_attribute='complete')
@@ -565,7 +567,34 @@ code: |
     if child.child_support:
       supported_children.append(child)
   supported_children.gathered = True
-      
+---
+id: shared_children.revisit
+continue button field: shared_children.revisit
+question: |
+  Edit info about your shared children
+subquestion: |
+  ${ shared_children.table }
+
+  ${ shared_children.add_action() }
+---
+id: shared_children.table
+table: shared_children.table
+rows: shared_children
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Birthdate: |
+      row_item.birthdate if defined("row_item.birthdate") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Child support you pay: |
+      row_item.child_support_paid if defined("row_item.child_support_paid") else "$0"
+  - Child annual income: |
+      "Yes" if defined("row_item.income") else "No"
+
+edit:
+  - name.first
+confirm: True  
 ---
 id: income intro screen
 continue button field: income_intro_screen
@@ -3489,12 +3518,14 @@ review:
       ###Children
 
   - Edit: 
-      - shared_children[0].name
+      - shared_children.revisit
+      - recompute:
+        - children_expenses.selected_types
     button: |
       **Children from this relationship**
       
       % for child in shared_children:
-      * ${ child.name.full() } 
+      * ${ child.name.full() } - Birthdate: ${ child.birthdate } - Annual income: ${ child.income }
       % endfor
 
       % if not shared_children.there_are_any:
@@ -3502,12 +3533,12 @@ review:
       % endif
 
   - Edit: 
-      - other_children[0].name
+      - other_children.there_are_any
     button: |
       **Other children that you support**
       
       % for child in other_children:
-      * ${ child.name.full() } 
+      * ${ child.name.full() } - Birthdate: ${ child.birthdate }
       % endfor
 
       % if not other_children.there_are_any:
@@ -3798,7 +3829,7 @@ progress: 100
 ---
 id: vt813 attachment
 attachment:
-  variable name: VT_813A_attachment.addendum
+  variable name: vt_financial_form_813A_attachment.addendum
   docx template file: VT_813A_addendum.docx
 ---
 id: overflow fields
