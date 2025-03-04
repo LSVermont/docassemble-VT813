@@ -3586,9 +3586,9 @@ review:
           - do_self_employment_worksheet
           - self_employed_expenses_monthly_amount
           - self_employed_net_income_monthly_amount
-          - sself_empl_cgs
+          - self_empl_cgs
           - self_empl_office
-          - elf_empl_employees
+          - self_empl_employees
           - self_empl_auto
           - self_empl_travel
           - self_empl_common_exp
@@ -3815,34 +3815,34 @@ code: |
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
   vt_financial_form_813A_attachment.overflow_fields["jobs"].overflow_trigger = 2
   vt_financial_form_813A_attachment.overflow_fields["jobs"].headers = [
-    {'employer.name.first': "Employer"},    
-    {'employer.address.city': "Employer address"},
+    {'employer': "Employer"},    
+    {'employer.address': "Employer address"},
   ]  
   
-  vt_financial_form_813A_attachment.overflow_fields["vehicles"].label = "Additional vehicles"
-  vt_financial_form_813A_attachment.overflow_fields["vehicles"].overflow_trigger = 4
-  #vt_financial_form_813A_attachment.overflow_fields["vehicles"].headers = [
-    #{'make': "Make"},
-    #{'model': "Model"},
-    #{'year': "Year"},
-    #{'market_value': "Fair market value"},
-    #{'balance': "Amount owed"},
-  #]  
+  vt_financial_form_813A_attachment.overflow_fields["shared_children"].label = "Shared Children"
+  vt_financial_form_813A_attachment.overflow_fields["shared_children"].overflow_trigger = 3
+  vt_financial_form_813A_attachment.overflow_fields["shared_children"].headers = [
+    {'name': "Name"},
+    {'birthdate': "DOB"},
+    {'address': "Address"},
+  ]  
   
-  vt_financial_form_813A_attachment.overflow_fields["real_estate"].label = "Additional real estate"
-  vt_financial_form_813A_attachment.overflow_fields["real_estate"].overflow_trigger = 2
-  #vt_financial_form_813A_attachment.overflow_fields["real_estate"].headers = [
-    #{'display_name': "Description"},
-    #{'market_value': "Fair market value"},
-    #{'balance': "Amount owed"},
-  #]  
+  vt_financial_form_813A_attachment.overflow_fields["other_children"].label = "Other Children"
+  vt_financial_form_813A_attachment.overflow_fields["other_children"].overflow_trigger = 3
+  vt_financial_form_813A_attachment.overflow_fields["other_children"].headers = [
+    {'name': "Name"},
+    {'birthdate': "DOB"},
+    {'address': "Address"},
+  ]  
 
-  vt_financial_form_813A_attachment.overflow_fields["other_assets"].label = "Additional assets"
-  vt_financial_form_813A_attachment.overflow_fields["other_assets"].overflow_trigger = 2
-  #vt_financial_form_813A_attachment.overflow_fields["other_assets"].headers = [
-    #{'display_name': "Description"},
-    #{'market_value': "Fair market value"},
-  #]  
+  vt_financial_form_813A_attachment.overflow_fields["supported_children"].label = "Supported Children"
+  vt_financial_form_813A_attachment.overflow_fields["supported_children"].overflow_trigger = 4
+  vt_financial_form_813A_attachment.overflow_fields["supported_children"].headers = [
+    {'name': "Name"},
+    {'child_support_amount': "Amount ordered"},
+    {'child_support_paid': "Amount paid"},
+    {'child_support_state': "State of Order"},
+  ]  
 
   vt_financial_form_813A_attachment.overflow_fields.gathered = True
 ---
