@@ -85,6 +85,64 @@ id: existing_case
 code: |
   al_form_type = "existing_case" 
 ---
+############Code below to allow Edit my answers to be clicked in Menu or in side nav#########
+---
+reconsider: True
+code: |
+  al_menu_items_tmp = [
+    {"url": url_ask(['al_start_over_confirmation','al_start_over']),
+    "label": "Start over"
+    },
+    {
+      "url": url_ask(['al_exit_logout_confirmation', 'al_exit_logout']),
+      "label": "Exit and delete my answers"
+    },
+  ]
+  if al_enable_incomplete_downloads:
+    al_menu_items_tmp.append({
+        "url": url_action('al_error_action_download_screen'), 
+        "label": "Download current progress"
+    })
+  
+  # Answer set feature is behind a server-wide configuration option
+  if get_config('assembly line',{}).get('enable answer sets'):
+    al_menu_items_tmp.extend([
+    {"url": url_ask(["al_sessions_snapshot_label", {"recompute": ["al_sessions_save_session_snapshot"]}, "al_sessions_save_status"]),
+    "label": "Save answer set"
+    },
+    action_menu_item("Load answer set", "al_load_saved_session"),
+  ]
+  )
+  
+  if get_config('assembly line',{}).get('enable answer set imports'):
+    al_menu_items_tmp.append(
+      {"url": url_ask(["al_sessions_json_file", {"recompute": ["al_sessions_import_json"]}, "al_sessions_load_status"]),
+      "label": "Import answer set"
+      }
+    )
+  al_menu_items_tmp.append(
+    {
+      "url": url_action('edit_answers_screen'),
+      "label": "Edit my answers"
+      
+    }
+  )
+    
+  al_menu_items = al_menu_items_tmp
+  del al_menu_items_tmp
+---
+---
+event: edit_answers_screen
+id: edit answers screen
+question: |
+  Edit your answers
+subquestion: |
+  ${ action_button_html(url_action('review_VT_813'), label='<i class="fa-solid fa-pencil"></i> Edit your answers', color='info') }
+  
+  Remember to come back to this screen to continue.
+continue button field: VT_fee_waiver_preview_question
+---
+---
 id: sections
 sections:
   - intro: Is this tool right for you
@@ -96,9 +154,10 @@ sections:
   - your_loans: Your loans
   - your_debts: Your debts
   - your_expenses: Your expenses
-  - review_VT_813: Review your answers
+  - review_VT_813: <i class="fa-solid fa-pencil"></i> <u>Edit your answers</u>
   - sign: Sign your document
   - get_docs: Download your document
+progressive: False
 ---
 id: This adds the signature feature to the interview
 code: |
@@ -1546,7 +1605,9 @@ columns:
       currency(row_item.health_insurance_paid) if defined("row_item.health_insurance_paid") else ""
 
 edit:
-  - revisit
+  - employer.name.first
+  - overtime_info
+  - healthcare_available
 
 confirm: True
 ---
@@ -2471,6 +2532,8 @@ fields:
     default:
       code: |
         {'loans': monthly_debt_payment > 0}
+  - note: |
+      After you enter any personal expenses, it will take a moment to generate your draft form so you can review it!
 ---
 id: personal expense information
 reconsider: personal_expenses[i].display_name
@@ -2937,7 +3000,7 @@ code: |
 id: primary_residence_loans.revisit
 continue button field: primary_residence_loans.revisit
 question: |
-  Edit primary_residence_loans
+  Edit your primary residence loans
 subquestion: |
   ${ primary_residence_loans_table }
 
@@ -3027,6 +3090,8 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_loans[i].self_payment
     datatype: yesnoradio
+  - note: |
+      Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
 validation code: |
   if other_loans[i].source != "other":
     other_loans[i].display_name = other_loans.terms_ordered.get(other_loans[i].source, other_loans[i].source)
@@ -3059,7 +3124,7 @@ continue button field: other_loans.review_items
 id: other_loans.revisit
 continue button field: other_loans.revisit
 question: |
-  Edit other_loans
+  Edit your other loans
 subquestion: |
   ${ other_loans_table }
 
@@ -3332,6 +3397,8 @@ fields:
     datatype: currency
   - Are YOU making this payment?: other_debt[i].self_payment
     datatype: yesnoradio
+  - note: |
+      Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
 ---
 id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
@@ -3349,7 +3416,7 @@ continue button field: other_debt.review_items
 id: other_debt.revisit
 continue button field: other_debt.revisit
 question: |
-  Edit other_debt
+  Edit your other debt
 subquestion: |
   ${ other_debt_table }
 
@@ -3423,7 +3490,7 @@ subquestion: |
   Click the image to open it in a new tab. Click the "Edit your answers" button
   to edit your answers.
 
-  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='<i class="fa-solid fa-pencil"></i> Edit your answers', color='info') }
   
   **Remember to come back to this window to continue and sign your form.**
 continue button field: VT_813A_preview_question    
@@ -3805,7 +3872,7 @@ subquestion: |
   
   ${ download_screen_instructions_one_form }
 
-  ${ action_button_html(url_action('review_VT_813'), label='Edit your answers', color='info') }
+  ${ action_button_html(url_action('review_VT_813'), label='<i class="fa-solid fa-pencil"></i> Edit your answers', color='info') }
 
   <hr>
   
@@ -3832,6 +3899,7 @@ attachment:
   variable name: vt_financial_form_813A_attachment.addendum
   docx template file: VT_813A_addendum.docx
 ---
+reconsider: True
 id: overflow fields
 code: |
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
@@ -4190,22 +4258,17 @@ attachments:
       - "users1_expenses_kids_specneeds_monthly_amount": |
           ${ round(special_needs_expenses_amount,2) } 
       - "childrens_income_disability_name": |
-          % for child in children_income.matches(source='disability'):
-          ${ child.name }
-          % endfor 
-          
+         ${ comma_and_list(child.name for child in children_income.matches(source='disability'))}
       - "childrens_income_disability_monthly_amount": |
           ${ currency(children_income.total(source = "disability", times_per_year = 12)) } 
       - "childrens_income_socsec_name": |
-          % for child in children_income.matches(source='socsec'):
-          ${ child.name }
-          % endfor 
+          ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
-          ${ currency(children_income.total(source = "socsec", times_per_year = 12)) } 
+          ${ currency(children_income.total(source = "social security", times_per_year = 12)) } 
       - "childrens_income_other_benefit_description": |
-          ${ children_income.matches(source=['other'])[0].source_other } 
+          ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
-          ${ children_income.matches(source=['other'])[0].name } 
+          ${ comma_and_list(child.name for child in children_income.matches(source='other')) }
       - "childrens_income_other_benefit_monthly_amount": |
           ${ currency(children_income.total(source=['other'], times_per_year=12)) } 
       - "parent_name_gets_children_benefits": |
