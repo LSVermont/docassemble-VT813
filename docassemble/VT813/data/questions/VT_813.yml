@@ -1517,7 +1517,9 @@ columns:
       currency(row_item.health_insurance_paid) if defined("row_item.health_insurance_paid") else ""
 
 edit:
-  - revisit
+  - employer.name.first
+  - overtime_info
+  - healthcare_available
 
 confirm: True
 ---
@@ -3804,9 +3806,10 @@ progress: 100
 ---
 id: vt813 attachment
 attachment:
-  variable name: VT_813A_attachment.addendum
+  variable name: vt_financial_form_813A_attachment.addendum
   docx template file: VT_813A_addendum.docx
 ---
+reconsider: True
 id: overflow fields
 code: |
   vt_financial_form_813A_attachment.overflow_fields["jobs"].label = "Additional jobs"
@@ -4165,22 +4168,17 @@ attachments:
       - "users1_expenses_kids_specneeds_monthly_amount": |
           ${ round(special_needs_expenses_amount,2) } 
       - "childrens_income_disability_name": |
-          % for child in children_income.matches(source='disability'):
-          ${ child.name }
-          % endfor 
-          
+         ${ comma_and_list(child.name for child in children_income.matches(source='disability'))}
       - "childrens_income_disability_monthly_amount": |
           ${ currency(children_income.total(source = "disability", times_per_year = 12)) } 
       - "childrens_income_socsec_name": |
-          % for child in children_income.matches(source='socsec'):
-          ${ child.name }
-          % endfor 
+          ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
-          ${ currency(children_income.total(source = "socsec", times_per_year = 12)) } 
+          ${ currency(children_income.total(source = "social security", times_per_year = 12)) } 
       - "childrens_income_other_benefit_description": |
-          ${ children_income.matches(source=['other'])[0].source_other } 
+          ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
-          ${ children_income.matches(source=['other'])[0].name } 
+          ${ comma_and_list(child.name for child in children_income.matches(source='other')) }
       - "childrens_income_other_benefit_monthly_amount": |
           ${ currency(children_income.total(source=['other'], times_per_year=12)) } 
       - "parent_name_gets_children_benefits": |
