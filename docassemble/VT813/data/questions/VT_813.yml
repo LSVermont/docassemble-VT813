@@ -649,10 +649,37 @@ columns:
   - Child support you pay: |
       row_item.child_support_paid if defined("row_item.child_support_paid") else "$0"
   - Child annual income: |
-      "Yes" if defined("row_item.income") else "No"
+      "Yes" if len(row_item.income) > 0 else "No"
 
 edit:
   - name.first
+  - income.revisit
+confirm: True  
+---
+continue button field: shared_children[i].income.revisit
+question: |
+  Edit info about the income of ${ shared_children[i].name }
+subquestion: |
+  ${ shared_children[i].income.table }
+
+  ${ shared_children[i].income.add_action() }
+
+---
+generic object: ALPeopleList
+id: shared_children income table
+table: shared_children[i].income.table
+rows: shared_children[i].income
+columns:
+  - Name: |
+      row_item.display_name
+  - Income per month: |
+      currency(row_item.total(times_per_year=12))
+  - Parent who receives the income: |
+      row_item.parent
+
+edit:
+  - value
+  - children_income.gathered
 confirm: True  
 ---
 id: income intro screen
@@ -1606,7 +1633,7 @@ columns:
 
 edit:
   - employer.name.first
-  - overtime_info
+  - to_add.revisit
   - healthcare_available
 
 confirm: True
