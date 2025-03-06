@@ -646,11 +646,10 @@ columns:
       row_item.birthdate if defined("row_item.birthdate") else ""
   - Address: |
       row_item.address.block() if defined("row_item.address.address") else ""
-  - Child support you pay: |
-      row_item.child_support_paid if defined("row_item.child_support_paid") else "$0"
-  - Child annual income: |
+  - Child gets income: |
       "Yes" if len(row_item.income) > 0 else "No"
-
+  - Child support you are ordered to pay: |
+      currency(row_item.child_support_paid) if defined("row_item.child_support_paid") else "$0"
 edit:
   - name.first
   - income.revisit
@@ -3937,7 +3936,7 @@ code: |
   ]  
   
   vt_financial_form_813A_attachment.overflow_fields["shared_children"].label = "Shared children"
-  vt_financial_form_813A_attachment.overflow_fields["shared_children"].overflow_trigger = 3
+  vt_financial_form_813A_attachment.overflow_fields["shared_children"].overflow_trigger = 4
   vt_financial_form_813A_attachment.overflow_fields["shared_children"].headers = [
     {'name': "Name"},
     {'birthdate': "Birthdate"},
@@ -4001,6 +4000,7 @@ code: |
     {'monthly_payment': "Monthly payment"},
     {'self_payment': "You are making this payment"},
   ]  
+
 
   vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].label = "Misc. personal expenses"
   vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].overflow_trigger = 0
