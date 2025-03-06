@@ -485,6 +485,9 @@ fields:
       children_income_ordered
   - Add another child?: shared_children.there_is_another
     datatype: yesnoradio
+validation code: |
+  if shared_children[i].age_in_years() >= 19:
+    validation_error("Check the birthdate you entered. This child is too old to be a 'minor.'",field="shared_children[i].birthdate")
 ---
 id: children income
 variable name: shared_children[i].income.terms_ordered
@@ -3618,7 +3621,7 @@ review:
       **Children from this relationship**
       
       % for child in shared_children:
-      * ${ child.name.full() } - Birthdate: ${ child.birthdate } - Annual income: ${ child.income }
+      * ${ child.name.full() } - Birthdate: ${ child.birthdate }
       % endfor
 
       % if not shared_children.there_are_any:
