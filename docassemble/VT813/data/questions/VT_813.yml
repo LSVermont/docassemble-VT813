@@ -4012,7 +4012,7 @@ code: |
   ] 
 
   vt_financial_form_813A_attachment.overflow_fields["children_expenses"].label = "Misc. children expenses"
-  vt_financial_form_813A_attachment.overflow_fields["children_expenses"].overflow_trigger = 4
+  vt_financial_form_813A_attachment.overflow_fields["children_expenses"].overflow_trigger = 0
   vt_financial_form_813A_attachment.overflow_fields["children_expenses"].headers = [
     {'display_name': "Description"},
     {'value': "Amount"},
