@@ -4309,30 +4309,30 @@ attachments:
       - "health_insurance_family_cost": |
           % for job in jobs:
           % if job.healthcare_available:
-          ${ round(job.health_insurance_family_cost,2) }
+          ${ round(job.health_insurance_family_cost, 2) }
           % endif
           % endfor
       - "health_insurance_2_person_cost": |
           % for job in jobs:
           % if job.healthcare_available:
-          ${ round(job.health_insurance_2_person_cost,2) }
+          ${ round(job.health_insurance_2_person_cost, 2) }
           % endif
           % endfor
       - "health_insurance_single_person_cost": |
           % for job in jobs:
           % if job.healthcare_available:
-          ${ round(job.health_insurance_single_person_cost,2) }
+          ${ round(job.health_insurance_single_person_cost, 2) }
           % endif
           % endfor
       - "health_insurance_kids_enrolled_yes": |
           ${ jobs.kids_enrolled } 
       - "health_insurance_kids_enrolled_no": |
           ${ not jobs.kids_enrolled } 
-      - "users1_expenses_child_care_monthly_amount": ${ round(total_monthly_childcare_costs,2) } 
+      - "users1_expenses_child_care_monthly_amount": ${ round(total_monthly_childcare_costs, 2) } 
       - "users1_expenses_child_care_subsidy_monthly_amount": |
-          ${ childcare_subsidy } 
+          ${ round(childcare_subsidy, 2) } 
       - "users1_expenses_child_care_net_monthly_amount": |
-          ${ round(total_monthly_childcare_costs - childcare_subsidy,2) }
+          ${ round(total_monthly_childcare_costs - childcare_subsidy, 2) }
       - "users1_expenses_kids_medical_description": |
           ${ uninsured_medical_expenses_type } 
       - "users1_expenses_kids_medical_monthly_amount": |
@@ -4348,11 +4348,11 @@ attachments:
       - "childrens_income_disability_name": |
          ${ comma_and_list(child.name for child in children_income.matches(source='disability'))}
       - "childrens_income_disability_monthly_amount": |
-          ${ currency(children_income.total(source = "disability", times_per_year = 12)) } 
+          ${ round(children_income.total(source = "disability", times_per_year = 12), 2) } 
       - "childrens_income_socsec_name": |
           ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
-          ${ currency(children_income.total(source = "social security", times_per_year = 12)) } 
+          ${ round(children_income.total(source = "social security", times_per_year = 12), 2) } 
       - "childrens_income_other_benefit_description": |
           ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
@@ -4412,7 +4412,7 @@ attachments:
           ${ real_estate_loans[1].self_payment } 
       - "users1_assets_real_estate_other_loans_total_lender": ""
       - "users1_assets_real_estate_other_loans_total_amount_owed": |
-          ${ round(real_estate_loans.balance(),2) } 
+          ${ round(real_estate_loans.balance,2) } 
       - "users1_assets_real_estate_other_loans_total_payment": |
           ${ round(real_estate_loans.total_other_attribute(attribute='monthly_payment'),2) } 
       - "users1_assets_vehicle_1_description": |
@@ -4420,13 +4420,13 @@ attachments:
       - "users1_assets_vehicle_1_lender": |
           ${ vehicle_loans[0].lender } 
       - "users1_assets_vehicle_1_description_amount_owed": |
-          ${ vehicle_loans[0].balance } 
+          ${ round(vehicle_loans[0].balance,2) } 
       - "users1_assets_vehicle_1_payment": |
-          ${ vehicle_loans[0].monthly_payment } 
+          ${ round(vehicle_loans[0].monthly_payment,2) } 
       - "users1_assets_vehicle_0_description_self_paid": |
-          ${ vehicle_loans[0].self_payment } 
+          ${ round(vehicle_loans[0].self_payment,2) } 
       - "users1_assets_vehicle_2_description": |
-          ${ vehicle_loans[1].balance } 
+          ${ round(vehicle_loans[1].balance,2) } 
       - "users1_assets_vehicle_2_lender": |
           ${ vehicle_loans[1].lender } 
       - "users1_assets_vehicle_2_amount_owed": |
