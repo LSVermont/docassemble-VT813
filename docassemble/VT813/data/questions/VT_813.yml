@@ -259,7 +259,8 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_813
-  al_expense_lists
+  if employed and is_self_employed and not has_schedule_c and do_self_employment_worksheet:
+    al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
   
