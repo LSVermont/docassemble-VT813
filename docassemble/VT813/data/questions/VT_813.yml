@@ -1251,7 +1251,7 @@ fields:
 id: name of one itemized job in list
 generic object: ALItemizedJobList
 question: |
-  What is your job title for your ${ordinal(i)} job?
+  What is your job title for this job?
 subquestion: |
   % if is_self_employed and len(x.complete_elements()) > 0:
   Remember, you've already told us about your self-employed income and being a ${ comma_and_list([job.source for job in x.complete_elements()]) }.
