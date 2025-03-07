@@ -724,16 +724,16 @@ comment: |
 id: public_benefits terms_ordered
 variable name: public_benefits.terms_ordered
 data: !!omap
-  - reach_up: "Reach Up"  
+  - 3squaresvt: "3SquaresVT / Food assistance"
   - dynasaur: "Dr. Dynasaur"
   - fuel_assist: "Fuel Assistance"
   - ga: "General Assistance (GA)"
+  - housing_assist: "Housing assistance (subsidy/voucher/Section 8)"
   - medicaid: "Medicaid"
   - medicare: "Medicare"
-  - 3squaresvt: "3SquaresVT / Food assistance"
+  - reach_up: "Reach Up"  
   - ssi: "SSI (Supplemental Security Income)" 
   - vhap: "VHAP"
-  - housing_assist: "Housing assistance (subsidy/voucher/Section 8)"
 ---
 id: public_benefits other display
 comment: |
@@ -987,6 +987,7 @@ data: !!omap
   - taxes: "Taxes"
   - utilities: "Utilities"
   - wages: "Wages and salaries"
+  - depreciation: "Depreciation expense"
   - other: "Other"
 ---
 id: rental income and expenses
@@ -4148,13 +4149,29 @@ attachments:
           ${ other_parties[0] } v. ${ users[0] }
           % endif
       - "users1_name": |
-          ${ users[0].name } 
+          % if user_ask_role == "plaintiff":
+          ${ users[0] }
+          % else:
+          ${ other_parties[0] }
+          % endif
       - "users1_birthdate": |
+          % if user_ask_role == "plaintiff":
           ${ format_date(users[0].birthdate, format='M/d/yyyy') }
-      - "other_parties1_name": |
-          ${ other_parties[0].name } 
-      - "other_parties1_birthdate": |
+          % else:
           ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
+          % endif
+      - "other_parties1_name": |
+          % if user_ask_role == "defendant":
+          ${ users[0] }
+          % else:
+          ${ other_parties[0] }
+          % endif
+      - "other_parties1_birthdate": |
+          % if user_ask_role == "defendant":
+          ${ format_date(users[0].birthdate, format='M/d/yyyy') }
+          % else:
+          ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
+          % endif
       - "role_plaintiff": |
           ${ user_ask_role == "plaintiff" }
       - "role_defendant": |
