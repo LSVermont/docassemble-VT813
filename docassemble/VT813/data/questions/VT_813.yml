@@ -2864,6 +2864,8 @@ subquestion: |
   
   Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
 
+  Select any that apply to you.
+
 fields:
   - Uninsured medical expenses for kids: uninsured_medical_expenses_kids
     datatype: yesno
@@ -2889,6 +2891,12 @@ fields:
   - Cost paid by you each month: special_needs_expenses_amount
     show if: specialneeds_expenses_kids
     datatype: currency
+  - None of the above: no_extraordinary_expenses
+    datatype: yesno
+    disable others:
+      - uninsured_medical_expenses_kids
+      - educational_expenses_kids
+      - specialneeds_expenses_kids
 continue button field: extraordinary_expenses
 ---
 id: primary_residence_loans.terms_ordered
@@ -3924,6 +3932,27 @@ review:
       - None
 
       % endif
+  - Edit:
+      - no_extraordinary_expenses
+    button: |
+      **Extraordinary expenses for children of this relationship**
+
+      % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids:
+      * ${ uninsured_medical_expenses_type } 
+      % endif
+      
+      % if defined("educational_expenses_kids") and educational_expenses_kids:
+      * ${ educational_expenses_type }
+      % endif
+
+      % if defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
+      * ${ special_needs_expenses_type }
+      % endif
+
+      % if no_extraordinary_expenses:
+      * None
+      % endif
+      
   - Edit: household_expenses.revisit
     button: |
       **Household expenses**
