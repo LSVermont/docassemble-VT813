@@ -951,6 +951,7 @@ fields:
     input type: radio
     code: |
       times_per_year_list
+    default: 12
   - Amount of income: other_incomes[i].value
     datatype: currency
   - note: |
@@ -3794,10 +3795,16 @@ review:
     button: |
       **Insurance (not health)**:
       
-      % for item in self_empl_other_insurances:
-      * ${ item.source }: ${ currency(item.value) }
-      % endfor
-
+      % if self_empl_other_insurances[0].source != '':
+      * ${ self_empl_other_insurances[0].source }: ${ currency(self_empl_other_insurances[0].value) }
+      % else:
+      * No other insurance.
+      % endif
+      % if self_empl_other_insurances[1].source != '':
+      * ${ self_empl_other_insurances[1].source }: ${ currency(self_empl_other_insurances[1].value) }
+      % else:
+      
+      % endif
   - Edit: self_empl_debts[0].value
     button: |
       **Bad debt, taxes and other interest expenses**:
