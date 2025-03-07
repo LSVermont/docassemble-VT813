@@ -318,7 +318,8 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_813
-  al_expense_lists
+  if employed and is_self_employed and not has_schedule_c and do_self_employment_worksheet:
+    al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
   
@@ -1080,7 +1081,7 @@ fields:
     show if:
       variable: has_schedule_e
       is: False
-  - Would you like to do the rental income worksheet questions?: do_rental_income_worksheet
+  - Would you like to do the rental income worksheet questions now?: do_rental_income_worksheet
     datatype: yesnoradio
     show if: 
       variable: has_schedule_e
@@ -3719,24 +3720,101 @@ review:
       - recompute:
         - jobs_order
     button: |
+      **Self-employment**
+      
       % if is_self_employed:
-      I am self employed as ${ self_employed_description }.
+      - I am self-employed: ${ self_employed_description }.
 
       % if has_schedule_c:
-      I have my schedule C.  My self employment income is ${ self_employed_net_income }
+      - I have my Schedule C. My monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
       % else:
-      I do not have my schedule C.
+      - I do not have a Schedule C.
       
       % if do_self_employment_worksheet:
-      My monthly net income is ${ currency(str(self_empl_gross_sales_monthly_amount - sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      - My monthly net income is ${ currency(str(self_empl_gross_sales_monthly_amount - sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
       % else:
-      I do not want to do a self employment worksheet.
+      - I do not want to do a self-employment worksheet right now. (Note: This form does require either a Schedule C or the self-employment worksheet to be filled out on page 11.)
       % endif
       % endif
       
       % else:
-      I am not self employed.
+      - I am not self-employed.
       % endif   
+
+  - note: |
+      % if is_self_employed and do_self_employment_worksheet:
+      ###Self-employment worksheet
+      % endif
+  - Edit: self_empl_gross_sales_monthly_amount
+    button: |
+      **Gross sales**:
+      ${ currency(self_empl_gross_sales_monthly_amount) }
+  - Edit: self_empl_cgs[0].value
+    button: |
+      **Cost of goods sold**:
+      ${ currency(self_empl_cgs[0].value) }
+
+  - Edit: self_empl_office[0].value
+    button: |
+      **Office and equipment expenses**:
+      
+      % for item in self_empl_office:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_employees[0].value
+    button: |
+      **Employee expenses**:
+      
+      % for item in self_empl_employees:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_auto[0].value
+    button: |
+      **Auto expenses**:
+      
+      % for item in self_empl_auto:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_travel[0].value
+    button: |
+      **Travel and meal expenses**:
+      
+      % for item in self_empl_travel:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_common_exp[0].value
+    button: |
+      **Other common expenses**:
+      
+      % for item in self_empl_common_exp:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_other_insurances[0].value
+    button: |
+      **Insurance (not health)**:
+      
+      % for item in self_empl_other_insurances:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+
+  - Edit: self_empl_debts[0].value
+    button: |
+      **Bad debt, taxes and other interest expenses**:
+      
+      % for item in self_empl_debts:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor
+  - Edit: self_empl_other_expenses[0].value
+    button: |
+      **Other expenses**:
+      
+      % for item in self_empl_other_expenses:
+      * ${ item.source }: ${ currency(item.value) }
+      % endfor 
+      
+
+  - note: |
+      ###Other incomes       
   - Edit: 
       - other_incomes.revisit
       - recompute:
@@ -3923,7 +4001,6 @@ progress: 100
 ---
 ##################### OVERFLOW + ADDENDUM #####################
 ---
-id: vt813 attachment
 attachment:
   variable name: vt_financial_form_813A_attachment.addendum
   docx template file: VT_813A_addendum.docx
