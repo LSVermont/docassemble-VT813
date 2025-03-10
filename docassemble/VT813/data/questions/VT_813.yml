@@ -195,7 +195,7 @@ code: |
   set_progress(20)
   
   shared_children.gather()
-  children_income_gathered
+  children_income.gathered
   other_children.gather()
   for child in supported_children:
     child.name.first
@@ -267,8 +267,8 @@ code: |
   if shared_children.there_are_any:
     total_monthly_childcare_costs
     extraordinary_expenses
-    if len(children_expenses) > 0:
-      children_expenses.review_items
+  if len(children_expenses) > 0:
+    children_expenses.review_items
 
   set_progress(74)
       
@@ -412,7 +412,6 @@ code: |
       children_income.append(income)
       children_income[-1].name = child.name
   children_income.gathered = True
-  children_income_gathered = True
 ---
 id: other children complete
 code: |
@@ -485,6 +484,67 @@ fields:
       children_income_ordered
   - Add another child?: shared_children.there_is_another
     datatype: yesnoradio
+---
+if: defined('interview_order_VT_813')
+sets:
+  - shared_children[i].name.first
+  - shared_children[i].name.middle
+  - shared_children[i].name.last
+  - shared_children[i].name.suffix
+id: shared children for review screen only
+question: ${ title_case(ordinal(i)) } child with ${ other_parties[0].name.full() }
+fields:
+  - code: |
+      shared_children[i].name_fields(person_or_business='person')
+  - Date of birth: shared_children[i].birthdate
+    datatype: BirthDate
+  - Their address: shared_children[i].address
+    datatype: object_radio
+    choices: address_choices
+    none of the above: A different address
+    default: users[0].address
+    disable others:
+      - shared_children[i].address.address
+      - shared_children[i].address.unit
+      - shared_children[i].address.city
+      - shared_children[i].address.state
+      - shared_children[i].address.zip
+  - Street address: shared_children[i].address.address
+    required: False
+    address autocomplete: True
+  - Apartment: shared_children[i].address.unit
+    required: False
+  - City: shared_children[i].address.city
+    required: False
+  - State: shared_children[i].address.state
+    required: False
+    code: states_list()
+  - Zip: shared_children[i].address.zip
+    required: False
+  - Are you ordered to pay child support for this child?: shared_children[i].child_support
+    datatype: yesnoradio
+  - Amount you are ordered to pay each month for this child: shared_children[i].child_support_amount
+    datatype: currency
+    show if: shared_children[i].child_support
+  - note: |
+      If you pay one amount for more than one child, you can divide that total amount by the number of children.
+    show if: shared_children[i].child_support
+  - Amount you currently pay each month for this child: shared_children[i].child_support_paid
+    datatype: currency
+    show if: shared_children[i].child_support
+  - State of order: shared_children[i].child_support_state
+    show if: shared_children[i].child_support
+    code: states_list()
+  - County of order:  shared_children[i].child_support_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: shared_children[i].child_support_state
+      is: "VT"
+  - note: |
+      ${ shared_children[i].income.table }
+
+      ${ shared_children[i].income.add_action() }
+
 ---
 id: children income
 variable name: shared_children[i].income.terms_ordered
@@ -618,6 +678,9 @@ fields:
   - note: |
       Examples: A step-child – or a child with another person – who you pay child support for or spend money on their daily needs.
 ---
+depends on:
+  - shared_children
+  - other_children
 code: |
   for child in shared_children:
     if child.child_support:
@@ -653,7 +716,6 @@ columns:
 
 edit:
   - name.first
-  - income.revisit
 confirm: True  
 ---
 continue button field: shared_children[i].income.revisit
@@ -756,6 +818,12 @@ code: |
     x.there_are_any = True
   else:
     x.there_are_any = False
+---
+id: selected types sets there_are_any
+generic object: ALIncomeList
+code: |
+  if not len(shared_children) > 0 and not len(other_children) > 0:
+    children_expenses.there_are_any = False
 ---
 id: are there public benefits
 #public_benefits
@@ -3613,8 +3681,14 @@ review:
 
   - Edit: 
       - shared_children.revisit
+      - undefine:
+        - supported_children
+        - children_income
       - recompute:
-        - children_expenses.selected_types
+        - supported_children.gathered
+        - children_income.gathered
+        - interview_order_VT_813
+
     button: |
       **Children from this relationship**
       
@@ -3628,6 +3702,10 @@ review:
 
   - Edit: 
       - other_children.there_are_any
+      - undefine:
+        - supported_children
+      - recompute:
+        - supported_children.gathered
     button: |
       **Other children that you support**
       
@@ -3824,7 +3902,34 @@ review:
       % endif
   - note: |
       ###Expenses 
+  - Edit: extraordinary_expenses
+    button : |
+      **Extraordinary expenseses for children with ${ other_parties[0].name.full() }**
+
+      % if uninsured_medical_expenses_kids:
+      Uninsured medical expenses for kids:
       
+        - Type: ${ uninsured_medical_expenses_type }
+      
+        - Amount: ${ currency(uninsured_medical_expenses_amount) }
+
+      % endif
+      % if educational_expenses_kids:
+      Educational expenses for kids: 
+      
+        - Type: ${ educational_expenses_type }
+      
+        - Amount: ${ currency(educational_expenses_amount) }
+
+      % endif
+      % if specialneeds_expenses_kids:
+      Educational expenses for kids: 
+      
+        - Type: ${ special_needs_expenses_type }
+      
+        - Amount: ${ currency(special_needs_expenses_amount) }
+      
+      % endif
   - Edit: children_expenses.revisit
     button: |
       **Children expenses**
