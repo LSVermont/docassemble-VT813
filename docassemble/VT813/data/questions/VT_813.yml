@@ -3739,17 +3739,17 @@ review:
       - I have my Schedule C. My monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
       % else:
       - I do not have a Schedule C.
-      
+      % endif
       % if do_self_employment_worksheet:
-      - My monthly net income is ${ currency(str(self_empl_gross_sales_monthly_amount - sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      - My monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
       % else:
       - I do not want to do a self-employment worksheet right now. (Note: This form does require either a Schedule C or the self-employment worksheet to be filled out on page 11.)
       % endif
-      % endif
-      
       % else:
       - I am not self-employed.
       % endif   
+
+      
 
   - note: |
       % if is_self_employed and do_self_employment_worksheet:
@@ -4259,7 +4259,7 @@ attachments:
           % if employed and is_self_employed and has_schedule_c:
           ${ round(self_employed_net_income/12,2) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+          ${ round(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])),2) }
           % else:
           0.00
           % endif
@@ -4553,8 +4553,8 @@ attachments:
           ${ round(vehicle_loans[0].balance,2) } 
       - "users1_assets_vehicle_1_payment": |
           ${ round(vehicle_loans[0].monthly_payment,2) } 
-      - "users1_assets_vehicle_0_description_self_paid": |
-          ${ round(vehicle_loans[0].self_payment,2) } 
+      - "users1_assets_vehicle_0_self_paid": |
+          ${ vehicle_loans[0].self_payment } 
       - "users1_assets_vehicle_2_description": |
           ${ round(vehicle_loans[1].balance,2) } 
       - "users1_assets_vehicle_2_lender": |
