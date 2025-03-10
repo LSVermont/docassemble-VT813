@@ -264,7 +264,7 @@ code: |
   set_progress(70)
   expenses_intro_screen
   
-  if shared_children.there_are_any:
+  if len(shared_children) > 0:
     total_monthly_childcare_costs
     extraordinary_expenses
   if len(children_expenses) > 0:
@@ -485,7 +485,6 @@ fields:
   - Add another child?: shared_children.there_is_another
     datatype: yesnoradio
 ---
-if: defined('interview_order_VT_813')
 sets:
   - shared_children[i].name.first
   - shared_children[i].name.middle
@@ -540,10 +539,7 @@ fields:
     show if:
       variable: shared_children[i].child_support_state
       is: "VT"
-  - note: |
-      ${ shared_children[i].income.table }
-
-      ${ shared_children[i].income.add_action() }
+continue button field: shared_children[i].revisit
 
 ---
 id: children income
@@ -715,7 +711,8 @@ columns:
       "Yes" if len(row_item.income) > 0 else "No"
 
 edit:
-  - name.first
+  - revisit
+  - income.revisit
 confirm: True  
 ---
 continue button field: shared_children[i].income.revisit
@@ -2903,6 +2900,7 @@ edit:
   - source
   - value
 ---
+if: len(shared_children) > 0
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
@@ -3687,7 +3685,9 @@ review:
       - recompute:
         - supported_children.gathered
         - children_income.gathered
-        - interview_order_VT_813
+      - follow up:
+        - extraordinary_expenses
+        
 
     button: |
       **Children from this relationship**
