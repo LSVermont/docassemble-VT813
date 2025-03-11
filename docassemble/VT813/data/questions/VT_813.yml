@@ -3757,7 +3757,7 @@ review:
       % endif
   - Edit: self_empl_gross_sales_monthly_amount
     button: |
-      **Gross sales**:
+      **Monthly gross sales**:
       ${ currency(self_empl_gross_sales_monthly_amount) }
   - Edit: self_empl_cgs[0].value
     button: |
@@ -3845,7 +3845,58 @@ review:
       % if not other_incomes.there_are_any:
       - None
       % endif
-          
+
+  - Edit: 
+      - has_schedule_e
+    button: |
+      % if defined("has_schedule_e"):
+      **Rental income**
+      
+      % if has_schedule_e:
+      I have a Schedule E.
+      % else:
+      I do not have a Schedule E.
+      
+      % if do_rental_income_worksheet:
+      I used the rental income worksheet.
+      % else:
+      I did not use the rental income worksheet yet.
+      % endif
+      % endif
+      
+      % if has_schedule_e and defined("schedule_e_income"):
+      Annual rental net income is ${ currency(schedule_e_income) }
+      % endif
+      % endif
+
+  - note: |
+      % if do_rental_income_worksheet:
+      ###Rental income worksheet
+      % endif
+      
+  - Edit: 
+      - annual_rental_income
+    button: |
+      % if do_rental_income_worksheet:
+      **Annual rental income**: ${ currency(annual_rental_income) }
+      % endif
+      
+  - Edit:
+      - rental_expenses.revisit
+    button: |
+      % if do_rental_income_worksheet:
+      % if rental_expenses.total(times_per_year=1) > 0:
+      **Annual expenses**
+      
+      % for expense in rental_expenses:
+      - ${ expense.display_name }: ${ currency(expense.total(times_per_year=1)) }
+      % endfor
+      % else:
+      - None
+      % endif
+      % endif
+
+      
   - note: |
       ###Loans   
 
@@ -4005,6 +4056,28 @@ review:
 
   - note: |
       **Select Resume, below, when you are done. It will take a moment to generate your form again.**
+---
+id: rental_expenses.revisit
+continue button field: rental_expenses.revisit
+question: |
+  Edit rental business expenses
+subquestion: |
+  
+  ${ rental_expenses_table }
+
+  ${ rental_expenses.add_action() }
+---
+id: rental_expenses_table
+table: rental_expenses_table
+rows: rental_expenses
+columns:
+  - Type: |
+      row_item.display_name
+  - Amount each year: |
+      currency(row_item.total(times_per_year=1))
+edit:
+  - source
+  - value
 ---
 ##################### DOWNLOAD SCREEN #####################
 ---
