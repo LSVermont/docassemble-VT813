@@ -1458,8 +1458,8 @@ fields:
     show if: jobs[i].enrolled
     datatype: currency
 ---
-depends on: healthcare_available
-if: not healthcare_available
+depends on: jobs[i].healthcare_available
+if: not jobs[i].healthcare_available
 code: |
   jobs[i].health_insurance_family_cost = 0
   jobs[i].health_insurance_2_person_cost = 0
@@ -2718,7 +2718,7 @@ code: |
 generic object: ALExpenseList
 code: |
   temp_total = 0
-  for item in children_expense:
+  for item in children_expenses:
     temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
   x.total_monthly_self_payment = temp_total
 ---
@@ -4178,15 +4178,36 @@ attachments:
     fields:
       - "trial_court_county": ${ trial_court.address.county } 
       - "docket_number": ${ docket_number } 
-      - "case_name": ${ case_name } 
+      - "case_name": |
+          % if user_ask_role == "plaintiff":
+          ${ users[0] } v. ${ other_parties[0] }
+          % else:
+          ${ other_parties[0] } v. ${ users[0] }
+          % endif
       - "users1_name": |
-          ${ users[0].name } 
+          % if user_ask_role == "plaintiff":
+          ${ users[0] }
+          % else:
+          ${ other_parties[0] }
+          % endif
       - "users1_birthdate": |
-          ${ users[0].birthdate } 
+          % if user_ask_role == "plaintiff":
+          ${ format_date(users[0].birthdate, format='M/d/yyyy') }
+          % else:
+          ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
+          % endif
       - "other_parties1_name": |
-          ${ other_parties[0].name } 
+          % if user_ask_role == "defendant":
+          ${ users[0] }
+          % else:
+          ${ other_parties[0] }
+          % endif
       - "other_parties1_birthdate": |
-          ${ other_parties[0].birthdate } 
+          % if user_ask_role == "defendant":
+          ${ format_date(users[0].birthdate, format='M/d/yyyy') }
+          % else:
+          ${ format_date(other_parties[0].birthdate, format='M/d/yyyy') }
+          % endif
       - "role_plaintiff": |
           ${ user_ask_role == "plaintiff" }
       - "role_defendant": |
@@ -4204,12 +4225,13 @@ attachments:
       - "users1_mailing_address_line_one": |
           ${ users[0].mailing_address.line_one() } 
       - "users1_mailing_address_line_two": |
-          ${ users[0].address.line_two() } 
+          ${ users[0].mailing_address.line_two() } 
       - "users1_daytime_phone_number": |
           ${ users[0].daytime_phone_number } 
       - "users1_evening_phone_number": ${ users[0].evening_phone_number } 
       - "users1_email": ${ users[0].email } 
       - "signature_date": ${ signature_date } 
+      - "users1_signature": ${ users[0].signature_if_final(i) }
       - "users1_name_full__1": |
           ${ users[0].name.full() } 
       - "users1_employer_0_name": |
@@ -4233,7 +4255,7 @@ attachments:
       - "overtime_included_yes": ${ overtime_included_any_job } 
       - "overtime_included_no": ${ not overtime_included_any_job } 
       - "users1_income_tips_commissions_monthly_amount": |
-          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses'], times_per_year=12),2) } 
+          ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
           % if employed and is_self_employed and has_schedule_c:
           ${ currency(self_employed_net_income/12,symbol='') }
           % elif employed and is_self_employed and do_self_employment_worksheet:
@@ -4328,63 +4350,63 @@ attachments:
       - "users1_benefits_housing_assistance": |
           ${ len(public_benefits.matches(source=['housing_assist'])) > 0 } 
       - "children1_name": |
-          ${ shared_children[0].name } 
+          ${ shared_children[0].name.full() } 
       - "children1_birthdate": |
-          ${ shared_children[0].birthdate } 
+          ${ format_date(shared_children[0].birthdate, format='M/d/yyyy') }
       - "children1_address": |
-          ${ shared_children[0].address } 
+          ${ shared_children[0].address.on_one_line() } 
       - "children2_name": |
-          ${ shared_children[1].name } 
+         ${ shared_children[1].name.full() } 
       - "children2_birthdate": |
-          ${ shared_children[1].birthdate } 
+          ${ format_date(shared_children[1].birthdate, format='M/d/yyyy') }
       - "children2_address": |
-          ${ shared_children[1].address } 
+          ${ shared_children[1].address.on_one_line() } 
       - "children3_name": |
-          ${ shared_children[2].name } 
+          ${ shared_children[2].name.full() } 
       - "children3_birthdate": |
-          ${ shared_children[2].birthdate } 
+          ${ format_date(shared_children[2].birthdate, format='M/d/yyyy') }
       - "children3_address": |
-          ${ shared_children[2].address } 
+          ${ shared_children[2].address.on_one_line() } 
       - "children4_name": |
-          ${ shared_children[3].name } 
+          ${ shared_children[3].name.full() } 
       - "children4_birthdate": |
-          ${ shared_children[3].birthdate } 
+          ${ format_date(shared_children[3].birthdate, format='M/d/yyyy') }
       - "children4_address": |
-          ${ shared_children[3].address } 
+          ${ shared_children[3].address.on_one_line() } 
       - "children_other1_name": |
-          ${ other_children[0].name } 
+          ${ other_children[0].name.full() } 
       - "children_other1_birthdate": |
-          ${ other_children[0].birthdate } 
+          ${ format_date(other_children[0].birthdate, format='M/d/yyyy') }
       - "children_other1_relationship_users1": |
           ${ other_children[0].relationship } 
       - "children_other1_address": |
           ${ other_children[0].address.on_one_line() } 
       - "children_other2_name": |
-          ${ other_children[1].name } 
+          ${ other_children[1].name.full() } 
       - "children_other2_birthdate": |
-          ${ other_children[1].birthdate } 
+          ${ format_date(other_children[1].birthdate, format='M/d/yyyy') }
       - "children_other2_relationship_users1": |
           ${ other_children[1].relationship } 
       - "children_other2_address": |
           ${ other_children[1].address.on_one_line() } 
       - "children_other3_name": |
-          ${ other_children[2].name } 
+          ${ other_children[2].name.full() } 
       - "children_other3_birthdate": |
-          ${ other_children[2].birthdate } 
+          ${ format_date(other_children[2].birthdate, format='M/d/yyyy') }
       - "children_other3_relationship_users1": |
           ${ other_children[2].relationship } 
       - "children_other3_address": |
           ${ other_children[2].address.on_one_line() } 
       - "children_other4_name": |
-          ${ other_children[3].name } 
+          ${ other_children[3].name.full() }
       - "children_other4_birthdate": |
-          ${ other_children[3].birthdate } 
+          ${ format_date(other_children[3].birthdate, format='M/d/yyyy') }
       - "children_other4_relationship_users1": |
           ${ other_children[3].relationship } 
       - "children_other4_address": |
           ${ other_children[3].address.on_one_line() } 
       - "children_supported1_name": |
-          ${ supported_children[0].name } 
+          ${ supported_children[0].name.full() } 
       - "children_supported1_amount": |
           ${ currency(supported_children[0].child_support_amount,symbol='') } 
       - "children_supported1_paid": |
@@ -4407,7 +4429,6 @@ attachments:
           % else:
           ${ supported_children[1].child_support_state }
           % endif
-
       - "children_supported3_name": |
           ${ supported_children[2].name } 
       - "children_supported3_amount": |
@@ -4415,9 +4436,10 @@ attachments:
       - "children_supported3_paid": |
           ${ currency(supported_children[2].child_support_paid,symbol='') } 
       - "children_supported3_order_from": |
-          ${ supported_children[2].child_support_state }
           % if supported_children[2].child_support_state == "VT":
-          ${ supported_children[2].child_support_county }
+          ${ supported_children[2].child_support_state }/${ supported_children[2].child_support_county }
+          % else:
+          ${ supported_children[2].child_support_state }
           % endif
       - "health_insurance_family_cost": |
           % for job in jobs:
@@ -4459,16 +4481,11 @@ attachments:
       - "users1_expenses_kids_specneeds_monthly_amount": |
           ${ currency(special_needs_expenses_amount,symbol='') } 
       - "childrens_income_disability_name": |
-          % for child in children_income.matches(source='disability'):
-          ${ child.name }
-          % endfor 
-          
+          ${ comma_and_list(child.name for child in children_income.matches(source='disability'))}
       - "childrens_income_disability_monthly_amount": |
           ${ currency(children_income.total(source = "disability", times_per_year = 12),symbol='') } 
       - "childrens_income_socsec_name": |
-          % for child in children_income.matches(source='socsec'):
-          ${ child.name }
-          % endfor 
+          ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
           ${ currency(children_income.total(source = "socsec", times_per_year = 12),symbol='') } 
       - "childrens_income_other_benefit_description": |
@@ -4501,25 +4518,25 @@ attachments:
           ${ round(primary_residence_loans.total_other_attribute(source='home_equity', attribute='balance'),2) } 
       - "users1_assets_real_estate_home_eq_loan_payment": |
           ${ round(primary_residence_loans.total_other_attribute(source='home_equity', attribute='monthly_payment'),2) } 
-      - "users1_assets_real_estate_2nd_mortgage_self_paid": |
+      - "users1_assets_real_estate_home_eq_loan_self_paid": |
           ${ primary_residence_loans.matches(source=['home_equity'])[0].self_payment } 
       - "users1_assets_real_estate_home_loans_total_lender": ""
       - "users1_assets_real_estate_home_loans_total_amount_owed": |
           ${ round(primary_residence_loans.balance(),2) } 
       - "users1_assets_real_estate_home_loans_total_payment": |
-          ${ round(primary_residence_loans.monthly_payment.total_other_attribute(attribute='monthly_payment'),2) } 
+          ${ round(primary_residence_loans.total_other_attribute(attribute='monthly_payment'),2) } 
       - "users1_assets_real_estate_other_loan1_description": |
-          ${ real_estate_loans[0].source_other } 
+          ${ real_estate_loans[0].source } 
       - "users1_assets_real_estate_other_loan1_lender": |
           ${ real_estate_loans[0].lender } 
       - "users1_assets_real_estate_other_loan1_amount_owed": |
           ${ currency(real_estate_loans[0].balance,symbol='') } 
       - "users1_assets_real_estate_other_loan1_payment": |
           ${ currency(real_estate_loans[0].monthly_payment,symbol='') } 
-      - "users1_assets_real_estate_2nd_mortgage_self_paid": |
+      - "users1_assets_real_estate_other_loan1_self_paid": |
           ${ real_estate_loans[0].self_payment } 
       - "users1_assets_real_estate_other_loan2_description": |
-          ${ real_estate_loans[1].source_other } 
+          ${ real_estate_loans[1].source } 
       - "users1_assets_real_estate_other_loan2_lender": |
           ${ real_estate_loans[1].lender } 
       - "users1_assets_real_estate_other_loan2_amount_owed": |
@@ -4541,10 +4558,10 @@ attachments:
           ${ currency(vehicle_loans[0].balance,symbol='') } 
       - "users1_assets_vehicle_1_payment": |
           ${ currency(vehicle_loans[0].monthly_payment,symbol='') } 
-      - "users1_assets_vehicle_0_description_self_paid": |
+      - "users1_assets_vehicle_0_self_paid": |
           ${ vehicle_loans[0].self_payment } 
       - "users1_assets_vehicle_2_description": |
-          ${ vehicle_loans[1].balance } 
+          ${ currency(vehicle_loans[1].balance,symbol='') } 
       - "users1_assets_vehicle_2_lender": |
           ${ vehicle_loans[1].lender } 
       - "users1_assets_vehicle_2_amount_owed": |
@@ -4578,13 +4595,13 @@ attachments:
       - "users1_personal_loan_1_self_paid": |
           ${ other_loans.matches(source=['personal'])[0].self_payment } 
       - "users1_personal_loan_2_lender": |
-          ${ other_loans.matches(source=['school'])[1].lender } 
+          ${ other_loans.matches(source=['school'])[0].lender } 
       - "users1_personal_loan_2_amount_owed": |
-          ${ currency(other_loans.matches(source=['school'])[1].balance,symbol='') } 
+          ${ currency(other_loans.matches(source=['school'])[0].balance,symbol='') } 
       - "users1_personal_loan_2_payment": |
-          ${ currency(other_loans.matches(source=['school'])[1].monthly_payment,symbol='') } 
+          ${ currency(other_loans.matches(source=['school'])[0].monthly_payment,symbol='') } 
       - "users1_personal_loan_2_self_paid": |
-          ${ other_loans.matches(source=['school'])[1].self_payment } 
+          ${ other_loans.matches(source=['school'])[0].self_payment } 
       - "users1_personal_loan_3_lender": |
           ${ other_loans.matches(source=['other'])[0].lender } 
       - "users1_personal_loan_3_amount_owed": |
@@ -4592,7 +4609,7 @@ attachments:
       - "users1_personal_loan_3_payment": |
           ${ currency(other_loans.matches(source=['other'])[0].monthly_payment,symbol='') } 
       - "users1_personal_loan_3_self_paid": |
-          ${ other_loans.matches(source=['other'])[2].self_payment } 
+          ${ other_loans.matches(source=['other'])[0].self_payment } 
       - "users1_personal_loan_4_lender": |
           ${ other_loans.matches(source=['other'])[1].lender } 
       - "users1_personal_loan_4_amount_owed": |
@@ -4600,7 +4617,7 @@ attachments:
       - "users1_personal_loan_4_payment": |
           ${ currency(other_loans.matches(source=['other'])[1].monthly_payment,symbol='') } 
       - "users1_personal_loan_4_self_paid": |
-          ${ other_loans.matches(source=['other'])[3].self_payment } 
+          ${ other_loans.matches(source=['other'])[1].self_payment } 
       - "users1_personal_loans_total_lender": ""
       - "users1_personal_loans_total_amount_owed": |
           ${ round(other_loans.balance(),2) } 
@@ -4695,8 +4712,8 @@ attachments:
       - "users1_other_debt_total_lender": ""
       - "users1_other_debt_total_amount_owed": |
           ${ round(other_debt.balance(),2) } 
-      - "users1_credit_card_debt_total_payment": |
-          ${ round(credit_card_debt.total_other_attribute(attribute='monthly_payment'),2) } 
+      - "users1_other_debt_total_payment": |
+          ${ round(other_debt.total_other_attribute(attribute='monthly_payment'),2) } 
       - "users1_expenses_rent_mortgage_self_paid": |
           ${ round(household_expenses.total(source='rent', times_per_year=12) -household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_rent_mortgage_other_paid": |
@@ -4818,27 +4835,27 @@ attachments:
       - "users1_expenses_auto_total_monthly_amount": |
           ${ round(vehicle_expenses.total(times_per_year = 12),2) } 
       - "users1_expenses_insur_life_self_paid": |
-          ${ round(insurance_expenses.total(source='insur_life', times_per_year=12) -insurance_expenses.total_other_attribute(source='insur_life', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total(source=['insur_life'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_other_paid": |
           ${ round(insurance_expenses.total_other_attribute(source='insur_life', attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_monthly_amount": |
           ${ round(insurance_expenses.total(source=['insur_life'], times_per_year=12),2) } 
       - "users1_expenses_insur_disab_self_paid": |
-          ${ round(insurance_expenses.total(source='insur_disab', times_per_year=12) -insurance_expenses.total_other_attribute(source='insur_disab', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total(source=['insur_disab'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_disab'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_disab_other_paid": |
-          ${ round(insurance_expenses.total_other_attribute(source='insur_disab', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total_other_attribute(source=['insur_disab'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_disab_monthly_amount": |
           ${ round(insurance_expenses.total(source=['insur_disab'], times_per_year=12),2) } 
       - "users1_expenses_insur_health_self_paid": |
-          ${ round(insurance_expenses.total(source='insur_health', times_per_year=12) -insurance_expenses.total_other_attribute(source='insur_health', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total(source=['insur_health'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_health_other_paid": |
-          ${ round(insurance_expenses.total_other_attribute(source='insur_health', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_health_monthly_amount": |
           ${ round(insurance_expenses.total(source=['insur_health'], times_per_year=12),2) } 
       - "users1_expenses_insur_dentvis_self_paid": |
-          ${ round(insurance_expenses.total(source='insur_dentvis', times_per_year=12) -insurance_expenses.total_other_attribute(source='insur_dentvis', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total(source=['insur_dentvis'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_dentvis'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_dentvis_other_paid": |
-          ${ round(insurance_expenses.total_other_attribute(source='insur_dentvis', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total_other_attribute(source=['insur_dentvis'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_dentvis_monthly_amount": |
           ${ round(insurance_expenses.total(source=['insur_dentvis'], times_per_year=12),2) } 
       - "users1_expenses_insur_total_self_paid": |
@@ -4978,7 +4995,7 @@ attachments:
       - "users1_credit_card_debt_total_payment_other_paid": |
           ${ currency(float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12)) - float(credit_card_debt.total_monthly_self_payment),symbol='') } 
       - "users1_credit_card_debt_total_payment_1": |
-          ${ round(credit_card_debt.total(times_per_year = 12),2) } 
+          ${ currency(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12),symbol='') } 
       - "users1_expenses_grand_total_self_paid": |
           ${ currency((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment),symbol='') }
       - "users1_expenses_grand_total_other_paid": |
@@ -5013,62 +5030,62 @@ attachments:
       - "users1_kids_expenses_other1_description": |
           ${ children_expenses.matches(source=['kids_other'])[0].source_other } 
       - "users1_kids_expenses_other1_monthly_amount": |
-          ${ round(children_expenses[0].matches(source=['kids_other'])[0].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[0].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other2_description": |
           ${ children_expenses.matches(source=['kids_other'])[1].source_other } 
       - "users1_kids_expenses_other2_monthly_amount": |
-          ${ round(children_expenses[1].matches(source=['kids_other'])[1].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[1].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other3_description": |
           ${ children_expenses.matches(source=['kids_other'])[2].source_other } 
       - "users1_kids_expenses_other3_monthly_amount": |
-          ${ round(children_expenses[2].matches(source=['kids_other'])[2].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[2].total(times_per_year=12),2) } 
       - "users1_kids_expenses_other4_description": |
           ${ children_expenses.matches(source=['kids_other'])[3].source_other } 
       - "users1_kids_expenses_other4_monthly_amount": |
-          ${ round(children_expenses[3].matches(source=['kids_other'])[3].total(times_per_year=12),2) } 
+          ${ round(children_expenses.matches(source=['kids_other'])[3].total(times_per_year=12),2) } 
       - "users1_kids_expenses_total_monthly_amount": |
           ${ round(children_expenses.total(times_per_year = 12),2) } 
       - "rental_income_amount": ${ currency(annual_rental_income,symbol='') } 
       - "rental_cleaning_amount": |
-          ${ round(rental_expenses.total(source=['cleaning'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['cleaning'], times_per_year=1),2) } 
       - "rental_commiss_amount": |
-          ${ round(rental_expenses.total(source=['commissions'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['commissions'], times_per_year=1),2) } 
       - "rental_insur_amount": |
-          ${ round(rental_expenses.total(source=['insurance'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['insurance'], times_per_year=1),2) } 
       - "rental_legal_amount": |
-          ${ round(rental_expenses.total(source=['legal'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['legal'], times_per_year=1),2) } 
       - "rental_mortgint_amount": |
-          ${ round(rental_expenses.total(source=['mortgage'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['mortgage'], times_per_year=1),2) } 
       - "rental_interest_amount": |
-          ${ round(rental_expenses.total(source=['other_interest'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['other_interest'], times_per_year=1),2) } 
       - "rental_repairs_amount": |
-          ${ round(rental_expenses.total(source=['repairs'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['repairs'], times_per_year=1),2) } 
       - "rental_supplies_amount": |
-          ${ round(rental_expenses.total(source=['supplies'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['supplies'], times_per_year=1),2) } 
       - "rental_taxes_amount": |
-          ${ round(rental_expenses.total(source=['taxes'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['taxes'], times_per_year=1),2) } 
       - "rental_utilities_amount": |
-          ${ round(rental_expenses.total(source=['utilities'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['utilities'], times_per_year=1),2) } 
       - "rental_wages_amount": |
-          ${ round(rental_expenses.total(source=['wages'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['wages'], times_per_year=1),2) } 
       - "rental_other_exp1_description": |
           ${ rental_expenses.matches(source=['other'])[0].source_other } 
       - "rental_other_exp1_amount": |
-          ${ round(rental_expenses[0].matches(source=['other'])[0].total(times_per_year=12),2) } 
+          ${ round(rental_expenses[0].matches(source=['other'])[0].total(times_per_year=1),2) } 
       - "rental_other_exp2_description": |
           ${ rental_expenses.matches(source=['other'])[1].source_other } 
       - "rental_other_exp2_amount": |
-          ${ round(rental_expenses[1].matches(source=['other'])[1].total(times_per_year=12),2) } 
+          ${ round(rental_expenses[1].matches(source=['other'])[1].total(times_per_year=1),2) } 
       - "rental_other_exp3_description": |
           ${ rental_expenses.matches(source=['other'])[2].source_other } 
       - "rental_other_exp3_amount": |
-          ${ round(rental_expenses[2].matches(source=['other'])[2].total(times_per_year=12),2) } 
+          ${ round(rental_expenses[2].matches(source=['other'])[2].total(times_per_year=1),2) } 
       - "rental_other_exp4_description": |
           ${ rental_expenses.matches(source=['other'])[3].source_other } 
       - "rental_other_exp4_amount": |
-          ${ round(rental_expenses[3].matches(source=['other'])[3].total(times_per_year=12),2) } 
+          ${ round(rental_expenses[3].matches(source=['other'])[3].total(times_per_year=1),2) } 
       - "rental_depreciation_amount": |
-          ${ round(rental_expenses.total(source=['depreciation'], times_per_year=12),2) } 
+          ${ round(rental_expenses.total(source=['depreciation'], times_per_year=1),2) } 
       - "rental_total_expenses_amount": |
           ${ round(rental_expenses.total(times_per_year = 1),2) } 
       - "rental_net_income_amount": |
