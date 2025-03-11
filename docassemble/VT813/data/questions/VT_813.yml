@@ -4256,13 +4256,6 @@ attachments:
       - "overtime_included_no": ${ not overtime_included_any_job } 
       - "users1_income_tips_commissions_monthly_amount": |
           ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
-          % if employed and is_self_employed and has_schedule_c:
-          ${ currency(self_employed_net_income/12,symbol='') }
-          % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])),symbol='') }
-          % else:
-          0.00
-          % endif
       - "users1_income_self_employment_monthly_amount": |
           % if employed and is_self_employed and has_schedule_c:
           ${ currency(self_employed_net_income/12,symbol='') }
@@ -4489,9 +4482,9 @@ attachments:
       - "childrens_income_socsec_monthly_amount": |
           ${ currency(children_income.total(source = "socsec", times_per_year = 12),symbol='') } 
       - "childrens_income_other_benefit_description": |
-          ${ children_income.matches(source=['other'])[0].source_other } 
+          ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
-          ${ children_income.matches(source=['other'])[0].name } 
+          ${ comma_and_list(child.name for child in children_income.matches(source='other')) }
       - "childrens_income_other_benefit_monthly_amount": |
           ${ currency(children_income.total(source=['other'], times_per_year=12),symbol='') } 
       - "parent_name_gets_children_benefits": |
@@ -4837,7 +4830,7 @@ attachments:
       - "users1_expenses_insur_life_self_paid": |
           ${ round(insurance_expenses.total(source=['insur_life'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_other_paid": |
-          ${ round(insurance_expenses.total_other_attribute(source='insur_life', attribute='paid_by_other_monthly'),2) } 
+          ${ round(insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly'),2) } 
       - "users1_expenses_insur_life_monthly_amount": |
           ${ round(insurance_expenses.total(source=['insur_life'], times_per_year=12),2) } 
       - "users1_expenses_insur_disab_self_paid": |
@@ -5071,19 +5064,19 @@ attachments:
       - "rental_other_exp1_description": |
           ${ rental_expenses.matches(source=['other'])[0].source_other } 
       - "rental_other_exp1_amount": |
-          ${ round(rental_expenses[0].matches(source=['other'])[0].total(times_per_year=1),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[0].total(times_per_year=1),2) } 
       - "rental_other_exp2_description": |
           ${ rental_expenses.matches(source=['other'])[1].source_other } 
       - "rental_other_exp2_amount": |
-          ${ round(rental_expenses[1].matches(source=['other'])[1].total(times_per_year=1),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[1].total(times_per_year=1),2) } 
       - "rental_other_exp3_description": |
           ${ rental_expenses.matches(source=['other'])[2].source_other } 
       - "rental_other_exp3_amount": |
-          ${ round(rental_expenses[2].matches(source=['other'])[2].total(times_per_year=1),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[2].total(times_per_year=1),2) } 
       - "rental_other_exp4_description": |
           ${ rental_expenses.matches(source=['other'])[3].source_other } 
       - "rental_other_exp4_amount": |
-          ${ round(rental_expenses[3].matches(source=['other'])[3].total(times_per_year=1),2) } 
+          ${ round(rental_expenses.matches(source=['other'])[3].total(times_per_year=1),2) } 
       - "rental_depreciation_amount": |
           ${ round(rental_expenses.total(source=['depreciation'], times_per_year=1),2) } 
       - "rental_total_expenses_amount": |
