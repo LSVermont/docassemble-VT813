@@ -479,7 +479,7 @@ fields:
     show if: shared_children[i].child_support
     code: states_list()
   - County of order:  shared_children[i].child_support_county
-    code: sorted(all_courts.unique_column_values('branch'))
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
     show if:
       variable: shared_children[i].child_support_state
       is: "VT"
@@ -543,7 +543,7 @@ fields:
     show if: shared_children[i].child_support
     code: states_list()
   - County of order:  shared_children[i].child_support_county
-    code: sorted(all_courts.unique_column_values('branch'))
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
     show if:
       variable: shared_children[i].child_support_state
       is: "VT"
@@ -667,7 +667,7 @@ fields:
     show if: other_children[i].child_support
     code: states_list()
   - County of Order:  other_children[i].child_support_county
-    code: sorted(all_courts.unique_column_values('branch'))
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
     show if:
       variable: other_children[i].child_support_state
       is: "VT"
@@ -725,7 +725,7 @@ fields:
     show if: other_children[i].child_support
     code: states_list()
   - County of Order:  other_children[i].child_support_county
-    code: sorted(all_courts.unique_column_values('branch'))
+    code: sorted(all_courts.unique_column_values('branch') - {"Environmental", "Judicial Bureau"} )
     show if:
       variable: other_children[i].child_support_state
       is: "VT"
@@ -764,7 +764,7 @@ subquestion: |
 id: other_children.revisit
 continue button field: other_children.revisit
 question: |
-  Edit info about your shared children
+  Edit info about other children you support
 subquestion: |
   ${ other_children.table }
 
@@ -783,7 +783,7 @@ columns:
   - Child gets income: |
       "Yes" if len(row_item.income) > 0 else "No"
   - Child support you are ordered to pay: |
-      currency(row_item.child_support_paid) if defined("row_item.child_support_paid") else "$0"
+      currency(row_item.child_support_amount) if defined("row_item.child_support_amount") else "$0"
 edit:
   - revisit
   - income.revisit
@@ -800,7 +800,7 @@ columns:
   - Address: |
       row_item.address.block() if defined("row_item.address.address") else ""
   - Child support you are ordered to pay: |
-      currency(row_item.child_support_paid) if defined("row_item.child_support_paid") else "$0"
+      currency(row_item.child_support_amount) if defined("row_item.child_support_amount") else "$0"
 edit:
   - revisit
 confirm: True  
@@ -4499,17 +4499,12 @@ attachments:
       - "users1_name_full__1": |
           ${ users[0].name.full() } 
       - "users1_employer_0_name": |
-          ${ jobs[0].employer.name.first } 
-      - "users1_employer_0_address_line_one": |
-          ${ jobs[0].employer.address.line_one() } 
-      - "users1_employer_0_address_line_two": |
-          ${ jobs[0].employer.address.line_two() } 
+          ${ jobs[0].employer.name.first }, ${ jobs[0].employer.address.on_one_line() } 
+
       - "users1_employer_1_name": |
-          ${ jobs[1].employer.name.first } 
-      - "users1_employer_1_address_line_one": |
-          ${ jobs[1].employer.address.line_one() } 
-      - "users1_employer_1_address_line_two": |
-          ${ jobs[1].employer.address.line_two() } 
+          ${ jobs[1].employer.name.first }, ${ jobs[1].employer.address.on_one_line() }  
+
+
       - "is_self_employed": ${ is_self_employed } 
       - "self_employed_employer_name": ${ self_employed_description } 
       - "employed_no": ${ not employed } 
