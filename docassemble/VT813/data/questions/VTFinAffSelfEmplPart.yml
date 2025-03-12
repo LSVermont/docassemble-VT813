@@ -74,7 +74,7 @@ fields:
     show if: 
       variable: has_schedule_c
       is: False
-  - Would you like to do the self-employment income worksheet questions?: do_self_employment_worksheet
+  - Would you like to do the self-employment income worksheet questions now?: do_self_employment_worksheet
     show if: 
       variable: has_schedule_c
       is: False
