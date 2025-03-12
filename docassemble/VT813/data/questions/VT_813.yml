@@ -4734,17 +4734,17 @@ attachments:
       - "users1_expenses_kids_specneeds_monthly_amount": |
           ${ currency(special_needs_expenses_amount,symbol='') } 
       - "childrens_income_disability_name": |
-          ${ comma_and_list(child.name for child in children_income.matches(source='disability'))}
+          ${ comma_and_list(child.name.first for child in children_income.matches(source='disability'))}
       - "childrens_income_disability_monthly_amount": |
           ${ currency(children_income.total(source = "disability", times_per_year = 12),symbol='') } 
       - "childrens_income_socsec_name": |
-          ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
+          ${ comma_and_list(child.name.first for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
           ${ currency(children_income.total(source = "social security", times_per_year = 12),symbol='') } 
       - "childrens_income_other_benefit_description": |
           ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
-          ${ comma_and_list(child.name for child in children_income.matches(source='other')) }
+          ${ comma_and_list(child.name.first for child in children_income.matches(source='other')) }
       - "childrens_income_other_benefit_monthly_amount": |
           ${ currency(children_income.total(source=['other'], times_per_year=12),symbol='') } 
       - "parent_name_gets_children_benefits": |
