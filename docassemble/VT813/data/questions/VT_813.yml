@@ -3003,8 +3003,10 @@ fields:
 validation code: |
   out_of_pocket_costs = total_monthly_childcare_costs - childcare_subsidy
 ---
+if: len(shared_children) == 0
+id: childcare costs if no shared children
 code: |
-  children_expenses
+  out_of_pocket_costs = 0
 ---
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
