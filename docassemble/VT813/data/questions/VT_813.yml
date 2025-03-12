@@ -412,6 +412,10 @@ code: |
     for income in child.income:
       children_income.append(income)
       children_income[-1].name = child.name
+      if not defined('children_income.parents'):
+        children_income.parents = income.parent
+      elif income.parent not in children_income.parents:
+        children_income.parents = children_income.parents + " & " + income.parent 
   children_income.gathered = True
 ---
 id: other children complete
@@ -4748,7 +4752,7 @@ attachments:
       - "childrens_income_other_benefit_monthly_amount": |
           ${ currency(children_income.total(source=['other'], times_per_year=12),symbol='') } 
       - "parent_name_gets_children_benefits": |
-          ${ children_income[0].parent } 
+          ${ children_income.parents } 
       - "users1_assets_real_estate_primary_res_lender": |
           ${ primary_residence_loans.matches(source=['primary'])[0].lender } 
       - "users1_assets_real_estate_primary_res_amount_owed": |
