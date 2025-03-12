@@ -195,7 +195,7 @@ code: |
   set_progress(20)
   
   shared_children.gather()
-  children_income_gathered
+  children_income.gathered
   other_children.gather()
   for child in supported_children:
     child.name.first
@@ -264,11 +264,11 @@ code: |
   set_progress(70)
   expenses_intro_screen
   
-  if shared_children.there_are_any:
+  if len(shared_children) > 0:
     total_monthly_childcare_costs
     extraordinary_expenses
-    if len(children_expenses) > 0:
-      children_expenses.review_items
+  if len(children_expenses) > 0:
+    children_expenses.review_items
 
   set_progress(74)
       
@@ -413,7 +413,6 @@ code: |
       children_income.append(income)
       children_income[-1].name = child.name
   children_income.gathered = True
-  children_income_gathered = True
 ---
 id: other children complete
 code: |
@@ -489,6 +488,63 @@ fields:
 validation code: |
   if shared_children[i].age_in_years() >= 19:
     validation_error("Check the birthdate you entered. This child is too old to be a 'minor.'",field="shared_children[i].birthdate")
+---
+sets:
+  - shared_children[i].name.first
+  - shared_children[i].name.middle
+  - shared_children[i].name.last
+  - shared_children[i].name.suffix
+id: shared children for review screen only
+question: ${ title_case(ordinal(i)) } child with ${ other_parties[0].name.full() }
+fields:
+  - code: |
+      shared_children[i].name_fields(person_or_business='person')
+  - Date of birth: shared_children[i].birthdate
+    datatype: BirthDate
+  - Their address: shared_children[i].address
+    datatype: object_radio
+    choices: address_choices
+    none of the above: A different address
+    default: users[0].address
+    disable others:
+      - shared_children[i].address.address
+      - shared_children[i].address.unit
+      - shared_children[i].address.city
+      - shared_children[i].address.state
+      - shared_children[i].address.zip
+  - Street address: shared_children[i].address.address
+    required: False
+    address autocomplete: True
+  - Apartment: shared_children[i].address.unit
+    required: False
+  - City: shared_children[i].address.city
+    required: False
+  - State: shared_children[i].address.state
+    required: False
+    code: states_list()
+  - Zip: shared_children[i].address.zip
+    required: False
+  - Are you ordered to pay child support for this child?: shared_children[i].child_support
+    datatype: yesnoradio
+  - Amount you are ordered to pay each month for this child: shared_children[i].child_support_amount
+    datatype: currency
+    show if: shared_children[i].child_support
+  - note: |
+      If you pay one amount for more than one child, you can divide that total amount by the number of children.
+    show if: shared_children[i].child_support
+  - Amount you currently pay each month for this child: shared_children[i].child_support_paid
+    datatype: currency
+    show if: shared_children[i].child_support
+  - State of order: shared_children[i].child_support_state
+    show if: shared_children[i].child_support
+    code: states_list()
+  - County of order:  shared_children[i].child_support_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: shared_children[i].child_support_state
+      is: "VT"
+continue button field: shared_children[i].revisit
+
 ---
 id: children income
 variable name: shared_children[i].income.terms_ordered
@@ -611,6 +667,64 @@ fields:
     show if:
       variable: other_children[i].child_support_state
       is: "VT"
+continue button field: other_children[i].revisit
+---
+sets:
+  - other_children[i].name.first
+  - other_children[i].name.middle
+  - other_children[i].name.last
+  - other_children[i].name.suffix
+id: other children
+question: ${ title_case(ordinal(i)) } child whom you provide support
+fields:
+  - code: |
+      other_children[i].name_fields(person_or_business='person')
+  - Date of birth: other_children[i].birthdate
+    datatype: BirthDate
+  - Their address: other_children[i].address
+    datatype: object_radio
+    choices: address_choices
+    none of the above: A different address
+    default: users[0].address
+    disable others:
+      - other_children[i].address.address
+      - other_children[i].address.unit
+      - other_children[i].address.city
+      - other_children[i].address.state
+      - other_children[i].address.zip
+  - Street address: other_children[i].address.address
+    required: False
+    address autocomplete: True
+  - Apartment: other_children[i].address.unit
+    required: False
+  - City: other_children[i].address.city
+    required: False
+  - State: other_children[i].address.state
+    required: False
+    code: states_list()
+  - Zip: other_children[i].address.zip
+    required: False
+  - What is your relationship to this child?: other_children[i].relationship
+    required: False
+  - Are you ordered to pay child support for this child?: other_children[i].child_support
+    datatype: yesnoradio
+  - Amount you are ordered to pay each month for this child: other_children[i].child_support_amount
+    datatype: currency
+    show if: other_children[i].child_support
+  - note: |
+      If you pay one amount for more than one child, you can divide that total amount by the number of children.
+    show if: other_children[i].child_support
+  - Amount you currently pay each month for this child: other_children[i].child_support_paid
+    datatype: currency
+    show if: other_children[i].child_support
+  - State of Order: other_children[i].child_support_state
+    show if: other_children[i].child_support
+    code: states_list()
+  - County of Order:  other_children[i].child_support_county
+    code: sorted(all_courts.unique_column_values('branch'))
+    show if:
+      variable: other_children[i].child_support_state
+      is: "VT"
   - Add another child?: other_children.there_is_another
     datatype: yesnoradio
 ---
@@ -622,6 +736,9 @@ fields:
   - note: |
       Examples: A step-child – or a child with another person – who you pay child support for or spend money on their daily needs.
 ---
+depends on:
+  - shared_children
+  - other_children
 code: |
   for child in shared_children:
     if child.child_support:
@@ -640,6 +757,15 @@ subquestion: |
 
   ${ shared_children.add_action() }
 ---
+id: other_children.revisit
+continue button field: other_children.revisit
+question: |
+  Edit info about your shared children
+subquestion: |
+  ${ other_children.table }
+
+  ${ other_children.add_action() }
+---
 id: shared_children.table
 table: shared_children.table
 rows: shared_children
@@ -655,8 +781,24 @@ columns:
   - Child support you are ordered to pay: |
       currency(row_item.child_support_paid) if defined("row_item.child_support_paid") else "$0"
 edit:
-  - name.first
+  - revisit
   - income.revisit
+confirm: True  
+---
+id: other_children.table
+table: other_children.table
+rows: other_children
+columns:
+  - Name: |
+      row_item.name.full() if defined("row_item.name.first") else ""
+  - Birthdate: |
+      row_item.birthdate if defined("row_item.birthdate") else ""
+  - Address: |
+      row_item.address.block() if defined("row_item.address.address") else ""
+  - Child support you are ordered to pay: |
+      currency(row_item.child_support_paid) if defined("row_item.child_support_paid") else "$0"
+edit:
+  - revisit
 confirm: True  
 ---
 continue button field: shared_children[i].income.revisit
@@ -759,6 +901,12 @@ code: |
     x.there_are_any = True
   else:
     x.there_are_any = False
+---
+id: selected types sets there_are_any
+generic object: ALIncomeList
+code: |
+  if not len(shared_children) > 0 and not len(other_children) > 0:
+    children_expenses.there_are_any = False
 ---
 id: are there public benefits
 #public_benefits
@@ -1963,7 +2111,7 @@ subquestion: |
   
   We will have screens for:
   
-  % if shared_children.there_are_any or other_children.there_are_any:
+  % if len(shared_children) > 0 or len(other_children) > 0:
   - child-related expenses
   %endif
   
@@ -2840,6 +2988,7 @@ edit:
   - source
   - value
 ---
+if: len(shared_children) > 0
 id: childcare costs
 question: Your child care costs for children with ${ other_parties[0].name.full() }
 subquestion: |
@@ -2854,8 +3003,10 @@ fields:
 validation code: |
   out_of_pocket_costs = total_monthly_childcare_costs - childcare_subsidy
 ---
+if: len(shared_children) == 0
+id: childcare costs if no shared children
 code: |
-  children_expenses
+  out_of_pocket_costs = 0
 ---
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
@@ -3626,29 +3777,39 @@ review:
 
   - Edit: 
       - shared_children.revisit
+      - undefine:
+        - supported_children
+        - children_income
       - recompute:
-        - children_expenses.selected_types
+        - supported_children.gathered
+        - children_income.gathered
+      - follow up:
+        - extraordinary_expenses
+        
+
     button: |
       **Children from this relationship**
       
       % for child in shared_children:
       * ${ child.name.full() } - Birthdate: ${ child.birthdate }
       % endfor
-
-      % if not shared_children.there_are_any:
+      % if len(shared_children) == 0:
       - None
       % endif
 
   - Edit: 
-      - other_children.there_are_any
+      - other_children.revisit
+      - undefine:
+        - supported_children
+      - recompute:
+        - supported_children.gathered
     button: |
       **Other children that you support**
       
       % for child in other_children:
       * ${ child.name.full() } - Birthdate: ${ child.birthdate }
       % endfor
-
-      % if not other_children.there_are_any:
+      % if len(other_children) == 0:
       - None
       % endif
 
@@ -3664,8 +3825,7 @@ review:
       % for benefit in public_benefits.complete_elements():
       * ${ benefit.display_name }
       % endfor
-
-      % if not public_benefits.there_are_any:
+      % if len(public_benefits) == 0:
       - None
       % endif
 
@@ -3842,7 +4002,7 @@ review:
       * ${ income.display_name.lower() }
       % endfor
 
-      % if not other_incomes.there_are_any:
+      % if len(other_incomes) == 0:
       - None
       % endif
 
@@ -3971,7 +4131,34 @@ review:
       % endif
   - note: |
       ###Expenses 
+  - Edit: extraordinary_expenses
+    button : |
+      **Extraordinary expenseses for children with ${ other_parties[0].name.full() }**
+
+      % if uninsured_medical_expenses_kids:
+      Uninsured medical expenses for kids:
       
+        - Type: ${ uninsured_medical_expenses_type }
+      
+        - Amount: ${ currency(uninsured_medical_expenses_amount) }
+
+      % endif
+      % if educational_expenses_kids:
+      Educational expenses for kids: 
+      
+        - Type: ${ educational_expenses_type }
+      
+        - Amount: ${ currency(educational_expenses_amount) }
+
+      % endif
+      % if specialneeds_expenses_kids:
+      Educational expenses for kids: 
+      
+        - Type: ${ special_needs_expenses_type }
+      
+        - Amount: ${ currency(special_needs_expenses_amount) }
+      
+      % endif
   - Edit: children_expenses.revisit
     button: |
       **Children expenses**
@@ -4553,7 +4740,7 @@ attachments:
       - "childrens_income_socsec_name": |
           ${ comma_and_list(child.name for child in children_income.matches(source='social security')) }
       - "childrens_income_socsec_monthly_amount": |
-          ${ currency(children_income.total(source = "socsec", times_per_year = 12),symbol='') } 
+          ${ currency(children_income.total(source = "social security", times_per_year = 12),symbol='') } 
       - "childrens_income_other_benefit_description": |
           ${ comma_and_list(child.source_other for child in children_income.matches(source=['other'])) } 
       - "childrens_income_other_benefit_name": |
