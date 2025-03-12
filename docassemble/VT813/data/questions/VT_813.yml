@@ -4495,17 +4495,12 @@ attachments:
       - "users1_name_full__1": |
           ${ users[0].name.full() } 
       - "users1_employer_0_name": |
-          ${ jobs[0].employer.name.first } 
-      - "users1_employer_0_address_line_one": |
-          ${ jobs[0].employer.address.line_one() } 
-      - "users1_employer_0_address_line_two": |
-          ${ jobs[0].employer.address.line_two() } 
+          ${ jobs[0].employer.name.first }, ${ jobs[0].employer.address.on_one_line() } 
+
       - "users1_employer_1_name": |
-          ${ jobs[1].employer.name.first } 
-      - "users1_employer_1_address_line_one": |
-          ${ jobs[1].employer.address.line_one() } 
-      - "users1_employer_1_address_line_two": |
-          ${ jobs[1].employer.address.line_two() } 
+          ${ jobs[1].employer.name.first }, ${ jobs[1].employer.address.on_one_line() }  
+
+
       - "is_self_employed": ${ is_self_employed } 
       - "self_employed_employer_name": ${ self_employed_description } 
       - "employed_no": ${ not employed } 
