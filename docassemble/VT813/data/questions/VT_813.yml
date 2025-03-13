@@ -4517,9 +4517,9 @@ attachments:
           ${ round(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12),2) } 
       - "users1_income_self_employment_monthly_amount": |
           % if employed and is_self_employed and has_schedule_c:
-          ${ currency(self_employed_net_income/12,symbol='') }
+          ${ "{:.2f}".format(self_employed_net_income/12) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])),symbol='') }
+          ${ "{:.2f}".format(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % else:
           0.00
           % endif
@@ -4527,11 +4527,11 @@ attachments:
           ${ round(jobs.total(source='expenses',times_per_year=12),2) } 
       - "users1_income_employment_monthly_total": |
           % if employed and is_self_employed and has_schedule_c:
-          ${ currency(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12),symbol='') }
+          ${ "{:.2f}".format(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12)) }
           % elif employed and is_self_employed and do_self_employment_worksheet:
-          ${ currency(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))),symbol='') }
+          ${ "{:.2f}".format(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])))) }
           % else: 
-          ${ round(jobs.total(times_per_year = 12),2) }
+          ${ "{:.2f}".format(jobs.total(times_per_year = 12)) }
           % endif
       - "users1_income_rental_monthly_amount": |
           ${ round(other_incomes.total(source=['rental income'], times_per_year=12),2) } 
@@ -4782,9 +4782,9 @@ attachments:
       - "users1_assets_real_estate_other_loan1_lender": |
           ${ real_estate_loans[0].lender } 
       - "users1_assets_real_estate_other_loan1_amount_owed": |
-          ${ currency(real_estate_loans[0].balance,symbol='') } 
+          ${ "{:.2f}".format(real_estate_loans[0].balance) } 
       - "users1_assets_real_estate_other_loan1_payment": |
-          ${ currency(real_estate_loans[0].monthly_payment,symbol='') } 
+          ${ "{:.2f}".format(real_estate_loans[0].monthly_payment) } 
       - "users1_assets_real_estate_other_loan1_self_paid": |
           ${ real_estate_loans[0].self_payment } 
       - "users1_assets_real_estate_other_loan2_description": |
