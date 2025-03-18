@@ -3683,7 +3683,7 @@ subquestion: |
   ${ al_court_bundle.as_pdf(key='preview') }
 
   Click the image to open it in a new tab. Click the "Edit your answers" button
-  to edit your answers.
+  to edit your answers. **Do not edit the PDF itself.** Use the Edit your answers button.
 
   ${ action_button_html(url_action('review_VT_813'), label='<i class="fa-solid fa-pencil"></i> Edit your answers', color='info') }
   
