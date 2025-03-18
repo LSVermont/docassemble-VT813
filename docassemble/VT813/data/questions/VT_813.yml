@@ -1847,35 +1847,39 @@ continue button field: VT_813A_intro
 question: |
   Is this tool right for you?
 subquestion: |
-  <h4>Do you need to fill out financial form 813A?</h4>
+  ${ start_accordion('<h2 class="h5">Do you need to fill out financial form 813A?</h2>') }
+  <p>There are a lot of questions on the 813A form. Be sure you really need to fill it out. It will take quite some time to describe all your income and expenses. This tool will help you work through it.</p>
 
-  There are a lot of questions on the 813A form. Be sure you really need to fill it out. It will take quite some time to describe all your income and expenses. This tool will help you work through it.
+  <p>You need to complete and file the 813A if:</p>
+  <ul><li>You are a party in a newly filed divorce, civil union dissolution, legal separation, annulment or parentage action and you and the other party have minor children; OR</li>
+  
+  <li>You or the other party are seeking to change a previously issued order for child support or spousal maintenance (alimony); OR</li>
+  
+  <li>You are required to pay support and an enforcement action has been filed against you; OR</li>
+  
+  <li>Your child is in the custody of the Department of Children and Families and support has been requested of you; OR</li>
+  
+  <li>You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.</li>
+  </ul>
 
-  You need to complete and file the 813A if:
-  
-  - You are a party in a newly filed divorce, civil union dissolution, legal separation, annulment or parentage action and you and the other party have minor children; OR
-  - You or the other party are seeking to change a previously issued order for child support or spousal maintenance (alimony); OR
-  - You are required to pay support and an enforcement action has been filed against you; OR
-  - Your child is in the custody of the Department of Children and Families and support has been requested of you; OR
-  - You are ordered by the court to complete and file this form or the other party requests that you fill out the form as part of a court case.
+  If you aren't sure if you should fill it out, <a href="https://www.vermontjudiciary.org/self-help/ARC"> contact the Vermont Judiciary Access and Resource Center.</a> Their services are free and they serve the whole state. They do NOT give legal advice. Or, <a href="https://www.vermontjudiciary.org/court-locations?f%5B0%5D=court_division%3A4">call family court.</a>
 
-  If you aren't sure if you should fill it out, [contact the court.](https://www.vermontjudiciary.org/court-locations?f%5B0%5D=court_division%3A4)
+  ${ next_accordion('<h2 class="h5">What you will need</h2>') }
+  <p>You will need to know:</p>
   
-  <h4>What you will need</h4>
-  
-  You will need to know:
-  
-  * birthdates of you, the other party and any children
-  * any Social Security or disability income received by your kids
-  * information about your court case like a case number (You can find this information on other court papers you have about this case. If you are starting a new case, you won't have a case number yet.)
-  * any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)
-  * the name and address of any employer you might have
-  * your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.
-  * amount of taxes taken out of your paycheck
-  * if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer — whether you enroll in that insurance or not (Ask the human resources folks.)
-  * all your expenses (including rent/mortgage, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)
-  * loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.
+  <li>birthdates of you, the other party and any children</li>
+  <li>any Social Security or disability income received by your kids</li>
+  <li>information about your court case like a case number (You can find this information on other court papers you have about this case. If you are starting a new case, you won't have a case number yet.)</li>
+  <li>any public assistance that you get (like 3SquaresVT food help, ReachUp help for families, SSI, housing assistance, etc.)</li>
+  <li>the name and address of any employer you might have</li>
+  <li>your income — If you work or get unemployment, have those paystubs on hand. If you get child support, have that information on hand. If you are self-employed, have your IRS Schedule C on hand or your business income and expenses. If you earn rental income, have IRS Schedule E on hand or your rental income and expenses.</li>
+  <li>amount of taxes taken out of your paycheck</li>
+  <li>if you work, you will need to know the costs of one-person, two-person and family health insurance offered by your employer — whether you enroll in that insurance or not (Ask the human resources folks.)</li>
+  <li>all your expenses (including rent/mortgage, utilities, insurance payments, child care, medical costs, car expenses, clothes, insurance, child support you pay, other child expenses, etc.)</li>
+  <li>loan payments for cars/trucks, your home or other real estate, credit card debt payments and any other loan payments.</li>
+  </ul>
 
+  ${ end_accordion() }
 ---
 id: important_notes_to_user
 question: |
@@ -2268,7 +2272,7 @@ subquestion: |
   
   ${ household_expenses.add_action() }
   
-  **Total household expenses above:**
+  **Total of household expenses shown above:**
   ${ currency(household_expenses.total(times_per_year=12)) }
 
 continue button field: household_expenses.review_items
@@ -2422,7 +2426,7 @@ subquestion: |
   
   ${ vehicle_expenses.add_action() }
 
-  **Total vehicle expenses above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
+  **Total of vehicle expenses shown above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
 continue button field: vehicle_expenses.review_items
 ---
 id: vehicle_expenses.revisit
@@ -2587,7 +2591,7 @@ subquestion: |
   
   ${ insurance_expenses.add_action() }
 
-  **Total insurance expenses above:** ${ currency(insurance_expenses.total(times_per_year=12)) }
+  **Total of insurance expenses shown above:** ${ currency(insurance_expenses.total(times_per_year=12)) }
 continue button field: insurance_expenses.review_items
 ---
 id: insurance_expenses.revisit
@@ -2800,7 +2804,7 @@ subquestion: |
 
   ${ personal_expenses.add_action() }
   
-  **Total personal expenses above:** ${ currency(personal_expenses.total(times_per_year=12)) }
+  **Total of personal expenses shown above:** ${ currency(personal_expenses.total(times_per_year=12)) }
 
 continue button field: personal_expenses.review_items
 ---
@@ -2967,7 +2971,7 @@ subquestion: |
 
   ${ children_expenses.add_action() }
 
-  **Total of above expenses:**    ${ currency(children_expenses.total(times_per_year=12)) }
+  **Total of expenses shown above:**    ${ currency(children_expenses.total(times_per_year=12)) }
  
 continue button field: children_expenses.review_items
 ---
