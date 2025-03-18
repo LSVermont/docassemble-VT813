@@ -87,7 +87,7 @@ question: |
 subquestion: |
   **Tip**: For these self-employment questions, you can look back 12 months. Then divide by 12 to get the monthly amount.
 fields:
-  - "Gross sales": self_empl_gross_sales_monthly_amount
+  - "Monthly gross sales or income": self_empl_gross_sales_monthly_amount
     datatype: currency
     min: 0
     
@@ -229,7 +229,7 @@ id: Wages and other employee expenses
 question: |
   Monthly business expenses from self-employment
 subquestion: |
-  Wages and other employee expenses for your business
+  Wages and other employee expenses you paid as part of your business
 fields:
   - "Wages paid": self_empl_employees[0].value
     datatype: currency
