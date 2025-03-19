@@ -4388,7 +4388,7 @@ code: |
 
 
   vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].label = "Misc. personal expenses"
-  vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].overflow_trigger = 0
+  vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].overflow_trigger = 0 + len(personal_expenses.matches(source=personal_expenses.sources(),exclude_source='other'))
   vt_financial_form_813A_attachment.overflow_fields["personal_expenses"].headers = [
     {'display_name': "Description"},
     {'value': "Amount"},
@@ -4397,7 +4397,7 @@ code: |
   ] 
 
   vt_financial_form_813A_attachment.overflow_fields["children_expenses"].label = "Misc. children expenses"
-  vt_financial_form_813A_attachment.overflow_fields["children_expenses"].overflow_trigger = 5
+  vt_financial_form_813A_attachment.overflow_fields["children_expenses"].overflow_trigger = 5 + len(children_expenses.matches(source=children_expenses.sources(),exclude_source='kids_other'))
   vt_financial_form_813A_attachment.overflow_fields["children_expenses"].headers = [
     {'display_name': "Description"},
     {'value': "Amount"},
