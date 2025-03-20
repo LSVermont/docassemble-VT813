@@ -1758,7 +1758,7 @@ subquestion: |
   Here is what you've told us about your other jobs. You can add more or continue
   to the next question.
   % else:
-  Here is what you've told us about your other jobs. You can add more or continue
+  Here is what you've told us about your jobs. You can add more or continue
   to the next question.
   % endif
   ${ jobs_table } 
@@ -2562,7 +2562,7 @@ code: |
 id: insurance expense paid by other question
 question:  Other payments for ${ insurance_expenses[i].display_name }
 subquestion: |
-  You said your ${ insurance_expenses[i].display_name } expense is ${ insurance_expenses[i].total(times_per_year=12) } per month.
+  You said your ${ insurance_expenses[i].display_name } expense is ${ currency(insurance_expenses[i].total(times_per_year=12)) } per month.
 fields: 
   - How much does somebody else pay for that expense per month?: insurance_expenses[i].paid_by_other_monthly
     datatype: currency
@@ -4139,49 +4139,18 @@ review:
       % endif
   - note: |
       ###Expenses 
-  - Edit: extraordinary_expenses
-    button : |
-      **Extraordinary expenseses for children with ${ other_parties[0].name.full() }**
-
-      % if uninsured_medical_expenses_kids:
-      Uninsured medical expenses for kids:
-      
-        - Type: ${ uninsured_medical_expenses_type }
-      
-        - Amount: ${ currency(uninsured_medical_expenses_amount) }
-
-      % endif
-      % if educational_expenses_kids:
-      Educational expenses for kids: 
-      
-        - Type: ${ educational_expenses_type }
-      
-        - Amount: ${ currency(educational_expenses_amount) }
-
-      % endif
-      % if specialneeds_expenses_kids:
-      Educational expenses for kids: 
-      
-        - Type: ${ special_needs_expenses_type }
-      
-        - Amount: ${ currency(special_needs_expenses_amount) }
-      
-      % endif
-  - Edit: children_expenses.revisit
+  - Edit: childcare_subsidy
     button: |
-      **Children expenses**
-
-      % for item in children_expenses:
-      * ${ item.display_name.lower()  }
-      % endfor
-      % if children_expenses.number_gathered() == 0:
-      - None
-
-      % endif
+      **Childcare costs for children with ${ other_parties[0].name.full() }**
+    
+      - Total cost of childcare each month: ${currency(total_monthly_childcare_costs) }
+      
+      - Any subsidy you get from the state to help pay each month: ${ currency(childcare_subsidy) }
+  
   - Edit:
       - no_extraordinary_expenses
     button: |
-      **Extraordinary expenses for children of this relationship**
+      **Extraordinary expenseses for children with ${ other_parties[0].name.full() }**
 
       % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids:
       * ${ uninsured_medical_expenses_type } 
@@ -4198,7 +4167,17 @@ review:
       % if no_extraordinary_expenses:
       * None
       % endif
-      
+  - Edit: children_expenses.revisit
+    button: |
+      **Common children expenses**
+
+      % for item in children_expenses:
+      * ${ item.display_name.lower()  }
+      % endfor
+      % if children_expenses.number_gathered() == 0:
+      - None
+
+      % endif
   - Edit: household_expenses.revisit
     button: |
       **Household expenses**
