@@ -298,7 +298,7 @@ code: |
     if is_self_employed:
       if has_schedule_c:
         self_employed_net_income
-      elif do_self_employment_worksheet:
+      else:
         net_income_order
         self_employed_expenses_monthly_amount
         self_employed_net_income_monthly_amount
@@ -318,7 +318,7 @@ mandatory: True
 code: |
   al_intro_screen
   interview_order_VT_813
-  if employed and is_self_employed and not has_schedule_c and do_self_employment_worksheet:
+  if employed and is_self_employed and not has_schedule_c:
     al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
@@ -1747,7 +1747,7 @@ subquestion: |
   You said that you were self-employed with a net income of
   % if has_schedule_c:
   ${ currency(self_employed_net_income/12) } each month. (You can update this later if needed.)
-  % elif do_self_employment_worksheet:
+  % else:
   ${ currency(str(self_employed_net_income_monthly_amount)) } each month. (You can update this later if needed.)
   % endif
   % endif
@@ -3846,7 +3846,6 @@ review:
           - is_self_employed
           - has_schedule_c
           - self_employed_net_income
-          - do_self_employment_worksheet
           - net_income_order
           - self_employed_expenses_monthly_amount
           - self_employed_net_income_monthly_amount
@@ -3884,7 +3883,6 @@ review:
           - is_self_employed
           - has_schedule_c
           - self_employed_net_income
-          - do_self_employment_worksheet
           - self_employed_expenses_monthly_amount
           - self_employed_net_income_monthly_amount
           - self_empl_cgs
@@ -3910,11 +3908,8 @@ review:
       - I have my Schedule C. My monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
       % else:
       - I do not have a Schedule C.
-      % endif
-      % if do_self_employment_worksheet:
+
       - My monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
-      % else:
-      - I do not want to do a self-employment worksheet right now. (Note: This form does require either a Schedule C or the self-employment worksheet to be filled out on page 11.)
       % endif
       % else:
       - I am not self-employed.
@@ -3923,7 +3918,7 @@ review:
       
 
   - note: |
-      % if is_self_employed and do_self_employment_worksheet:
+      % if is_self_employed and not has_schedule_c:
       ###Self-employment worksheet
       % endif
   - Edit: self_empl_gross_sales_monthly_amount
@@ -4266,6 +4261,8 @@ subquestion: |
   
   ${ download_screen_instructions_one_form }
 
+  **Do not edit the PDF itself.** Use the Edit your answers button.
+
   ${ action_button_html(url_action('review_VT_813'), label='<i class="fa-solid fa-pencil"></i> Edit your answers', color='info') }
 
   <hr>
@@ -4504,7 +4501,7 @@ attachments:
       - "users1_income_self_employment_monthly_amount": |
           % if employed and is_self_employed and has_schedule_c:
           ${ "{:.2f}".format(self_employed_net_income/12) }
-          % elif employed and is_self_employed and do_self_employment_worksheet:
+          % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % else:
           0.00
@@ -4514,7 +4511,7 @@ attachments:
       - "users1_income_employment_monthly_total": |
           % if employed and is_self_employed and has_schedule_c:
           ${ "{:.2f}".format(float(jobs.total(times_per_year=12)) + float(self_employed_net_income/12)) }
-          % elif employed and is_self_employed and do_self_employment_worksheet:
+          % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(jobs.total(times_per_year=12)) + float(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])))) }
           % else: 
           ${ "{:.2f}".format(jobs.total(times_per_year = 12)) }
@@ -4553,7 +4550,7 @@ attachments:
       - "users1_income_monthly_total": |
           % if employed and is_self_employed and has_schedule_c:
           ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }
-          % elif employed and is_self_employed and do_self_employment_worksheet:
+          % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % else: 
           ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)) }

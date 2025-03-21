@@ -8,7 +8,7 @@ comment: |
   Controls order and branching logic for questions specific to this form
 id: interview_order_vtfinaffselfemplpart
 code: |
-  do_self_employment_worksheet
+  has_schedule_c
   self_empl_gross_sales_monthly_amount
   self_empl_cgs[0].value
   self_empl_office[0].value
@@ -26,7 +26,7 @@ comment: |
   Controls order and branching logic to determine net income for 813
 id: net_income_order
 code: |
-  if not has_schedule_c and do_self_employment_worksheet:
+  if not has_schedule_c:
     self_empl_gross_sales_monthly_amount
     self_empl_cgs[0].value
     self_empl_office[0].value
@@ -56,6 +56,8 @@ question: |
   Self-employment
 fields:
   - Description of your self-employed business: self_employed_description
+  - note: |
+      Many self-employed people don't file a IRS Schedule C form each year. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly net income from self-employment. Only complete the worksheet if you cannot include an IRS Schedule C.
   - Do you have a copy of your IRS Schedule C tax form?: has_schedule_c
     datatype: yesnoradio
   - note: |
@@ -64,21 +66,6 @@ fields:
   - Annual net profit: self_employed_net_income
     show if: has_schedule_c
     datatype: currency
-  - note: |
-      Note: If you have a Schedule C to share with the court, you do not have to fill out the self-employment worksheet on page 11 of this form.
-    show if: 
-      variable: has_schedule_c
-      is: True
-  - note: |
-      Many people don't file a Schedule C. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly net income from self-employment. Only complete this worksheet if you can’t include an IRS Schedule C.
-    show if: 
-      variable: has_schedule_c
-      is: False
-  - Would you like to do the self-employment income worksheet questions now?: do_self_employment_worksheet
-    show if: 
-      variable: has_schedule_c
-      is: False
-    datatype: yesnoradio
 continue button field: selfemployment_worksheet
 ---
 id: Your monthly gross sales or receipts
