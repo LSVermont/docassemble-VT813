@@ -204,9 +204,9 @@ code: |
   set_progress(30)
   user_ask_role
   docket_number
-
   user_selected_county
-  trial_court.address.county
+  if defined("user_selected_county"):
+    trial_court.address.county
   
   nav.set_section('your_income')
   set_progress(40)
@@ -322,8 +322,8 @@ code: |
     al_expense_lists
   nav.set_section('review_VT_813')  
   set_progress(90)
-  
-  trial_court.address.county
+  if defined("user_selected_county"):
+    trial_court.address.county
   VT_813A_preview_question
   
 
@@ -339,7 +339,6 @@ code: |
       data={
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
-          "court_division_where_filing": showifdef("trial_court.division_abbr"),
           "gets_public_benefits": showifdef("public_benefits.sources"),
           "employed": showifdef("employed"),
           "reached_interview_end": True,
@@ -348,7 +347,8 @@ code: |
   )
   nav.set_section('get_docs')
   set_progress(100)
-  trial_court.address.county
+  if defined("user_selected_county"):
+    trial_court.address.county
   VT_813A_download
 ---
 id: other_parties object
@@ -3749,9 +3749,8 @@ review:
       - trial_court_index
       - trial_court
     button: |
-      % if defined("trial_court.address.county"):
-      **Is in family court in this county**: ${( trial_court.address.county )} County
-
+      % if defined("user_selected_county"):
+      **Is in family court in this county**: ${ user_selected_county }
       % else:
       **Is in family court in this county**: No county selected
       % endif
@@ -3859,9 +3858,9 @@ review:
       **Work**
       
       % if employed:
-      * I get income from working.
+      * You get income from working.
       % else:
-      * I do not get income from working. I am unemployed because: ${ why_unemployed }.
+      * You do not get income from working. You are unemployed because: ${ why_unemployed }.
       % endif
   - Edit: review_jobs
     button: |
@@ -3903,17 +3902,17 @@ review:
       **Self-employment**
       
       % if is_self_employed:
-      - I am self-employed: ${ self_employed_description }.
+      - You are self-employed: ${ self_employed_description }.
 
       % if has_schedule_c:
-      - I have my Schedule C. My monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
+      - You have a Schedule C. Your monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
       % else:
-      - I do not have a Schedule C.
+      - You do not have a Schedule C.
 
-      - My monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      - Your monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
       % endif
       % else:
-      - I am not self-employed.
+      - You are not self-employed.
       % endif   
 
       
@@ -4020,14 +4019,14 @@ review:
       **Rental income**
       
       % if has_schedule_e:
-      I have a Schedule E.
+      You have a Schedule E.
       % else:
-      I do not have a Schedule E.
+      You do not have a Schedule E.
       
       % if do_rental_income_worksheet:
-      I used the rental income worksheet.
+      You used the rental income worksheet.
       % else:
-      I did not use the rental income worksheet yet.
+      You did not use the rental income worksheet yet.
       % endif
       % endif
       
@@ -4405,18 +4404,7 @@ attachments:
     variable name: VT_financial_form_813a_post_interview_instructions[i]        
     skip undefined: True
     docx template file: VT_813A_next_steps.docx
-    fields:
-        - "address_county": ${ trial_court.address.county }
-        - "court_division": ${ trial_court.division_abbr }
-        - "court_name": ${ trial_court }
-        - "address_address": ${ trial_court.address.address }
-        - "address_unit": ${ trial_court.address.unit }
-        - "address_city": ${ trial_court.address.city }
-        - "address_state": ${ trial_court.address.state }
-        - "address_zip": ${ trial_court.address.zip }
-        - "arbitrary_attribute": ${ trial_court.arbitrary_attribute }
-        - "phone": ${ trial_court.phone }
-        - "email": ${ trial_court.email }
+
   
   - name: VT financial form 813A
     filename: vt_financial_form_813A.pdf     
@@ -4424,7 +4412,12 @@ attachments:
     skip undefined: True
     pdf template file: VT_financial_form_813A.pdf
     fields:
-      - "trial_court_county": ${ trial_court.address.county } 
+      - "trial_court_county": |
+          % if defined("user_selected_county"):
+          ${ user_selected_county }
+          % else:
+          ${ }
+          % endif
       - "docket_number": ${ docket_number } 
       - "case_name": |
           % if user_ask_role == "plaintiff":
