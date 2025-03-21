@@ -3881,6 +3881,7 @@ review:
   - Edit:
       - invalidate:
           - is_self_employed
+          - self_empl_gross_sales_monthly_amount
           - has_schedule_c
           - self_employed_net_income
           - self_employed_expenses_monthly_amount
