@@ -4792,11 +4792,11 @@ attachments:
       - "users1_assets_vehicle_0_self_paid": |
           ${ vehicle_loans[0].self_payment } 
       - "users1_assets_vehicle_2_description": |
-          ${ "{:.2f}".format(vehicle_loans[1].balance) } 
+          ${ "{:.2f}".format(vehicle_loans[1].source) }
       - "users1_assets_vehicle_2_lender": |
           ${ vehicle_loans[1].lender } 
       - "users1_assets_vehicle_2_amount_owed": |
-          ${ "{:.2f}".format(vehicle_loans[1].source) } 
+          ${ "{:.2f}".format(vehicle_loans[1].balance) } 
       - "users1_assets_vehicle_2_payment": |
           ${ "{:.2f}".format(vehicle_loans[1].monthly_payment) } 
       - "users1_assets_vehicle_1_self_paid": |
