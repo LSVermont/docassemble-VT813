@@ -1122,7 +1122,7 @@ code: |
   if has_schedule_e:
     other_incomes[i].value = schedule_e_income
     other_incomes[i].times_per_year = 1
-  elif do_rental_income_worksheet:
+  else:
     other_incomes[i].value = monthly_rental_income
     other_incomes[i].times_per_year = 12
 ---
@@ -1146,8 +1146,6 @@ data: !!omap
 id: rental income and expenses
 question: |
   Rental income worksheet
-subquestion: |
-  Complete this worksheet only if you have rental income.
 fields:
   - Annual rent received: annual_rental_income
     datatype: currency
@@ -1171,7 +1169,7 @@ objects:
 id: rental expense information
 reconsider: rental_expenses[i].display_name
 question: |
-  Tell us about your ${ rental_expenses[i].display_name.lower() } expense
+  Tell us about your ${ rental_expenses[i].display_name.lower() } expense for your rental business
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -1215,6 +1213,8 @@ code: |
 id: rental net income
 question:  Rental income
 fields:
+  - note: |
+      Many people don't file an IRS Schedule E for rental income. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete the worksheet if you can’t include an IRS Schedule E.
   - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
   - note: |
@@ -1225,21 +1225,6 @@ fields:
   - Annual rental net income: schedule_e_income
     datatype: currency
     show if: has_schedule_e
-  - note: |
-      Note: If you have a Schedule E to share with the court, you do not have to fill out the rental income worksheet on page 10 of this form.
-    show if:
-      variable: has_schedule_e
-      is: True
-  - note: |
-      Many people don't file a Schedule E. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete this worksheet if you can’t include an IRS Schedule E.
-    show if:
-      variable: has_schedule_e
-      is: False
-  - Would you like to do the rental income worksheet questions now?: do_rental_income_worksheet
-    datatype: yesnoradio
-    show if: 
-      variable: has_schedule_e
-      is: False
 ---
 code: |
   if defined('other_incomes[i].source') and other_incomes[i].source != "other":
@@ -3209,7 +3194,7 @@ table: primary_residence_loans_table
 rows: primary_residence_loans
 columns:
   - Type of Loan: |
-      row_item.source
+      row_item.display_name.lower() 
   - Lender: |
       row_item.lender
   - Balance owed: |
@@ -3514,7 +3499,7 @@ id: info for each credit_card_debt loans
 question: |
   About your credit card debt
 fields:
-  - Card Holder: credit_card_debt[i].source
+  - Name of card holder: credit_card_debt[i].source
   - Company: credit_card_debt[i].lender
   - Balance owed: credit_card_debt[i].balance
     datatype: currency
@@ -4023,7 +4008,7 @@ review:
       % else:
       You do not have a Schedule E.
       
-      % if do_rental_income_worksheet:
+      % if not has_schedule_e:
       You used the rental income worksheet.
       % else:
       You did not use the rental income worksheet yet.
@@ -4036,26 +4021,26 @@ review:
       % endif
 
   - note: |
-      % if do_rental_income_worksheet:
+      % if not has_schedule_e:
       ###Rental income worksheet
       % endif
       
   - Edit: 
       - annual_rental_income
     button: |
-      % if do_rental_income_worksheet:
+      % if not has_schedule_e:
       **Annual rental income**: ${ currency(annual_rental_income) }
       % endif
       
   - Edit:
       - rental_expenses.revisit
     button: |
-      % if do_rental_income_worksheet:
+      % if not has_schedule_e:
       % if rental_expenses.total(times_per_year=1) > 0:
       **Annual expenses**
       
       % for expense in rental_expenses:
-      - ${ expense.display_name }: ${ currency(expense.total(times_per_year=1)) }
+      - ${ expense.display_name.lower() }: ${ currency(expense.total(times_per_year=1)) }
       % endfor
       % else:
       - None
@@ -4082,7 +4067,7 @@ review:
       **Other real estate loans**
 
       % for item in real_estate_loans:
-      * ${ item.source }
+      * ${ item.source.lower() }
       % endfor
       % if real_estate_loans.number_gathered() == 0:
       - None
@@ -4129,7 +4114,7 @@ review:
       **Other debt**
 
       % for item in other_debt:
-      * ${ item.source }
+      * ${ item.source.lower() }
       % endfor
       % if other_debt.number_gathered() == 0:
       - None
@@ -4792,11 +4777,11 @@ attachments:
       - "users1_assets_vehicle_0_self_paid": |
           ${ vehicle_loans[0].self_payment } 
       - "users1_assets_vehicle_2_description": |
-          ${ "{:.2f}".format(vehicle_loans[1].balance) } 
+          ${ vehicle_loans[1].source }
       - "users1_assets_vehicle_2_lender": |
           ${ vehicle_loans[1].lender } 
       - "users1_assets_vehicle_2_amount_owed": |
-          ${ "{:.2f}".format(vehicle_loans[1].source) } 
+          ${ "{:.2f}".format(vehicle_loans[1].balance) } 
       - "users1_assets_vehicle_2_payment": |
           ${ "{:.2f}".format(vehicle_loans[1].monthly_payment) } 
       - "users1_assets_vehicle_1_self_paid": |
@@ -5422,7 +5407,11 @@ attachments:
       - "self_empl_other_exp1_subtotal_amount": |
           ${ "{:.2f}".format(self_empl_other_expenses.total(times_per_year = 12)) }
       - "self_employed_expenses_monthly_amount": |
+          % if is_self_employed:
           ${ "{:.2f}".format(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ])) }
+          % else:
+          ${ }
+          % endif
       - "users1_income_self_employment_monthly_amount_1": |
           % if has_schedule_c:
           ${ "{:.2f}".format(self_employed_net_income/12) }
