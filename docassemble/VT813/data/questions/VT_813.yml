@@ -3500,6 +3500,15 @@ question: |
   About your credit card debt
 fields:
   - Name of card holder: credit_card_debt[i].source
+    datatype: radio
+    choices:
+      - ${ users[0] }
+      - ${ other_parties[0] }
+      - Other
+  - Name: credit_card_debt[i].source_other
+    show if:
+      variable: credit_card_debt[i].source
+      is: Other
   - Company: credit_card_debt[i].lender
   - Balance owed: credit_card_debt[i].balance
     datatype: currency
@@ -3507,6 +3516,11 @@ fields:
     datatype: currency
   - Are YOU making this payment?: credit_card_debt[i].self_payment
     datatype: yesnoradio
+validation code: |
+  if credit_card_debt[i].source != "Other":
+    credit_card_debt[i].display_name = credit_card_debt[i].source
+  else: 
+    credit_card_debt[i].display_name = credit_card_debt[i].source_other
 ---
 id: want to add more credit_card_debt
 reconsider: credit_card_debt.total_monthly_self_payment
@@ -3535,7 +3549,7 @@ table: credit_card_debt_table
 rows: credit_card_debt
 columns:
   - Card holder: |
-      row_item.source
+      row_item.display_name
   - Company: |
       row_item.lender
   - Balance owed: |
@@ -4051,7 +4065,10 @@ review:
   - note: |
       ###Loans   
 
-  - Edit: primary_residence_loans.revisit
+  - Edit: 
+      - primary_residence_loans.revisit
+      - recompute: 
+        - primary_residence_loans.total_monthly_self_payment
     button: |
       **Primary residence loans**
 
@@ -4062,7 +4079,10 @@ review:
       - None
 
       % endif
-  - Edit: real_estate_loans.revisit
+  - Edit: 
+      - real_estate_loans.revisit
+      - recompute: 
+        - real_estate_loans.total_monthly_self_payment
     button: |
       **Other real estate loans**
 
@@ -4073,7 +4093,10 @@ review:
       - None
 
       % endif
-  - Edit: vehicle_loans.revisit
+  - Edit: 
+      - vehicle_loans.revisit
+      - recompute: 
+        - vehicle_loans.total_monthly_self_payment
     button: |
       **Vehicle loans**
 
@@ -4084,7 +4107,10 @@ review:
       - None
 
       % endif
-  - Edit: other_loans.revisit
+  - Edit: 
+      - other_loans.revisit
+      - recompute: 
+        - other_loans.total_monthly_self_payment
     button: |
       **Other loans**
 
@@ -4098,7 +4124,10 @@ review:
   - note: |
       ###Debts    
 
-  - Edit: credit_card_debt.revisit
+  - Edit: 
+      - credit_card_debt.revisit
+      - recompute: 
+        - credit_card_debt.total_monthly_self_payment
     button: |
       **Credit card debt**
 
@@ -4109,7 +4138,10 @@ review:
       - None
 
       % endif
-  - Edit: other_debt.revisit
+  - Edit: 
+      - other_debt.revisit
+      - recompute: 
+        - other_debt.total_monthly_self_payment
     button: |
       **Other debt**
 
@@ -4840,7 +4872,7 @@ attachments:
       - "users1_personal_loans_total_payment": |
           ${ "{:.2f}".format(other_loans.total_other_attribute(attribute='monthly_payment')) } 
       - "users1_credit_card_debt_1_name": |
-          ${ credit_card_debt[0].source } 
+          ${ credit_card_debt[0].display_name } 
       - "users1_credit_card_debt_1_lender": |
           ${ credit_card_debt[0].lender } 
       - "users1_credit_card_debt_1_amount_owed": |
@@ -4850,7 +4882,7 @@ attachments:
       - "users1_credit_card_debt_1_self_paid": |
           ${ credit_card_debt[0].self_payment } 
       - "users1_credit_card_debt_2_name": |
-          ${ credit_card_debt[1].source } 
+          ${ credit_card_debt[1].display_name } 
       - "users1_credit_card_debt_2_lender": |
           ${ credit_card_debt[1].lender } 
       - "users1_credit_card_debt_2_amount_owed": |
@@ -4860,7 +4892,7 @@ attachments:
       - "users1_credit_card_debt_2_self_paid": |
           ${ credit_card_debt[1].self_payment } 
       - "users1_credit_card_debt_3_name": |
-          ${ credit_card_debt[2].source } 
+          ${ credit_card_debt[2].display_name } 
       - "users1_credit_card_debt_3_lender": |
           ${ credit_card_debt[2].lender } 
       - "users1_credit_card_debt_3_amount_owed": |
@@ -4870,7 +4902,7 @@ attachments:
       - "users1_credit_card_debt_3_self_paid": |
           ${ credit_card_debt[2].self_payment } 
       - "users1_credit_card_debt_4_name": |
-          ${ credit_card_debt[3].source } 
+          ${ credit_card_debt[3].display_name } 
       - "users1_credit_card_debt_4_lender": |
           ${ credit_card_debt[3].lender } 
       - "users1_credit_card_debt_4_amount_owed": |
@@ -4880,7 +4912,7 @@ attachments:
       - "users1_credit_card_debt_4_self_paid": |
           ${ credit_card_debt[3].self_payment } 
       - "users1_credit_card_debt_5_name": |
-          ${ credit_card_debt[4].source } 
+          ${ credit_card_debt[4].display_name } 
       - "users1_credit_card_debt_5_lender": |
           ${ credit_card_debt[4].lender } 
       - "users1_credit_card_debt_5_amount_owed": |
@@ -4890,7 +4922,7 @@ attachments:
       - "users1_credit_card_debt_5_self_paid": |
           ${ credit_card_debt[4].self_payment } 
       - "users1_credit_card_debt_6_name": |
-          ${ credit_card_debt[5].source } 
+          ${ credit_card_debt[5].display_name } 
       - "users1_credit_card_debt_6_lender": |
           ${ credit_card_debt[5].lender } 
       - "users1_credit_card_debt_6_amount_owed": |
