@@ -2116,6 +2116,36 @@ subquestion: |
   - personal expenses
     
   Tap the Next button.
+comment: |
+  --Notes on how an expenses list is gathered, which may have expenses set as default from other lists, using household_expensess as an example--
+  
+  Interview has already asked about primary_residence_loans (which will be used as a default for the household_expenses['rent']
+
+  Interview order calls household_expenses and household_expenses.review_items - id: interview_order_VT_813
+
+  Gather looks for .there_are_any - id: selected types sets there_are_any
+
+  there_any_any asks for household_expenses.selected_types - id: household expenses types
+  
+  default code sets household_expenses.selected_types['rent'] to true if there are primary_residence_loans that the user pays
+
+  if any selected types,
+   move_check_to_lists function from al_income_move
+   This creates a number of elements in the list. The version in al_income_move does not delete 'source' if other, (original may set 'source' to the default, like 'vehicle')
+   also sets .moved for the list
+   there_are_any is set to true (  check_for_others will set source? CHECK)
+   will then look for complete - id: ALExpense complete
+
+  complete calls for attribute (value for household_expenses) for information question
+  if household_expenses[i].source is "rent", then code sets the value. for editing purposes, it also sets primary_residence_loans_househould_expenses_list_number to the index of household_expenses wi id: code setting loans as default for rent
+
+  information question calls display name (with reconsider to keep it fresh)
+  
+  answering the question sets display_name fresh with new source_other with validation code
+
+  complete sets display  
+  
+  household_expenses.review_items shows a table, which will include the mortgage expense calculated by the code block
 ---
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
@@ -2212,9 +2242,14 @@ validation code: |
       household_expenses[i].paid_by_other_monthly_default = 0
     invalidate('household_expenses[i].paid_by_other_monthly')
 ---
+code: |
+  household_expenses.appendObject()
+  household_expenses[-1].source = 'rent'
+  primary_residence_loans_househould_expenses_list_number = len(household_expenses)-1  
+---
 if: household_expenses[i].source == 'rent' and primary_residence_loans.total_monthly_self_payment  > 0
 code: |
-  household_expenses[i].value = primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
+  household_expenses[i].value = float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))
   household_expenses[i].times_per_year = 12
   if float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - primary_residence_loans.total_monthly_self_payment > 0:
     household_expenses[i].paid_by_other = True
@@ -2222,6 +2257,7 @@ code: |
   else:
     household_expenses[i].paid_by_other = False    
     household_expenses[i].paid_by_other_monthly = 0
+  primary_residence_loans_househould_expenses_list_number = i
   
 ---
 id: household expenses paid by others
@@ -2285,7 +2321,6 @@ columns:
       currency(row_item.total(times_per_year=12))
 edit:
   - source
-  - value
 ---
 id: vehicle_expenses.terms_ordered
 # "!!omap" makes these terms ordered
@@ -2369,6 +2404,11 @@ validation code: |
       vehicle_expenses[i].paid_by_other_monthly_default = 0
     invalidate('vehicle_expenses[i].paid_by_other_monthly')
 ---
+code: |
+  vehicle_expenses.appendObject()
+  vehicle_expenses[-1].source = 'auto_loans'
+  vehicle_loans.househould_expenses_list_number = len(household_expenses)-1  
+---
 if: vehicle_expenses[i].source == 'auto_loans' and vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
 code: |
   vehicle_expenses[i].value = vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
@@ -2379,6 +2419,7 @@ code: |
   else:
     vehicle_expenses[i].paid_by_other = False    
     vehicle_expenses[i].paid_by_other_monthly = 0
+  vehicle_loans.househould_expenses_list_number = i
 ---
 id: vehicle expenses paid by others
 question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
@@ -4069,6 +4110,8 @@ review:
       - primary_residence_loans.revisit
       - recompute: 
         - primary_residence_loans.total_monthly_self_payment
+        - household_expenses[primary_residence_loans_househould_expenses_list_number].value
+      - household_expenses.revisit
     button: |
       **Primary residence loans**
 
@@ -4095,6 +4138,10 @@ review:
       % endif
   - Edit: 
       - vehicle_loans.revisit
+      - recompute: 
+        - vehicle_loans.total_monthly_self_payment
+        - household_expenses[vehicle_loans.househould_expenses_list_number].value
+      - household_expenses.revisit
       - recompute: 
         - vehicle_loans.total_monthly_self_payment
     button: |
