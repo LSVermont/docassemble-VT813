@@ -548,7 +548,9 @@ fields:
       variable: shared_children[i].child_support_state
       is: "VT"
 continue button field: shared_children[i].revisit
-
+validation code: |
+  if shared_children[i].child_support == False:
+    invalidate('shared_children[i].child_support_amount','shared_children[i].child_support_paid','shared_children[i].child_support_state')
 ---
 id: children income
 variable name: shared_children[i].income.terms_ordered
@@ -2407,7 +2409,7 @@ validation code: |
 code: |
   vehicle_expenses.appendObject()
   vehicle_expenses[-1].source = 'auto_loans'
-  vehicle_loans.househould_expenses_list_number = len(household_expenses)-1  
+  vehicle_loans.vehicles_expenses_list_number = len(household_expenses)-1  
 ---
 if: vehicle_expenses[i].source == 'auto_loans' and vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
 code: |
@@ -2419,7 +2421,7 @@ code: |
   else:
     vehicle_expenses[i].paid_by_other = False    
     vehicle_expenses[i].paid_by_other_monthly = 0
-  vehicle_loans.househould_expenses_list_number = i
+  vehicle_loans.vehicles_expenses_list_number = i
 ---
 id: vehicle expenses paid by others
 question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
@@ -2573,6 +2575,11 @@ validation code: |
       insurance_expenses[i].paid_by_other_monthly_default = 0
     invalidate('insurance_expenses[i].paid_by_other_monthly')
 ---
+code: |
+  insurance_expenses.appendObject()
+  insurance_expenses[-1].source = 'insur_health'
+  insurance_expenses_list_number = len(household_expenses)-1  
+---
 if: insurance_expenses[i].source == "insur_health"
 code: |
   insurance_expenses[i].times_per_year = 12
@@ -2583,6 +2590,7 @@ code: |
       insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
     else:
       insurance_expenses[i].value = health_insurance_paid_total  
+  insurance_expenses_list_number = i
 ---
 id: insurance expense paid by other question
 question:  Other payments for ${ insurance_expenses[i].display_name }
@@ -3835,6 +3843,7 @@ review:
         - children_income.gathered
       - follow up:
         - extraordinary_expenses
+        - out_of_pocket_costs
         
 
     button: |
@@ -4140,7 +4149,7 @@ review:
       - vehicle_loans.revisit
       - recompute: 
         - vehicle_loans.total_monthly_self_payment
-        - household_expenses[vehicle_loans.househould_expenses_list_number].value
+        - household_expenses[vehicle_loans.vehicles_expenses_list_number].value
       - household_expenses.revisit
       - recompute: 
         - vehicle_loans.total_monthly_self_payment
