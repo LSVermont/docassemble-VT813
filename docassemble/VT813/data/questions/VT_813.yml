@@ -4053,12 +4053,12 @@ review:
       % else:
       - None
       % endif
-      % endif
+
 
       **Annual rent received**
       
       - ${ currency(annual_rental_income) }
-      
+      % endif      
   - note: |
       ###Loans   
 
