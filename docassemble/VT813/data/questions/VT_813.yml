@@ -4024,7 +4024,7 @@ review:
       **Rental income - IRS Schedule E**
       
       % if has_schedule_e:
-      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10).
+      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10). Edit the net income above.
       % else:
       You do not have a Schedule E. You used the rental income worksheet (edit below).
       % endif
