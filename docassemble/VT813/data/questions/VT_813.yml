@@ -1295,9 +1295,12 @@ question: |
 subquestion: |
   % if is_self_employed:
   You said you have self-employment income. Do you also have jobs where you work for an employer?
+
   % else:
   You said you do not have self-employment income. Do you have jobs where you work for an employer? 
   % endif
+
+  Note: If you get income from long-term or short-term rentals, don’t include that here. We will collect information about that income separately.
   
 fields:
   - Do you have other jobs?: has_jobs
@@ -4012,42 +4015,33 @@ review:
       % endif
 
   - Edit: 
+      - invalidate:
+          - has_schedule_e
+          - schedule_e_income
       - has_schedule_e
     button: |
       % if defined("has_schedule_e"):
-      **Rental income**
+      **Rental income - IRS Schedule E**
       
       % if has_schedule_e:
-      You have a Schedule E.
+      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10).
       % else:
-      You do not have a Schedule E.
-      
-      % if not has_schedule_e:
-      You used the rental income worksheet.
-      % else:
-      You did not use the rental income worksheet yet.
+      You do not have a Schedule E. You used the rental income worksheet (edit below).
       % endif
       % endif
       
-      % if has_schedule_e and defined("schedule_e_income"):
-      Annual rental net income is ${ currency(schedule_e_income) }
-      % endif
-      % endif
-
   - note: |
       % if not has_schedule_e:
       ###Rental income worksheet
       % endif
-      
-  - Edit: 
-      - annual_rental_income
-    button: |
-      % if not has_schedule_e:
-      **Annual rental income**: ${ currency(annual_rental_income) }
-      % endif
-      
+
   - Edit:
+      - invalidate:
+          - monthly_rental_income
       - rental_expenses.revisit
+      - annual_rental_income
+      - recompute:
+        - monthly_rental_income
     button: |
       % if not has_schedule_e:
       % if rental_expenses.total(times_per_year=1) > 0:
@@ -4061,6 +4055,9 @@ review:
       % endif
       % endif
 
+      **Annual rent received**
+      
+      - ${ currency(annual_rental_income) }
       
   - note: |
       ###Loans   
