@@ -2154,7 +2154,7 @@ comment: |
 id: household_expenses.terms_ordered
 variable name: household_expenses.terms_ordered
 data: !!omap
-  - rent: "Rent or mortgage"
+  - rent: "Rent"
   - property_tax: "Property taxes"
   - home_insurance: "Homeowners' or renter's insurance"
   - electric: "Electricity"
@@ -2196,9 +2196,7 @@ fields:
     datatype: checkboxes
     code: |
       household_expenses_ordered
-    default:
-      code: | 
-        {'rent': len(primary_residence_loans) > 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
+
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2285,9 +2283,16 @@ code: |
   else:
     household_expenses[i].display_name = household_expenses_other_display
 ---
+reconsider: primary_residence_loans.total_monthly_self_payment
 id: want to add more household expenses
 question: Do you want to list any more household expenses?
 subquestion: |
+
+  % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form.   You can edit this by
+  [clicking this link](${ url_action('primary_residence_loans.revisit')}).
+  % endif
+  
   Tap Next if you don't have more to add.
   
   ${ household_expenses_table }
@@ -2295,7 +2300,7 @@ subquestion: |
   ${ household_expenses.add_action() }
   
   **Total of household expenses shown above:**
-  ${ currency(household_expenses.total(times_per_year=12)) }
+  ${ currency(household_expenses.total(times_per_year=12) + primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) ) }
 
 continue button field: household_expenses.review_items
 ---
