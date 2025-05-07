@@ -746,14 +746,17 @@ depends on:
   - shared_children
   - other_children
 code: |
+  child_support_shared = 0
   for child in shared_children:
     if child.child_support:
       supported_children.append(child)
+      child_support_shared += child.child_support_amount
   for child in other_children:
     if child.child_support:
       supported_children.append(child)
   supported_children.gathered = True
 ---
+reconsider: supported_children.gathered
 id: shared_children.revisit
 continue button field: shared_children.revisit
 question: |
@@ -762,6 +765,8 @@ subquestion: |
   ${ shared_children.table }
 
   ${ shared_children.add_action() }
+
+  The child support you pay for your shared children is ${ child_support_shared }.
 ---
 id: other_children.revisit
 continue button field: other_children.revisit
@@ -1595,8 +1600,9 @@ fields:
     show if: enrolled
     datatype: currency
 ---
+id: sets health insurance info if no job
 depends on: healthcare_available
-if: not healthcare_available
+if: len(jobs) == 0 or not healthcare_available
 code: |
   health_insurance_family_cost = 0
   health_insurance_2_person_cost = 0
@@ -2489,7 +2495,7 @@ variable name: insurance_expenses.terms_ordered
 data: !!omap
   - insur_life: "Life insurance"
   - insur_disab: "Disability insurance"
-  - insur_health: "Health insurance"
+  - insur_health: "Health insurance not offered through employer"
   - insur_dentvis: "Dental/vision insurance"
 ---
 id: insurance_expenses_other_display
@@ -2513,6 +2519,7 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
   % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  **Health insurance through work:**
   You said that you pay ${ currency(health_insurance_paid) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer) }. This amount will be entered into the form. You will be able to change this after entering any other insurance expense information.
   % endif
 fields:
@@ -2588,6 +2595,7 @@ subquestion: |
   Tap Next if you don't have more to add.
 
     % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  **Health insurance through work:**
   You said that you pay ${ currency(health_insurance_paid) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer) }. [You can edit this by clicking this link](${ url_action('health_insurance_paid')})
   % endif
   
@@ -2912,8 +2920,6 @@ data: !!omap
   - kids_camp: "Summer camp/school vacation camp"
   - kids_tuition: "Private school tuition"
   - kids_medical: "Uninsured medical/dental expenses"
-  - kids_childsupport: |
-      Child Support you pay for children you share with ${ other_parties[0].name_full() }
   - kids_other: "Miscellaneous"
 
 --- 
@@ -2954,7 +2960,12 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if out_of_pocket_costs > 0:
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). This amount will be entered into the form. You will be able to edit it.
+  % endif
+
+  
+  % if child_support_shared > 0:
+  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_shared)}. This amount will be entered into the form. You will be able to edit it.
   % endif
 fields:
   - no label: children_expenses.selected_types
@@ -3029,12 +3040,16 @@ subquestion: |
   % if out_of_pocket_costs > 0:
   You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).  This amount will be entered into the form. [Click here to change this amount.](${ url_action('out_of_pocket_costs')})
   % endif
+
+  % if child_support_shared > 0:
+  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_shared)}. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  % endif
   
   ${ children_expenses_table }
 
   ${ children_expenses.add_action() }
 
-  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs) }
+  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared ) }
  
 continue button field: children_expenses.review_items
 ---
