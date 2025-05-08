@@ -243,19 +243,24 @@ code: |
   else:
     primary_residence_loans.there_are_any = False
     real_estate_loans.there_are_any = False
+  primary_residence_loans.total_monthly_self_payment
+  real_estate_loans.total_monthly_self_payment
   
   set_progress(55)
   if len(vehicle_loans) > 0:
     vehicle_loans.review_items
+  vehicle_loans.total_monthly_self_payment
   set_progress(57)
   if len(other_loans) > 0:
     other_loans.review_items
+  other_loans.total_monthly_self_payment
   
   
   nav.set_section('your_debts')
   set_progress(60)
   if len(credit_card_debt) > 0:
     credit_card_debt.review_items
+  credit_card_debt.total_monthly_self_payment
   set_progress(65)
   if len(other_debt) > 0:
     other_debt.review_items
@@ -274,9 +279,11 @@ code: |
       
   if len(household_expenses) > 0:
     household_expenses.review_items
+  household_expenses.total_monthly_self_payment
   set_progress(76)
   if len(vehicle_expenses) > 0:
     vehicle_expenses.review_items
+  vehicle_expenses.total_monthly_self_payment
   set_progress(77)
   if len(insurance_expenses) > 0:
     insurance_expenses.review_items
@@ -747,6 +754,9 @@ depends on:
   - other_children
 code: |
   child_support_shared = 0
+  child_support_other_self_paid = 0
+  child_support_other_other_paid = 0
+  child_support_other_total = 0
   for child in shared_children:
     if child.child_support:
       supported_children.append(child)
@@ -754,6 +764,10 @@ code: |
   for child in other_children:
     if child.child_support:
       supported_children.append(child)
+      child_support_other_self_paid += child.child_support_paid
+      child_support_other_other_paid += child.child_support_amount - child.child_support_paid
+      child_support_other_total += child.child_support_amount
+      
   supported_children.gathered = True
 ---
 reconsider: supported_children.gathered
@@ -768,6 +782,7 @@ subquestion: |
 
   The child support you pay for your shared children is ${ child_support_shared }.
 ---
+reconsider: supported_children.gathered
 id: other_children.revisit
 continue button field: other_children.revisit
 question: |
@@ -2723,6 +2738,10 @@ subquestion: |
   <hr>
   % endif
 
+  % if child_support_other_total > 0:
+  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_other_total)}. This amount will be entered into the form. You will be able to edit it.
+  % endif
+
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
@@ -2838,12 +2857,16 @@ subquestion: |
   
   <hr>
   % endif
+
+  % if child_support_other_total > 0:
+  According to the information you entered about children that you do not share with ${ other_parties[0].name.full() }, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_other_total )}.  You pay ${ currency(child_support_other_self_paid )}.  The total amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
+  % endif  
   
   ${ personal_expenses_table }
 
   ${ personal_expenses.add_action() }
   
-  **Total of personal expenses shown above:** ${ currency(personal_expenses.total(times_per_year=12) + total_monthly_debt_payment) }
+  **Total of personal expenses shown above:** ${ currency(float(personal_expenses.total(times_per_year=12)) + float(total_monthly_debt_payment) + child_support_other_total) }
 
 continue button field: personal_expenses.review_items
 ---
@@ -5310,11 +5333,11 @@ attachments:
       - "users1_expenses_other_kids_monthly_amount": |
           ${ "{:.2f}".format(personal_expenses.total(source=['other_kids'], times_per_year=12)) } 
       - "users1_expenses_child_support_self_paid": |
-          ${ "{:.2f}".format(personal_expenses.total(source='child_support', times_per_year=12) -personal_expenses.total_other_attribute(source='child_support', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(child_support_other_self_paid) } 
       - "users1_expenses_child_support_other_paid": |
-          ${ "{:.2f}".format(personal_expenses.total_other_attribute(source='child_support', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(child_support_other_other_paid) } 
       - "users1_expenses_child_support_monthly_amount": |
-          ${ "{:.2f}".format(personal_expenses.total(source=['child_support'], times_per_year=12)) } 
+          ${ "{:.2f}".format(child_support_other_total) } 
       - "users1_expenses_alimony_self_paid": |
           ${ "{:.2f}".format(personal_expenses.total(source='alimony', times_per_year=12) -personal_expenses.total_other_attribute(source='alimony', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_alimony_other_paid": |
@@ -5328,11 +5351,11 @@ attachments:
       - "users1_expenses_other_monthly_amount": |
           ${ "{:.2f}".format(personal_expenses.total(source=['other'], times_per_year=12)) } 
       - "users1_expenses_monthly_total_self_paid": |
-          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year=12) -personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+ monthly_debt_payment) } 
+          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year=12) -personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+ monthly_debt_payment + child_support_other_self_paid ) } 
       - "users1_expenses_monthly_total_other_paid": |
-          ${ "{:.2f}".format(float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+float(total_monthly_debt_payment)-float(monthly_debt_payment)) } 
+          ${ "{:.2f}".format(float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+float(total_monthly_debt_payment)-float(monthly_debt_payment) + child_support_other_other_paid ) } 
       - "users1_expenses_monthly_total": |
-          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year = 12))+float(total_monthly_debt_payment)) } 
+          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year = 12))+float(total_monthly_debt_payment)  + child_support_other_total ) } 
       - "users1_credit_card_debt_total_payment_self_paid": |
           ${ "{:.2f}".format(float(credit_card_debt.total_monthly_self_payment)) } 
       - "users1_credit_card_debt_total_payment_other_paid": |
@@ -5342,9 +5365,9 @@ attachments:
       - "users1_expenses_grand_total_self_paid": |
           ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment) + primary_residence_loans.total_monthly_self_payment + vehicle_loans.total_monthly_self_payment + health_insurance_paid + monthly_debt_payment) }
       - "users1_expenses_grand_total_other_paid": |
-          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment)) + (float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment + health_insurance_paid_by_employer + float(total_monthly_debt_payment) - float(monthly_debt_payment)) }
+          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment)) + (float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment + health_insurance_paid_by_employer + float(total_monthly_debt_payment) - float(monthly_debt_payment) + child_support_other_self_paid) }
       - "users1_expenses_grand_total_monthly_amount": |
-          ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment)) }
+          ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment) + child_support_other_total) }
       - "users1_deductions_federal_monthly_amount": ${ "{:.2f}".format(jobs.deductions_federal_monthly_amount) } 
       - "users1_deductions_fica_monthly_amount": ${ "{:.2f}".format(jobs.deductions_fica_monthly_amount) } 
       - "users1_deductions_medicare_monthly_amount": ${ "{:.2f}".format(jobs.deductions_medicare_monthly_amount) } 
@@ -5369,7 +5392,7 @@ attachments:
       - "users1_kids_expenses_medical_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_medical'], times_per_year=12)) } 
       - "users1_kids_expenses_childsupport_monthly_amount": |
-          ${ "{:.2f}".format(children_expenses.total(source=['kids_childsupport'], times_per_year=12)) } 
+          ${ "{:.2f}".format(child_support_shared) } 
       - "users1_kids_expenses_other1_description": |
           ${ children_expenses.matches(source=['kids_other'])[0].source_other } 
       - "users1_kids_expenses_other1_monthly_amount": |
@@ -5387,7 +5410,7 @@ attachments:
       - "users1_kids_expenses_other4_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.matches(source=['kids_other'])[3].total(times_per_year=12)) } 
       - "users1_kids_expenses_total_monthly_amount": |
-          ${ "{:.2f}".format(float(children_expenses.total(times_per_year = 12))+out_of_pocket_costs) } 
+          ${ "{:.2f}".format(float(children_expenses.total(times_per_year = 12))+out_of_pocket_costs+child_support_shared) } 
       - "rental_income_amount": ${ "{:.2f}".format(annual_rental_income) } 
       - "rental_cleaning_amount": |
           ${ "{:.2f}".format(rental_expenses.total(source=['cleaning'], times_per_year=1)) } 
