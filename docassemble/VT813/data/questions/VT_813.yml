@@ -2208,7 +2208,12 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  <hr>
+  **Household expenses you have told us about already**
+  
   You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  
+  <hr>
   % endif
 fields:
   - no label: household_expenses.selected_types
@@ -2369,7 +2374,11 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  <hr>
+  **Vehicle expenses you have told us about already**
+  
   You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  <hr>
   % endif
 fields:
   - no label: vehicle_expenses.selected_types
@@ -2536,8 +2545,10 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
   % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
-  **Health insurance through work:**
-  You said that you pay ${ currency(health_insurance_paid) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer) }. This amount will be entered into the form. You will be able to change this after entering any other insurance expense information.
+  <hr>
+  **Health insurance expenses you have told us about already**
+  
+  You said that you pay **${ currency(health_insurance_paid) }** for health insurance and someone else pays **${ currency(health_insurance_paid_by_employer) }.** This amount will be entered into the form. You will be able to change this after entering any other insurance expense information.
   % endif
 fields:
   - no label: insurance_expenses.selected_types
@@ -2674,7 +2685,6 @@ data: !!omap
   - contributions: "Monthly contribution to retirement funds (401K, IRA, etc.)"
   - other_kids: |
       Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court-ordered child support you pay for children of another relationship"
   - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
@@ -2716,6 +2726,8 @@ subquestion: |
   
   % if monthly_debt_payment > 0:
   <hr>
+  **Personal expenses you have told us about already**
+  
   You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
@@ -2734,17 +2746,24 @@ subquestion: |
     - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
   % endif
    
-   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
+   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
+  % endif
 
-  This amount will be entered into the form. You will be able to edit it after entering other expenses.
+  % if monthly_debt_payment == 0 and child_support_other_total > 0:
+    <hr>
+    **Personal expenses you have told us about already**
+  % elif child_support_other_total > 0:
   
+    According to the information you entered about children from another relationship, your monthly court-ordered child support payments are:
+  
+  % for child in other_children:
+  - **${ currency(child.child_support_amount) }** for ${child.name_full() }. And you pay **${ currency(child.child_support_paid)}.**
+  % endfor
+  This amount will be entered into the form. You will be able to edit it.
+  % else:
+  
+  % endif
   <hr>
-  % endif
-
-  % if child_support_other_total > 0:
-  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_other_total)}. This amount will be entered into the form. You will be able to edit it.
-  % endif
-
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
@@ -2984,15 +3003,31 @@ subquestion: |
   What expenses do you have for children of this relationship?
   
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
-  
+
   % if out_of_pocket_costs > 0:
+  <hr>
+  **Child expenses you have told us about already**
+  
   You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). This amount will be entered into the form. You will be able to edit it.
   % endif
-
+  
+  % if out_of_pocket_costs == 0 and child_support_shared > 0:
+  <hr>
+  **Child expenses you have told us about already**
+  % endif
   
   % if child_support_shared > 0:
-  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_shared)}. This amount will be entered into the form. You will be able to edit it.
+  According to the information you entered about shared children, your monthly child support expense is: 
+  
+  % for child in shared_children:
+  % if child.child_support_amount > 0:
+  - **${ currency(child.child_support_amount) }** for ${child.name_full() }. And you pay **${ currency(child.child_support_paid)}.**
   % endif
+  % endfor
+  
+  This amount will be entered into the form. You will be able to edit it.
+  % endif
+  <hr>
 fields:
   - no label: children_expenses.selected_types
     datatype: checkboxes
@@ -3043,10 +3078,6 @@ fields:
     min: 0
     max: ${ children_expenses[i].total(times_per_year=12) }
     default: ${ children_expenses[i].paid_by_other_monthly_default }
-
----
-code: |
-  children_expenses[i].paid_by_other_monthly_default = 0
 ---
 id: children expense display name
 code: |
@@ -3068,7 +3099,7 @@ subquestion: |
   % endif
 
   % if child_support_shared > 0:
-  According to the information you entered about shared children, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_shared)}. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  According to the information you entered about shared children, your monthly child support expense is **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
   % endif
   
   ${ children_expenses_table }
