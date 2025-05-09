@@ -2754,12 +2754,8 @@ subquestion: |
     **Personal expenses you have told us about already**
   % elif child_support_other_total > 0:
   
-    According to the information you entered about children from another relationship, your monthly court-ordered child support payments are:
-  
-  % for child in other_children:
-  - **${ currency(child.child_support_amount) }** for ${child.name_full() }. And you pay **${ currency(child.child_support_paid)}.**
-  % endfor
-  This amount will be entered into the form. You will be able to edit it.
+    According to the information you entered about children from another relationship, your monthly child support expense for these children is:
+  **${ currency(child_support_other_total) }** and you pay **${ currency(child_support_other_self_paid) }**. This will be entered into the form. You will be able to edit it.
   % else:
   
   % endif
@@ -2881,7 +2877,7 @@ subquestion: |
   % endif
 
   % if child_support_other_total > 0:
-  According to the information you entered about children that you do not share with ${ other_parties[0].name.full() }, your monthly child support to ${ other_parties[0].name_full() } is ${ currency(child_support_other_total )}.  You pay ${ currency(child_support_other_self_paid )}.  The total amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
+  According to the information you entered about children of another relationship, your monthly child support expense for these children is ${ currency(child_support_other_total )}. This will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
   % endif  
   
   ${ personal_expenses_table }
@@ -3017,15 +3013,8 @@ subquestion: |
   % endif
   
   % if child_support_shared > 0:
-  According to the information you entered about shared children, your monthly child support expense is: 
-  
-  % for child in shared_children:
-  % if child.child_support_amount > 0:
-  - **${ currency(child.child_support_amount) }** for ${child.name_full() }. And you pay **${ currency(child.child_support_paid)}.**
-  % endif
-  % endfor
-  
-  This amount will be entered into the form. You will be able to edit it.
+  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is: 
+  **${ currency(child_support_shared) }**. This amount will be entered into the form. You will be able to edit it.
   % endif
   <hr>
 fields:
@@ -3099,7 +3088,7 @@ subquestion: |
   % endif
 
   % if child_support_shared > 0:
-  According to the information you entered about shared children, your monthly child support expense is **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
   % endif
   
   ${ children_expenses_table }
