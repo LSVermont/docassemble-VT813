@@ -2980,13 +2980,6 @@ code: |
     temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
   x.total_monthly_self_payment = temp_total
 ---
-generic object: ALExpenseList
-code: |
-  temp_total = 0
-  for item in children_expenses:
-    temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
-  x.total_monthly_self_payment = temp_total
----
 id: children_expenses_ordered object
 objects:
   - children_expenses_ordered: DAOrderedDict.using(elements=children_expenses.terms_ordered, auto_gather=False, gathered=True)
