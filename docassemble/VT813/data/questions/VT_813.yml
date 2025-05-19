@@ -218,6 +218,9 @@ code: |
 
 
   jobs_order
+
+  if rental_income:
+    has_schedule_e or monthly_rental_income
   
   set_progress(48)
   if len(other_incomes) > 0:
@@ -1022,7 +1025,6 @@ edit:
 id: other_incomes.terms_ordered
 variable name: other_incomes.terms_ordered
 data: !!omap
-  - rental income: "Rental income"
   - pension: "Retirement/pension"
   - unemployment income: "Unemployment benefits"
   - worker comp: "Workers compensation and/or disability insurance (SSDI)"
@@ -1086,6 +1088,16 @@ subquestion: |
   % elif i > 0:
   You have already told us about your income from ${ comma_and_list(other_income.display_name for other_income in other_incomes.complete_elements()) }.
   % endif
+
+  % if rental_income:
+  You said that your total monthly rental income is
+  % if has_schedule_e:
+  **${ currency(schedule_e_income/12) }**
+  % else: 
+  **${ currency(monthly_rental_income) }** 
+  % endif
+  . This amount will be entered into the form. You will be able to edit it.
+  % endif
 fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
@@ -1116,15 +1128,6 @@ validation code: |
     other_incomes[i].display_name = other_incomes.terms_ordered.get(other_incomes[i].source, other_incomes[i].source)
   else:
     other_incomes[i].display_name = other_incomes[i].source_other
----
-if: other_incomes[i].source == "rental income"
-code: |
-  if has_schedule_e:
-    other_incomes[i].value = schedule_e_income
-    other_incomes[i].times_per_year = 1
-  else:
-    other_incomes[i].value = monthly_rental_income
-    other_incomes[i].times_per_year = 12
 ---
 id: rental_expenses.terms_ordered
 variable name: rental_expenses.terms_ordered
@@ -1213,10 +1216,13 @@ code: |
 id: rental net income
 question:  Rental income
 fields:
+  - Do you receive any rental income?: rental_income
+    datatype: yesnoradio
   - note: |
       Many people don't file an IRS Schedule E for rental income. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete the worksheet if you can’t include an IRS Schedule E.
   - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
+    show if: rental_income
   - note: |
       If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
       
@@ -1238,10 +1244,36 @@ id: want to add more other incomes
 question: Do you want to add any more incomes?
 subquestion: |
   Tap Next if you don't have more to add.
+
+  % if rental_income:
+  You said that your total monthly rental income is
+  % if has_schedule_e:
+  **${ currency(schedule_e_income/12) }**
+  % else: 
+  **${ currency(monthly_rental_income) }** 
+  % endif
+  . This amount will be entered into the form.   
+  % if has_schedule_e:
+  [You can edit this by
+  clicking this link](${ url_action('schedule_e_income')}).
+  % else: 
+  [You can edit this by
+  clicking this link](${ url_action('rental_expenses.revisit')}).
+  % endif
+  % endif
   
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
+
+  Your total monthly other income is 
+  % if rental_income and has_schedule_e:
+  ${ currency((float(other_incomes.total(times_per_year=1)) + schedule_e_income)/12)}.
+  % elif rental_income:
+  ${ currency(float(other_incomes.total(times_per_year=12)) + monthly_rental_income)}.
+  % else:
+  ${ currency(float(other_incomes.total(times_per_year=12)))}.
+  % endif
 continue button field: other_incomes.review_items
 ---
 id: other_incomes.revisit
@@ -2125,7 +2157,7 @@ subquestion: |
 id: household_expenses.terms_ordered
 variable name: household_expenses.terms_ordered
 data: !!omap
-  - rent: "Rent or mortgage"
+  - rent: "Rent"
   - property_tax: "Property taxes"
   - home_insurance: "Homeowners' or renter's insurance"
   - electric: "Electricity"
@@ -2214,17 +2246,6 @@ validation code: |
     else:
       household_expenses[i].paid_by_other_monthly_default = 0
     invalidate('household_expenses[i].paid_by_other_monthly')
----
-if: household_expenses[i].source == 'rent' and primary_residence_loans.total_monthly_self_payment  > 0
-code: |
-  household_expenses[i].value = primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
-  household_expenses[i].times_per_year = 12
-  if float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - primary_residence_loans.total_monthly_self_payment > 0:
-    household_expenses[i].paid_by_other = True
-    household_expenses[i].paid_by_other_monthly = float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - primary_residence_loans.total_monthly_self_payment
-  else:
-    household_expenses[i].paid_by_other = False    
-    household_expenses[i].paid_by_other_monthly = 0
   
 ---
 id: household expenses paid by others
@@ -4243,15 +4264,28 @@ review:
   - note: |
       **Select Resume, below, when you are done. It will take a moment to generate your form again.**
 ---
+id: annual_rental_income revisit
+continue button field: annual_rental_income_revisit
+question: Edit annual rental income
+fields:
+  - Annual rent received: annual_rental_income
+    datatype: currency
+
+---
+reconsider: monthly_rental_income
 id: rental_expenses.revisit
 continue button field: rental_expenses.revisit
 question: |
-  Edit rental business expenses
+  Edit rental business income and expenses
 subquestion: |
+
+  You said your annual rental income was ${ currency(annual_rental_income) }. [Click hear to edit.](${ url_action('annual_rental_income_revisit')})
   
   ${ rental_expenses_table }
 
   ${ rental_expenses.add_action() }
+
+  Your total annual rental income is ${ currency(annual_rental_income - float(rental_expenses.total(times_per_year = 1)))} and your monthly rental income is ${ currency(monthly_rental_income)}.
 ---
 id: rental_expenses_table
 table: rental_expenses_table
@@ -4525,7 +4559,7 @@ attachments:
           ${ "{:.2f}".format(jobs.total(times_per_year = 12)) }
           % endif
       - "users1_income_rental_monthly_amount": |
-          ${ "{:.2f}".format(other_incomes.total(source=['rental income'], times_per_year=12)) } 
+          ${ "{:.2f}".format((float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12,symbol="") }
       - "users1_income_income_retirement_monthly_amount": |
           ${ "{:.2f}".format(other_incomes.total(source=['pension'], times_per_year=12)) } 
       - "users1_income_unemployment_monthly_amount": |
