@@ -1168,6 +1168,13 @@ data: !!omap
   - depreciation: "Depreciation expense"
   - other: "Other"
 ---
+id: annual_rental_income revisit
+continue button field: annual_rental_income_revisit
+question: Edit annual rental income
+fields:
+  - Annual rent received: annual_rental_income
+    datatype: currency
+---
 id: rental income and expenses
 question: |
   Rental income worksheet
@@ -4228,7 +4235,6 @@ review:
       - primary_residence_loans.revisit
       - recompute: 
         - primary_residence_loans.total_monthly_self_payment
-        - household_expenses[primary_residence_loans_househould_expenses_list_number].value
       - household_expenses.revisit
     button: |
       **Primary residence loans**
@@ -4411,14 +4417,6 @@ review:
   - note: |
       **Select Resume, below, when you are done. It will take a moment to generate your form again.**
 ---
-id: annual_rental_income revisit
-continue button field: annual_rental_income_revisit
-question: Edit annual rental income
-fields:
-  - Annual rent received: annual_rental_income
-    datatype: currency
-
----
 reconsider: monthly_rental_income
 id: rental_expenses.revisit
 continue button field: rental_expenses.revisit
@@ -4599,8 +4597,6 @@ attachments:
     variable name: VT_financial_form_813a_post_interview_instructions[i]        
     skip undefined: True
     docx template file: VT_813A_next_steps.docx
-
-  
   - name: VT financial form 813A
     filename: vt_financial_form_813A.pdf     
     variable name: vt_financial_form_813A_attachment[i]        
@@ -4706,7 +4702,13 @@ attachments:
           ${ "{:.2f}".format(jobs.total(times_per_year = 12)) }
           % endif
       - "users1_income_rental_monthly_amount": |
+          % if rental_income and has_schedule_e:
+          ${ "{:.2f}".format(schedule_e_income/12,symbol="") }
+          % elif rental_income:
           ${ "{:.2f}".format((float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12,symbol="") }
+          % else:
+          0.00
+          % endif
       - "users1_income_income_retirement_monthly_amount": |
           ${ "{:.2f}".format(other_incomes.total(source=['pension'], times_per_year=12)) } 
       - "users1_income_unemployment_monthly_amount": |
@@ -4734,13 +4736,30 @@ attachments:
       - "users1_income_other_monthly_amount": |
           ${ "{:.2f}".format(other_incomes.total(source=['other'], times_per_year=12)) } 
       - "users1_other_incomes_total_monthly_amount": |
+          % if rental_income and has_schedule_e:
+          ${ "{:.2f}".format((float(schedule_e_income)/12 + float(other_incomes.total(times_per_year = 12))),symbol="") }
+          % elif rental_income:
+          ${ "{:.2f}".format((float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12 + float(other_incomes.total(times_per_year = 12)),symbol="") }
+          % else:
           ${ "{:.2f}".format(other_incomes.total(times_per_year = 12)) } 
-          
+          % endif
       - "users1_income_monthly_total": |
-          % if employed and is_self_employed and has_schedule_c:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }
+          % if employed and is_self_employed and has_schedule_c and rental_income and has_schedule_e:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + schedule_e_income/12) } 
+          % elif employed and is_self_employed and has_schedule_c and rental_income:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
+          % elif employed and is_self_employed and not has_schedule_c and rental_income and has_schedule_e:          
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))+ schedule_e_income/12) }          
+          % elif employed and is_self_employed and not has_schedule_c and rental_income:
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))  + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }
+          % elif employed and is_self_employed and has_schedule_c:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
           % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+          % elif rental_income and has_schedule_e: 
+          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)+ schedule_e_income/12) }
+          % elif rental_income: 
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (annual_rental_income - float(rental_expenses.total(times_per_year=1)))/12) }
           % else: 
           ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)) }
           % endif
