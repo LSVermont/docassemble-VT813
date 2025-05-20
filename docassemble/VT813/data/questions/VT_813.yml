@@ -756,6 +756,7 @@ depends on:
   - shared_children
   - other_children
 code: |
+  supported_children.clear()
   child_support_shared = 0
   child_support_other_self_paid = 0
   child_support_other_other_paid = 0
@@ -3014,7 +3015,7 @@ generic object: ALExpenseList
 code: |
   temp_total = 0
   for item in x:
-    temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
+    temp_total += float(item.total(times_per_year=12)) - item.paid_by_other_monthly
   x.total_monthly_self_payment = temp_total
 ---
 id: children_expenses_ordered object
