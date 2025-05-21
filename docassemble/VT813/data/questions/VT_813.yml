@@ -218,6 +218,9 @@ code: |
 
 
   jobs_order
+
+  if rental_income:
+    has_schedule_e or monthly_rental_income
   
   set_progress(48)
   if len(other_incomes) > 0:
@@ -243,19 +246,24 @@ code: |
   else:
     primary_residence_loans.there_are_any = False
     real_estate_loans.there_are_any = False
+  primary_residence_loans.total_monthly_self_payment
+  real_estate_loans.total_monthly_self_payment
   
   set_progress(55)
   if len(vehicle_loans) > 0:
     vehicle_loans.review_items
+  vehicle_loans.total_monthly_self_payment
   set_progress(57)
   if len(other_loans) > 0:
     other_loans.review_items
+  other_loans.total_monthly_self_payment
   
   
   nav.set_section('your_debts')
   set_progress(60)
   if len(credit_card_debt) > 0:
     credit_card_debt.review_items
+  credit_card_debt.total_monthly_self_payment
   set_progress(65)
   if len(other_debt) > 0:
     other_debt.review_items
@@ -274,11 +282,12 @@ code: |
       
   if len(household_expenses) > 0:
     household_expenses.review_items
+  household_expenses.total_monthly_self_payment
   set_progress(76)
   if len(vehicle_expenses) > 0:
     vehicle_expenses.review_items
+  vehicle_expenses.total_monthly_self_payment
   set_progress(77)
-  preload_insurance_expenses
   if len(insurance_expenses) > 0:
     insurance_expenses.review_items
   set_progress(78)
@@ -304,6 +313,7 @@ code: |
         self_employed_net_income_monthly_amount
     if len(jobs) > 0:
       review_jobs
+      healthcare_available 
       set_progress(44)    
       paystub_instructions
   single_jobs_attribute
@@ -548,7 +558,9 @@ fields:
       variable: shared_children[i].child_support_state
       is: "VT"
 continue button field: shared_children[i].revisit
-
+validation code: |
+  if shared_children[i].child_support == False:
+    invalidate('shared_children[i].child_support_amount','shared_children[i].child_support_paid','shared_children[i].child_support_state')
 ---
 id: children income
 variable name: shared_children[i].income.terms_ordered
@@ -744,14 +756,25 @@ depends on:
   - shared_children
   - other_children
 code: |
+  supported_children.clear()
+  child_support_shared = 0
+  child_support_other_self_paid = 0
+  child_support_other_other_paid = 0
+  child_support_other_total = 0
   for child in shared_children:
     if child.child_support:
       supported_children.append(child)
+      child_support_shared += child.child_support_paid
   for child in other_children:
     if child.child_support:
       supported_children.append(child)
+      child_support_other_self_paid += child.child_support_paid
+      child_support_other_other_paid += child.child_support_amount - child.child_support_paid
+      child_support_other_total += child.child_support_amount
+      
   supported_children.gathered = True
 ---
+reconsider: supported_children.gathered
 id: shared_children.revisit
 continue button field: shared_children.revisit
 question: |
@@ -760,7 +783,10 @@ subquestion: |
   ${ shared_children.table }
 
   ${ shared_children.add_action() }
+
+  The child support you pay for your shared children is ${ child_support_shared }.
 ---
+reconsider: supported_children.gathered
 id: other_children.revisit
 continue button field: other_children.revisit
 question: |
@@ -1022,7 +1048,6 @@ edit:
 id: other_incomes.terms_ordered
 variable name: other_incomes.terms_ordered
 data: !!omap
-  - rental income: "Rental income"
   - pension: "Retirement/pension"
   - unemployment income: "Unemployment benefits"
   - worker comp: "Workers compensation and/or disability insurance (SSDI)"
@@ -1086,6 +1111,16 @@ subquestion: |
   % elif i > 0:
   You have already told us about your income from ${ comma_and_list(other_income.display_name for other_income in other_incomes.complete_elements()) }.
   % endif
+
+  % if rental_income:
+  You said that your total monthly rental income is
+  % if has_schedule_e:
+  **${ currency(schedule_e_income/12) }**
+  % else: 
+  **${ currency(monthly_rental_income) }** 
+  % endif
+  . This amount will be entered into the form. You will be able to edit it.
+  % endif
 fields:
   - Source of income: other_incomes[i].source
     input type: dropdown
@@ -1117,15 +1152,6 @@ validation code: |
   else:
     other_incomes[i].display_name = other_incomes[i].source_other
 ---
-if: other_incomes[i].source == "rental income"
-code: |
-  if has_schedule_e:
-    other_incomes[i].value = schedule_e_income
-    other_incomes[i].times_per_year = 1
-  else:
-    other_incomes[i].value = monthly_rental_income
-    other_incomes[i].times_per_year = 12
----
 id: rental_expenses.terms_ordered
 variable name: rental_expenses.terms_ordered
 data: !!omap
@@ -1142,6 +1168,13 @@ data: !!omap
   - wages: "Wages and salaries"
   - depreciation: "Depreciation expense"
   - other: "Other"
+---
+id: annual_rental_income revisit
+continue button field: annual_rental_income_revisit
+question: Edit annual rental income
+fields:
+  - Annual rent received: annual_rental_income
+    datatype: currency
 ---
 id: rental income and expenses
 question: |
@@ -1213,10 +1246,13 @@ code: |
 id: rental net income
 question:  Rental income
 fields:
+  - Do you receive any rental income?: rental_income
+    datatype: yesnoradio
   - note: |
       Many people don't file an IRS Schedule E for rental income. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete the worksheet if you can’t include an IRS Schedule E.
   - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
+    show if: rental_income
   - note: |
       If you file an IRS Schedule E tax form, find the line for "Total rental real estate and royalty income or (loss)." That is your annual rental net income.
       
@@ -1238,10 +1274,36 @@ id: want to add more other incomes
 question: Do you want to add any more incomes?
 subquestion: |
   Tap Next if you don't have more to add.
+
+  % if rental_income:
+  You said that your total monthly rental income is
+  % if has_schedule_e:
+  **${ currency(schedule_e_income/12) }**
+  % else: 
+  **${ currency(monthly_rental_income) }** 
+  % endif
+  . This amount will be entered into the form.   
+  % if has_schedule_e:
+  [You can edit this by
+  clicking this link](${ url_action('schedule_e_income')}).
+  % else: 
+  [You can edit this by
+  clicking this link](${ url_action('rental_expenses.revisit')}).
+  % endif
+  % endif
   
   ${ other_incomes_table }
   
   ${ other_incomes.add_action() }
+
+  Your total monthly other income is 
+  % if rental_income and has_schedule_e:
+  ${ currency((float(other_incomes.total(times_per_year=1)) + schedule_e_income)/12)}.
+  % elif rental_income:
+  ${ currency(float(other_incomes.total(times_per_year=12)) + monthly_rental_income)}.
+  % else:
+  ${ currency(float(other_incomes.total(times_per_year=12)))}.
+  % endif
 continue button field: other_incomes.review_items
 ---
 id: other_incomes.revisit
@@ -1295,9 +1357,12 @@ question: |
 subquestion: |
   % if is_self_employed:
   You said you have self-employment income. Do you also have jobs where you work for an employer?
+
   % else:
   You said you do not have self-employment income. Do you have jobs where you work for an employer? 
   % endif
+
+  Note: If you get income from long-term or short-term rentals, don’t include that here. We will collect information about that income separately.
   
 fields:
   - Do you have other jobs?: has_jobs
@@ -1347,8 +1412,7 @@ generic object: ALItemizedJob
 code: |
   x.source
   x.employer.name.first
-  x.to_add.gather()
-  x.healthcare_available    
+  x.to_add.gather()   
   x.complete = True
 ---
 id: job at least one wage
@@ -1519,7 +1583,7 @@ code: |
     if job.overtime_info:
       overtime_included_any_job = True
 ---
-code: |
+comment: |
   jobs.kids_enrolled = False
   for job in jobs:
     if job.healthcare_available and job.kids_enrolled:
@@ -1557,7 +1621,6 @@ code: |
 ---
 code: |
   overtime_included_any_job
-  jobs.kids_enrolled
   jobs.deductions_federal_monthly_amount
   jobs.deductions_fica_monthly_amount
   jobs.deductions_medicare_monthly_amount
@@ -1568,43 +1631,44 @@ code: |
 id: healthcare benefits
 question: Healthcare benefits
 fields:
-  - Could you get insurance through this job — even if you choose not to enroll yourself or your children?: jobs[i].healthcare_available
+  - Could you get insurance through a job — even if you choose not to enroll yourself or your children?: healthcare_available
     datatype: yesnoradio
   - note: |
       Ask the human resources department at your job to find answers to these questions. You need to fill in all the prices even if you don't have kids and even if you don't use your employer's health insurance.
-    show if: jobs[i].healthcare_available
-  - Total monthly family health insurance cost to employee: jobs[i].health_insurance_family_cost
+    show if: healthcare_available
+  - Total monthly family health insurance cost to employee: health_insurance_family_cost
     datatype: currency
-    show if: jobs[i].healthcare_available
-  - Total monthly two person cost to employee: jobs[i].health_insurance_2_person_cost
+    show if: healthcare_available
+  - Total monthly two person cost to employee: health_insurance_2_person_cost
     datatype: currency
-    show if: jobs[i].healthcare_available
-  - Total monthly cost for single person coverage to employee: jobs[i].health_insurance_single_person_cost
+    show if: healthcare_available
+  - Total monthly cost for single person coverage to employee: health_insurance_single_person_cost
     datatype: currency
-    show if: jobs[i].healthcare_available
-  - Are you enrolled in your employer's insurance?: jobs[i].enrolled
+    show if: healthcare_available
+  - Are you enrolled in your employer's insurance?: enrolled
     datatype: yesnoradio
-    show if: jobs[i].healthcare_available
-  - Are your kids enrolled?: jobs[i].kids_enrolled
+    show if: healthcare_available
+  - Are your kids enrolled?: kids_enrolled
     datatype: yesnoradio
-    show if: jobs[i].healthcare_available
-  - How much do **you** pay for the health insurance each month?: jobs[i].health_insurance_paid
-    show if: jobs[i].enrolled
+    show if: healthcare_available
+  - How much do **you** pay for the health insurance each month?: health_insurance_paid
+    show if: enrolled
     datatype: currency
-  - How much does **someone else** pay for the health insurance each month? For example, your employer or spouse.: jobs[i].health_insurance_paid_by_employer
-    show if: jobs[i].enrolled
+  - How much does **someone else** pay for the health insurance each month? For example, your employer or spouse.: health_insurance_paid_by_employer
+    show if: enrolled
     datatype: currency
 ---
-depends on: jobs[i].healthcare_available
-if: not jobs[i].healthcare_available
+id: sets health insurance info if no job
+depends on: healthcare_available
+if: len(jobs) == 0 or not healthcare_available
 code: |
-  jobs[i].health_insurance_family_cost = 0
-  jobs[i].health_insurance_2_person_cost = 0
-  jobs[i].health_insurance_single_person_cost = 0
-  jobs[i].health_insurance_paid = 0
-  jobs[i].enrolled = False
-  jobs[i].kids_enrolled = False
-  jobs[i].health_insurance_paid_by_employer = 0
+  health_insurance_family_cost = 0
+  health_insurance_2_person_cost = 0
+  health_insurance_single_person_cost = 0
+  health_insurance_paid = 0
+  enrolled = False
+  kids_enrolled = False
+  health_insurance_paid_by_employer = 0
     
 ---
 id: sets default attributes if personal expenses arent paid
@@ -2116,13 +2180,43 @@ subquestion: |
   - personal expenses
     
   Tap the Next button.
+comment: |
+  --Notes on how an expenses list is gathered, which may have expenses set as default from other lists, using household_expensess as an example--
+  
+  Interview has already asked about primary_residence_loans (which will be used as a default for the household_expenses['rent']
+
+  Interview order calls household_expenses and household_expenses.review_items - id: interview_order_VT_813
+
+  Gather looks for .there_are_any - id: selected types sets there_are_any
+
+  there_any_any asks for household_expenses.selected_types - id: household expenses types
+  
+  default code sets household_expenses.selected_types['rent'] to true if there are primary_residence_loans that the user pays
+
+  if any selected types,
+   move_check_to_lists function from al_income_move
+   This creates a number of elements in the list. The version in al_income_move does not delete 'source' if other, (original may set 'source' to the default, like 'vehicle')
+   also sets .moved for the list
+   there_are_any is set to true (  check_for_others will set source? CHECK)
+   will then look for complete - id: ALExpense complete
+
+  complete calls for attribute (value for household_expenses) for information question
+  if household_expenses[i].source is "rent", then code sets the value. for editing purposes, it also sets primary_residence_loans_househould_expenses_list_number to the index of household_expenses wi id: code setting loans as default for rent
+
+  information question calls display name (with reconsider to keep it fresh)
+  
+  answering the question sets display_name fresh with new source_other with validation code
+
+  complete sets display  
+  
+  household_expenses.review_items shows a table, which will include the mortgage expense calculated by the code block
 ---
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
 id: household_expenses.terms_ordered
 variable name: household_expenses.terms_ordered
 data: !!omap
-  - rent: "Rent or mortgage"
+  - rent: "Rent"
   - property_tax: "Property taxes"
   - home_insurance: "Homeowners' or renter's insurance"
   - electric: "Electricity"
@@ -2157,16 +2251,19 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  <hr>
+  **Household expenses you have told us about already**
+  
   You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  
+  <hr>
   % endif
 fields:
   - no label: household_expenses.selected_types
     datatype: checkboxes
     code: |
       household_expenses_ordered
-    default:
-      code: | 
-        {'rent': len(primary_residence_loans) > 0 and primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
+
 ---
 id: ALExpense complete
 generic object: ALExpense
@@ -2211,18 +2308,7 @@ validation code: |
     else:
       household_expenses[i].paid_by_other_monthly_default = 0
     invalidate('household_expenses[i].paid_by_other_monthly')
----
-if: household_expenses[i].source == 'rent' and primary_residence_loans.total_monthly_self_payment  > 0
-code: |
-  household_expenses[i].value = primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
-  household_expenses[i].times_per_year = 12
-  if float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - primary_residence_loans.total_monthly_self_payment > 0:
-    household_expenses[i].paid_by_other = True
-    household_expenses[i].paid_by_other_monthly = float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - primary_residence_loans.total_monthly_self_payment
-  else:
-    household_expenses[i].paid_by_other = False    
-    household_expenses[i].paid_by_other_monthly = 0
-  
+
 ---
 id: household expenses paid by others
 question:  Other payments for ${ household_expenses[i].display_name.lower() }
@@ -2247,9 +2333,16 @@ code: |
   else:
     household_expenses[i].display_name = household_expenses_other_display
 ---
+reconsider: primary_residence_loans.total_monthly_self_payment
 id: want to add more household expenses
 question: Do you want to list any more household expenses?
 subquestion: |
+
+  % if primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form.   [You can edit this by
+  clicking this link](${ url_action('primary_residence_loans.revisit')}).
+  % endif
+  
   Tap Next if you don't have more to add.
   
   ${ household_expenses_table }
@@ -2257,10 +2350,11 @@ subquestion: |
   ${ household_expenses.add_action() }
   
   **Total of household expenses shown above:**
-  ${ currency(household_expenses.total(times_per_year=12)) }
+  ${ currency(household_expenses.total(times_per_year=12) + primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) ) }
 
 continue button field: household_expenses.review_items
 ---
+reconsider: household_expenses.total_monthly_self_payment
 id: household_expenses.revisit
 continue button field: household_expenses.revisit
 question: |
@@ -2285,14 +2379,12 @@ columns:
       currency(row_item.total(times_per_year=12))
 edit:
   - source
-  - value
 ---
 id: vehicle_expenses.terms_ordered
 # "!!omap" makes these terms ordered
 # their order here will be their same order when shown to users.
 variable name: vehicle_expenses.terms_ordered
 data: !!omap
-  - auto_loans: "Vehicle loans"
   - auto_insur: "Car insurance"
   - auto_gas: "Gas"
   - auto_maint: "Maintenance/repairs"
@@ -2320,7 +2412,11 @@ subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
   
   % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  <hr>
+  **Vehicle expenses you have told us about already**
+  
   You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  <hr>
   % endif
 fields:
   - no label: vehicle_expenses.selected_types
@@ -2369,6 +2465,11 @@ validation code: |
       vehicle_expenses[i].paid_by_other_monthly_default = 0
     invalidate('vehicle_expenses[i].paid_by_other_monthly')
 ---
+code: |
+  vehicle_expenses.appendObject()
+  vehicle_expenses[-1].source = 'auto_loans'
+  vehicle_loans.vehicles_expenses_list_number = len(household_expenses)-1  
+---
 if: vehicle_expenses[i].source == 'auto_loans' and vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
 code: |
   vehicle_expenses[i].value = vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
@@ -2379,6 +2480,7 @@ code: |
   else:
     vehicle_expenses[i].paid_by_other = False    
     vehicle_expenses[i].paid_by_other_monthly = 0
+  vehicle_loans.vehicles_expenses_list_number = i
 ---
 id: vehicle expenses paid by others
 question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
@@ -2401,18 +2503,26 @@ code: |
   else:
     vehicle_expenses[i].display_name = vehicle_expenses_other_display
 ---
+reconsider: vehicle_loans.total_monthly_self_payment
 id: want to add more expenses
 question: Do you want to list any more vehicle expenses?
 subquestion: |
   Tap Next if you don't have more to add.
+
+    % if vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. [You can edit this by
+  clicking this link](${ url_action('vehicle_loans.revisit')}).
+
+  % endif
   
   ${ vehicle_expenses_table }
   
   ${ vehicle_expenses.add_action() }
 
-  **Total of vehicle expenses shown above:** ${ currency(vehicle_expenses.total(times_per_year=12)) }
+  **Total of vehicle expenses shown above:** ${ currency(vehicle_expenses.total(times_per_year=12) + vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }
 continue button field: vehicle_expenses.review_items
 ---
+reconsider: vehicle_expenses.total_monthly_self_payment
 id: vehicle_expenses.revisit
 continue button field: vehicle_expenses.revisit
 question: |
@@ -2449,7 +2559,7 @@ variable name: insurance_expenses.terms_ordered
 data: !!omap
   - insur_life: "Life insurance"
   - insur_disab: "Disability insurance"
-  - insur_health: "Health insurance"
+  - insur_health: "Health insurance not offered through employer"
   - insur_dentvis: "Dental/vision insurance"
 ---
 id: insurance_expenses_other_display
@@ -2465,16 +2575,6 @@ id: insurance_expenses_ordered object
 objects:
   - insurance_expenses_ordered: DAOrderedDict.using(elements=insurance_expenses.terms_ordered, auto_gather=False, gathered=True)
 ---
-id: preload health insurance to expenses
-code: |
-  health_insurance_paid_total = 0
-  health_insurance_paid_by_employer_total = 0
-  for job in jobs:
-    if job.healthcare_available and job.enrolled:
-      health_insurance_paid_total += job.health_insurance_paid
-      health_insurance_paid_by_employer_total += job.health_insurance_paid_by_employer
-  preload_insurance_expenses = True
----
 #expenses
 id: insurance expenses types
 question: |
@@ -2482,17 +2582,17 @@ question: |
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
-  % if health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0:
-  You said that you pay ${ currency(health_insurance_paid_total) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer_total) }. Health insurance is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  <hr>
+  **Health insurance expenses you have told us about already**
+  
+  You said that you pay **${ currency(health_insurance_paid) }** for health insurance and someone else pays **${ currency(health_insurance_paid_by_employer) }.** This amount will be entered into the form. You will be able to change this after entering any other insurance expense information.
   % endif
 fields:
   - no label: insurance_expenses.selected_types
     datatype: checkboxes
     code: |
       insurance_expenses_ordered
-    default:
-      code: |
-        {'insur_health': health_insurance_paid_total > 0 or health_insurance_paid_by_employer_total > 0}
 ---
 id: insurance expense information
 reconsider: insurance_expenses[i].display_name
@@ -2532,17 +2632,6 @@ validation code: |
       insurance_expenses[i].paid_by_other_monthly_default = 0
     invalidate('insurance_expenses[i].paid_by_other_monthly')
 ---
-if: insurance_expenses[i].source == "insur_health"
-code: |
-  insurance_expenses[i].times_per_year = 12
-  if health_insurance_paid_by_employer_total + health_insurance_paid_total > 0:
-    if health_insurance_paid_by_employer_total > 0:
-      insurance_expenses[i].paid_by_other = True
-      insurance_expenses[i].paid_by_other_monthly = health_insurance_paid_by_employer_total
-      insurance_expenses[i].value = health_insurance_paid_total + health_insurance_paid_by_employer_total
-    else:
-      insurance_expenses[i].value = health_insurance_paid_total  
----
 id: insurance expense paid by other question
 question:  Other payments for ${ insurance_expenses[i].display_name }
 subquestion: |
@@ -2570,14 +2659,20 @@ id: want to add more insurance expenses
 question: Do you want to list any more insurance expenses?
 subquestion: |
   Tap Next if you don't have more to add.
+
+    % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  **Health insurance through work:**
+  You said that you pay ${ currency(health_insurance_paid) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer) }. [You can edit this by clicking this link](${ url_action('health_insurance_paid')})
+  % endif
   
   ${ insurance_expenses_table }
   
   ${ insurance_expenses.add_action() }
 
-  **Total of insurance expenses shown above:** ${ currency(insurance_expenses.total(times_per_year=12)) }
+  **Total of insurance expenses shown above:** ${ currency(float(insurance_expenses.total(times_per_year=12)) + health_insurance_paid) }
 continue button field: insurance_expenses.review_items
 ---
+reconsider: insurance_expenses.total_monthly_self_payment
 id: insurance_expenses.revisit
 continue button field: insurance_expenses.revisit
 question: |
@@ -2626,10 +2721,8 @@ data: !!omap
   - dues: "Union dues"
   - save: "Monthly contribution to savings"
   - contributions: "Monthly contribution to retirement funds (401K, IRA, etc.)"
-  - loans: "Monthly loan and debt payments"
   - other_kids: |
       Expenses for children living with you but not of the relationship with ${ other_parties[0].name_full() }
-  - child_support: "Court-ordered child support you pay for children of another relationship"
   - alimony: "Court-ordered spousal maintenance (alimony) you pay"
   - other: "Miscellaneous"
 --- 
@@ -2671,6 +2764,8 @@ subquestion: |
   
   % if monthly_debt_payment > 0:
   <hr>
+  **Personal expenses you have told us about already**
+  
   You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
@@ -2689,21 +2784,25 @@ subquestion: |
     - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
   % endif
    
-   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
-
-  "Monthly loan and debt payments" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
-  
-  <hr>
+   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
   % endif
 
+  % if monthly_debt_payment == 0 and child_support_other_total > 0:
+    <hr>
+    **Personal expenses you have told us about already**
+  % elif child_support_other_total > 0:
+  
+    According to the information you entered about children from another relationship, your monthly child support expense for these children is:
+  **${ currency(child_support_other_total) }** and you pay **${ currency(child_support_other_self_paid) }**. This will be entered into the form. You will be able to edit it.
+  % else:
+  
+  % endif
+  <hr>
 fields:
   - no label: personal_expenses.selected_types
     datatype: checkboxes
     code: |
       personal_expenses_ordered
-    default:
-      code: |
-        {'loans': monthly_debt_payment > 0}
   - note: |
       After you enter any personal expenses, it will take a moment to generate your draft form so you can review it!
 ---
@@ -2744,17 +2843,7 @@ validation code: |
     else:
       personal_expenses[i].paid_by_other_monthly_default = 0
     invalidate('personal_expenses[i].paid_by_other_monthly')
----
-if: personal_expenses[i].source == 'loans' and monthly_debt_payment > 0
-code: |
-  personal_expenses[i].value = total_monthly_debt_payment
-  personal_expenses[i].times_per_year = 12
-  if float(total_monthly_debt_payment) - monthly_debt_payment > 0:
-    personal_expenses[i].paid_by_other = True
-    personal_expenses[i].paid_by_other_monthly = float(total_monthly_debt_payment) - monthly_debt_payment
-  else:
-    personal_expenses[i].paid_by_other = False
-    personal_expenses[i].paid_by_other_monthly = 0
+
 ---
 id: personal expenses paid by others question
 question:  Other payments for ${ personal_expenses[i].display_name.lower() }
@@ -2779,30 +2868,107 @@ code: |
   else:
     personal_expenses[i].display_name = personal_expenses_other_display
 ---
+reconsider: 
+  - real_estate_loans.total_monthly_self_payment
+  - other_loans.total_monthly_self_payment
+  - other_debt.total_monthly_self_payment
+  - monthly_debt_payment
+  - total_monthly_debt_payment
 id: want to add more personal expenses
 question: Do you want to list any more personal expenses?
 subquestion: |
   Tap Next if you don't have more to add.
   
+  % if total_monthly_debt_payment > 0:
+  <hr>
+  You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
+
+  % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+    - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) }. 
+  
+      - [Click here to edit the real estate loans.](${ url_action('real_estate_loans.revisit')})
+  
+  % endif
+  % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
+    - Other loans: Total of ${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_loans.total_monthly_self_payment) }. They include:
+  % for loan_type in ["personal","school","other"]:
+  % if len(other_loans.matches(source=[loan_type])) > 0:
+      - ${ quantity_noun(len(other_loans.matches(source=[loan_type])), other_loans.terms_ordered.get(loan_type, loan_type)).lower() }
+  % endif
+  % endfor
+
+      - [Click here to edit other loans.](${ url_action('other_loans.revisit')})
+  
+  % endif
+  % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
+    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
+
+      - [Click here to edit the other debt.](${ url_action('other_debt.revisit')})
+  
+  % endif
+   
+   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
+
+  "Monthly loan and debt payments" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  
+  <hr>
+  % endif
+
+  % if child_support_other_total > 0:
+  According to the information you entered about children of another relationship, your monthly child support expense for these children is ${ currency(child_support_other_total )}. This will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
+  % endif  
+  
   ${ personal_expenses_table }
 
   ${ personal_expenses.add_action() }
   
-  **Total of personal expenses shown above:** ${ currency(personal_expenses.total(times_per_year=12)) }
+  **Total of personal expenses shown above:** ${ currency(float(personal_expenses.total(times_per_year=12)) + float(total_monthly_debt_payment) + child_support_other_total) }
 
 continue button field: personal_expenses.review_items
 ---
+reconsider: total_monthly_debt_payment
 id: personal_expenses.revisit
 continue button field: personal_expenses.revisit
 question: |
   Edit personal expenses
 subquestion: |
+
+  % if monthly_debt_payment > 0:
+  <hr>
+  You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
+
+  % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
+    - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) }. 
+  
+  [You can edit the real estate loans by clicking this link](${ url_action('real_estate_loans.revisit')}).
+  % endif
+  % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
+    - Other loans: Total of ${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_loans.total_monthly_self_payment) }. They include:
+  % for loan_type in ["personal","school","other"]:
+  % if len(other_loans.matches(source=[loan_type])) > 0:
+      - ${ quantity_noun(len(other_loans.matches(source=[loan_type])), other_loans.terms_ordered.get(loan_type, loan_type)).lower() }
+  % endif
+  % endfor
+
+  [You can edit the other loans by clicking this link](${ url_action('other_loans.revisit')}).
+
+  % endif
+  % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
+    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
+
+  [You can edit the other debt by clicking this link](${ url_action('other_debt.revisit')}).
+  % endif
+   
+   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
+  
+  % endif
+  
   ${ personal_expenses_table }
   
   ${ personal_expenses.add_action() }
 
   Total of expenses: 
-  ${ currency(personal_expenses.total(times_per_year=12)) }
+  ${ currency(personal_expenses.total(times_per_year=12) + total_monthly_debt_payment) }
 ---
 id: personal_expenses_table
 table: personal_expenses_table
@@ -2827,15 +2993,12 @@ variable name: children_expenses.terms_ordered
 data: !!omap
   - kids_clothes: "Clothing and shoes"
   - kids_diapers: "Diapers"
-  - kids_childcare: "Out-of-pocket childcare costs"
   - kids_lunch: "School lunches"
   - kids_supplies: "School supplies"
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
   - kids_camp: "Summer camp/school vacation camp"
   - kids_tuition: "Private school tuition"
   - kids_medical: "Uninsured medical/dental expenses"
-  - kids_childsupport: |
-      Child Support you pay for children you share with ${ other_parties[0].name_full() }
   - kids_other: "Miscellaneous"
 
 --- 
@@ -2852,14 +3015,7 @@ generic object: ALExpenseList
 code: |
   temp_total = 0
   for item in x:
-    temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
-  x.total_monthly_self_payment = temp_total
----
-generic object: ALExpenseList
-code: |
-  temp_total = 0
-  for item in children_expenses:
-    temp_total += float(item.total(times_per_year=12) - item.paid_by_other_monthly_default)
+    temp_total += float(item.total(times_per_year=12)) - item.paid_by_other_monthly
   x.total_monthly_self_payment = temp_total
 ---
 id: children_expenses_ordered object
@@ -2874,18 +3030,29 @@ subquestion: |
   What expenses do you have for children of this relationship?
   
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
-  
+
   % if out_of_pocket_costs > 0:
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). Because of this, "Out-of-pocket childcare costs" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
+  <hr>
+  **Child expenses you have told us about already**
+  
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). This amount will be entered into the form. You will be able to edit it.
   % endif
+  
+  % if out_of_pocket_costs == 0 and child_support_shared > 0:
+  <hr>
+  **Child expenses you have told us about already**
+  % endif
+  
+  % if child_support_shared > 0:
+  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is: 
+  **${ currency(child_support_shared) }**. This amount will be entered into the form. You will be able to edit it.
+  % endif
+  <hr>
 fields:
   - no label: children_expenses.selected_types
     datatype: checkboxes
     code: |
       children_expenses_ordered
-    default:
-      code: |
-        {'kids_childcare': out_of_pocket_costs > 0}
 ---
 id: children expense information
 reconsider: children_expenses[i].display_name
@@ -2931,10 +3098,6 @@ fields:
     min: 0
     max: ${ children_expenses[i].total(times_per_year=12) }
     default: ${ children_expenses[i].paid_by_other_monthly_default }
-
----
-code: |
-  children_expenses[i].paid_by_other_monthly_default = 0
 ---
 id: children expense display name
 code: |
@@ -2950,12 +3113,20 @@ question: Do you want to list any more child expenses?
 subquestion: |
 
   Tap Next if you don't have more to add.
+
+  % if out_of_pocket_costs > 0:
+  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).  This amount will be entered into the form. [Click here to change this amount.](${ url_action('out_of_pocket_costs')})
+  % endif
+
+  % if child_support_shared > 0:
+  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  % endif
   
   ${ children_expenses_table }
 
   ${ children_expenses.add_action() }
 
-  **Total of expenses shown above:**    ${ currency(children_expenses.total(times_per_year=12)) }
+  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared ) }
  
 continue button field: children_expenses.review_items
 ---
@@ -3180,6 +3351,7 @@ code: |
       temp_total += item.monthly_payment
   x.total_monthly_self_payment = temp_total
 ---
+reconsider: primary_residence_loans.total_monthly_self_payment
 id: primary_residence_loans.revisit
 continue button field: primary_residence_loans.revisit
 question: |
@@ -3794,6 +3966,7 @@ review:
         - children_income.gathered
       - follow up:
         - extraordinary_expenses
+        - out_of_pocket_costs
         
 
     button: |
@@ -4012,42 +4185,33 @@ review:
       % endif
 
   - Edit: 
+      - invalidate:
+          - has_schedule_e
+          - schedule_e_income
       - has_schedule_e
     button: |
       % if defined("has_schedule_e"):
-      **Rental income**
+      **Rental income - IRS Schedule E**
       
       % if has_schedule_e:
-      You have a Schedule E.
+      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10). Edit the net income above.
       % else:
-      You do not have a Schedule E.
-      
-      % if not has_schedule_e:
-      You used the rental income worksheet.
-      % else:
-      You did not use the rental income worksheet yet.
+      You do not have a Schedule E. You used the rental income worksheet (edit below).
       % endif
       % endif
       
-      % if has_schedule_e and defined("schedule_e_income"):
-      Annual rental net income is ${ currency(schedule_e_income) }
-      % endif
-      % endif
-
   - note: |
       % if not has_schedule_e:
       ###Rental income worksheet
       % endif
-      
-  - Edit: 
-      - annual_rental_income
-    button: |
-      % if not has_schedule_e:
-      **Annual rental income**: ${ currency(annual_rental_income) }
-      % endif
-      
+
   - Edit:
+      - invalidate:
+          - monthly_rental_income
       - rental_expenses.revisit
+      - annual_rental_income
+      - recompute:
+        - monthly_rental_income
     button: |
       % if not has_schedule_e:
       % if rental_expenses.total(times_per_year=1) > 0:
@@ -4059,9 +4223,12 @@ review:
       % else:
       - None
       % endif
-      % endif
 
+
+      **Annual rent received**
       
+      - ${ currency(annual_rental_income) }
+      % endif      
   - note: |
       ###Loans   
 
@@ -4069,6 +4236,7 @@ review:
       - primary_residence_loans.revisit
       - recompute: 
         - primary_residence_loans.total_monthly_self_payment
+      - household_expenses.revisit
     button: |
       **Primary residence loans**
 
@@ -4095,6 +4263,10 @@ review:
       % endif
   - Edit: 
       - vehicle_loans.revisit
+      - recompute: 
+        - vehicle_loans.total_monthly_self_payment
+        - household_expenses[vehicle_loans.vehicles_expenses_list_number].value
+      - household_expenses.revisit
       - recompute: 
         - vehicle_loans.total_monthly_self_payment
     button: |
@@ -4246,15 +4418,20 @@ review:
   - note: |
       **Select Resume, below, when you are done. It will take a moment to generate your form again.**
 ---
+reconsider: monthly_rental_income
 id: rental_expenses.revisit
 continue button field: rental_expenses.revisit
 question: |
-  Edit rental business expenses
+  Edit rental business income and expenses
 subquestion: |
+
+  You said your annual rental income was ${ currency(annual_rental_income) }. [Click hear to edit.](${ url_action('annual_rental_income_revisit')})
   
   ${ rental_expenses_table }
 
   ${ rental_expenses.add_action() }
+
+  Your total annual rental income is ${ currency(annual_rental_income - float(rental_expenses.total(times_per_year = 1)))} and your monthly rental income is ${ currency(monthly_rental_income)}.
 ---
 id: rental_expenses_table
 table: rental_expenses_table
@@ -4421,8 +4598,6 @@ attachments:
     variable name: VT_financial_form_813a_post_interview_instructions[i]        
     skip undefined: True
     docx template file: VT_813A_next_steps.docx
-
-  
   - name: VT financial form 813A
     filename: vt_financial_form_813A.pdf     
     variable name: vt_financial_form_813A_attachment[i]        
@@ -4528,7 +4703,13 @@ attachments:
           ${ "{:.2f}".format(jobs.total(times_per_year = 12)) }
           % endif
       - "users1_income_rental_monthly_amount": |
-          ${ "{:.2f}".format(other_incomes.total(source=['rental income'], times_per_year=12)) } 
+          % if rental_income and has_schedule_e:
+          ${ "{:.2f}".format(schedule_e_income/12,symbol="") }
+          % elif rental_income:
+          ${ "{:.2f}".format((float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12,symbol="") }
+          % else:
+          0.00
+          % endif
       - "users1_income_income_retirement_monthly_amount": |
           ${ "{:.2f}".format(other_incomes.total(source=['pension'], times_per_year=12)) } 
       - "users1_income_unemployment_monthly_amount": |
@@ -4556,13 +4737,30 @@ attachments:
       - "users1_income_other_monthly_amount": |
           ${ "{:.2f}".format(other_incomes.total(source=['other'], times_per_year=12)) } 
       - "users1_other_incomes_total_monthly_amount": |
+          % if rental_income and has_schedule_e:
+          ${ "{:.2f}".format((float(schedule_e_income)/12 + float(other_incomes.total(times_per_year = 12))),symbol="") }
+          % elif rental_income:
+          ${ "{:.2f}".format((float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12 + float(other_incomes.total(times_per_year = 12)),symbol="") }
+          % else:
           ${ "{:.2f}".format(other_incomes.total(times_per_year = 12)) } 
-          
+          % endif
       - "users1_income_monthly_total": |
-          % if employed and is_self_employed and has_schedule_c:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }
+          % if employed and is_self_employed and has_schedule_c and rental_income and has_schedule_e:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + schedule_e_income/12) } 
+          % elif employed and is_self_employed and has_schedule_c and rental_income:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
+          % elif employed and is_self_employed and not has_schedule_c and rental_income and has_schedule_e:          
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))+ schedule_e_income/12) }          
+          % elif employed and is_self_employed and not has_schedule_c and rental_income:
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))  + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }
+          % elif employed and is_self_employed and has_schedule_c:
+          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
           % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+          % elif rental_income and has_schedule_e: 
+          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)+ schedule_e_income/12) }
+          % elif rental_income: 
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (annual_rental_income - float(rental_expenses.total(times_per_year=1)))/12) }
           % else: 
           ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)) }
           % endif
@@ -4690,27 +4888,21 @@ attachments:
           ${ supported_children[2].child_support_state }
           % endif
       - "health_insurance_family_cost": |
-          % for job in jobs:
-          % if job.healthcare_available:
-          ${ "{:.2f}".format(job.health_insurance_family_cost) }
+          % if healthcare_available:
+          ${ "{:.2f}".format(health_insurance_family_cost) }
           % endif
-          % endfor
       - "health_insurance_2_person_cost": |
-          % for job in jobs:
-          % if job.healthcare_available:
-          ${ "{:.2f}".format(job.health_insurance_2_person_cost) }
+          % if healthcare_available:
+          ${ "{:.2f}".format(health_insurance_2_person_cost) }
           % endif
-          % endfor
       - "health_insurance_single_person_cost": |
-          % for job in jobs:
-          % if job.healthcare_available:
-          ${ "{:.2f}".format(job.health_insurance_single_person_cost) }
+          % if healthcare_available:
+          ${ "{:.2f}".format(health_insurance_single_person_cost) }
           % endif
-          % endfor
       - "health_insurance_kids_enrolled_yes": |
-          ${ jobs.kids_enrolled } 
+          ${ kids_enrolled } 
       - "health_insurance_kids_enrolled_no": |
-          ${ not jobs.kids_enrolled } 
+          ${ not kids_enrolled } 
       - "users1_expenses_child_care_monthly_amount": ${ "{:.2f}".format(total_monthly_childcare_costs) } 
       - "users1_expenses_child_care_subsidy_monthly_amount": |
           ${ "{:.2f}".format(childcare_subsidy) } 
@@ -4963,11 +5155,11 @@ attachments:
       - "users1_other_debt_total_payment": |
           ${ "{:.2f}".format(other_debt.total_other_attribute(attribute='monthly_payment')) } 
       - "users1_expenses_rent_mortgage_self_paid": |
-          ${ "{:.2f}".format(household_expenses.total(source='rent', times_per_year=12) -household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_monthly_self_payment+float(household_expenses.total(source='rent', times_per_year=12) -household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_rent_mortgage_other_paid": |
-          ${ "{:.2f}".format(household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format((float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment)+float(household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_rent_mortgage_monthly_amount": |
-          ${ "{:.2f}".format(household_expenses.total(source=['rent'], times_per_year=12)) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+household_expenses.total(source=['rent'], times_per_year=12)) } 
       - "users1_expenses_property_tax_self_paid": |
           ${ "{:.2f}".format(household_expenses.total(source='property_tax', times_per_year=12) -household_expenses.total_other_attribute(source='property_tax', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_property_tax_other_paid": |
@@ -5041,17 +5233,17 @@ attachments:
       - "users1_expenses_repairs_monthly_amount": |
           ${ "{:.2f}".format(household_expenses.total(source=['repairs'], times_per_year=12)) } 
       - "users1_expenses_total_self_paid": |
-          ${ "{:.2f}".format(household_expenses.total(times_per_year=12) -household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_monthly_self_payment+float(household_expenses.total(times_per_year=12) -household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_total_other_paid": |
-          ${ "{:.2f}".format(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format((float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment)+float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_total_monthly_amount": |
-          ${ "{:.2f}".format(household_expenses.total(times_per_year = 12)) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+household_expenses.total(times_per_year = 12)) } 
       - "users1_assets_vehicles_total_payment_self_paid_1": |
-          ${ "{:.2f}".format(vehicle_expenses.total(source='auto_loans', times_per_year=12) -vehicle_expenses.total_other_attribute(source='auto_loans', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(vehicle_loans.total_monthly_self_payment) } 
       - "users1_assets_vehicles_total_payment_other_paid_1": |
-          ${ "{:.2f}".format(vehicle_expenses.total_other_attribute(source='auto_loans', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment) } 
       - "users1_assets_vehicles_total_payment_1": |
-          ${ "{:.2f}".format(vehicle_expenses.total(source=['auto_loans'], times_per_year=12)) } 
+          ${ "{:.2f}".format(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } 
       - "users1_expenses_auto_insur_self_paid": |
           ${ "{:.2f}".format(vehicle_expenses.total(source='auto_insur', times_per_year=12) -vehicle_expenses.total_other_attribute(source='auto_insur', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_auto_insur_other_paid": |
@@ -5077,11 +5269,11 @@ attachments:
       - "users1_expenses_auto_reg_monthly_amount": |
           ${ "{:.2f}".format(vehicle_expenses.total(source=['auto_reg'], times_per_year=12)) } 
       - "users1_expenses_auto_total_self_paid": |
-          ${ "{:.2f}".format(vehicle_expenses.total(times_per_year=12) -vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(vehicle_loans.total_monthly_self_payment+float(vehicle_expenses.total(times_per_year=12) -vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_auto_total_other_paid": |
-          ${ "{:.2f}".format(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment+float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_auto_total_monthly_amount": |
-          ${ "{:.2f}".format(vehicle_expenses.total(times_per_year = 12)) } 
+          ${ "{:.2f}".format(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+vehicle_expenses.total(times_per_year = 12)) } 
       - "users1_expenses_insur_life_self_paid": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_life'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_life'],attribute='paid_by_other_monthly')) } 
       - "users1_expenses_insur_life_other_paid": |
@@ -5095,11 +5287,11 @@ attachments:
       - "users1_expenses_insur_disab_monthly_amount": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_disab'], times_per_year=12)) } 
       - "users1_expenses_insur_health_self_paid": |
-          ${ "{:.2f}".format(insurance_expenses.total(source=['insur_health'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'))+ health_insurance_paid) } 
       - "users1_expenses_insur_health_other_paid": |
-          ${ "{:.2f}".format(insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly')) + health_insurance_paid_by_employer) } 
       - "users1_expenses_insur_health_monthly_amount": |
-          ${ "{:.2f}".format(insurance_expenses.total(source=['insur_health'], times_per_year=12)) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'], times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer) } 
       - "users1_expenses_insur_dentvis_self_paid": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_dentvis'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_dentvis'],attribute='paid_by_other_monthly')) } 
       - "users1_expenses_insur_dentvis_other_paid": |
@@ -5107,11 +5299,11 @@ attachments:
       - "users1_expenses_insur_dentvis_monthly_amount": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_dentvis'], times_per_year=12)) } 
       - "users1_expenses_insur_total_self_paid": |
-          ${ "{:.2f}".format(insurance_expenses.total(times_per_year=12) -insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total(times_per_year=12) -insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+health_insurance_paid) } 
       - "users1_expenses_insur_total_other_paid": |
-          ${ "{:.2f}".format(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+health_insurance_paid_by_employer) } 
       - "users1_expenses_insur_total_monthly_amount": |
-          ${ "{:.2f}".format(insurance_expenses.total(times_per_year = 12)) } 
+          ${ "{:.2f}".format(float(insurance_expenses.total(times_per_year = 12)) + health_insurance_paid + health_insurance_paid_by_employer) } 
       - "users1_expenses_medical_self_paid": |
           ${ "{:.2f}".format(personal_expenses.total(source='medical', times_per_year=12) -personal_expenses.total_other_attribute(source='medical', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_medical_other_paid": |
@@ -5203,11 +5395,11 @@ attachments:
       - "users1_expenses_contributions_monthly_amount": |
           ${ "{:.2f}".format(personal_expenses.total(source=['contributions'], times_per_year=12)) } 
       - "users1_expenses_loandebt_self_paid": |
-          ${ "{:.2f}".format(personal_expenses.total(source='loans', times_per_year=12) -personal_expenses.total_other_attribute(source='loans', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(monthly_debt_payment) } 
       - "users1_expenses_loandebt_other_paid": |
-          ${ "{:.2f}".format(personal_expenses.total_other_attribute(source='loans', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(total_monthly_debt_payment) - float(monthly_debt_payment)) } 
       - "users1_expenses_loandebt_monthly_amount": |
-          ${ "{:.2f}".format(personal_expenses.total(source=['loans'], times_per_year=12)) } 
+          ${ "{:.2f}".format(total_monthly_debt_payment) } 
       - "users1_expenses_other_kids_self_paid": |
           ${ "{:.2f}".format(personal_expenses.total(source='other_kids', times_per_year=12) -personal_expenses.total_other_attribute(source='other_kids', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_other_kids_other_paid": |
@@ -5215,11 +5407,11 @@ attachments:
       - "users1_expenses_other_kids_monthly_amount": |
           ${ "{:.2f}".format(personal_expenses.total(source=['other_kids'], times_per_year=12)) } 
       - "users1_expenses_child_support_self_paid": |
-          ${ "{:.2f}".format(personal_expenses.total(source='child_support', times_per_year=12) -personal_expenses.total_other_attribute(source='child_support', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(child_support_other_self_paid) } 
       - "users1_expenses_child_support_other_paid": |
-          ${ "{:.2f}".format(personal_expenses.total_other_attribute(source='child_support', attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(child_support_other_other_paid) } 
       - "users1_expenses_child_support_monthly_amount": |
-          ${ "{:.2f}".format(personal_expenses.total(source=['child_support'], times_per_year=12)) } 
+          ${ "{:.2f}".format(child_support_other_total) } 
       - "users1_expenses_alimony_self_paid": |
           ${ "{:.2f}".format(personal_expenses.total(source='alimony', times_per_year=12) -personal_expenses.total_other_attribute(source='alimony', attribute='paid_by_other_monthly')) } 
       - "users1_expenses_alimony_other_paid": |
@@ -5233,11 +5425,11 @@ attachments:
       - "users1_expenses_other_monthly_amount": |
           ${ "{:.2f}".format(personal_expenses.total(source=['other'], times_per_year=12)) } 
       - "users1_expenses_monthly_total_self_paid": |
-          ${ "{:.2f}".format(personal_expenses.total(times_per_year=12) -personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year=12) -personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+ monthly_debt_payment + child_support_other_self_paid ) } 
       - "users1_expenses_monthly_total_other_paid": |
-          ${ "{:.2f}".format(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) } 
+          ${ "{:.2f}".format(float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+float(total_monthly_debt_payment)-float(monthly_debt_payment) + child_support_other_other_paid ) } 
       - "users1_expenses_monthly_total": |
-          ${ "{:.2f}".format(personal_expenses.total(times_per_year = 12)) } 
+          ${ "{:.2f}".format(float(personal_expenses.total(times_per_year = 12))+float(total_monthly_debt_payment)  + child_support_other_total ) } 
       - "users1_credit_card_debt_total_payment_self_paid": |
           ${ "{:.2f}".format(float(credit_card_debt.total_monthly_self_payment)) } 
       - "users1_credit_card_debt_total_payment_other_paid": |
@@ -5245,11 +5437,11 @@ attachments:
       - "users1_credit_card_debt_total_payment_1": |
           ${ "{:.2f}".format(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12)) } 
       - "users1_expenses_grand_total_self_paid": |
-          ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment)) }
+          ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment) + primary_residence_loans.total_monthly_self_payment + vehicle_loans.total_monthly_self_payment + health_insurance_paid + monthly_debt_payment+ child_support_other_self_paid) }
       - "users1_expenses_grand_total_other_paid": |
-          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment))) }
+          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment)) + (float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment + health_insurance_paid_by_employer + float(total_monthly_debt_payment) - float(monthly_debt_payment) + child_support_other_other_paid) }
       - "users1_expenses_grand_total_monthly_amount": |
-          ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12))) }
+          ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment) + child_support_other_total) }
       - "users1_deductions_federal_monthly_amount": ${ "{:.2f}".format(jobs.deductions_federal_monthly_amount) } 
       - "users1_deductions_fica_monthly_amount": ${ "{:.2f}".format(jobs.deductions_fica_monthly_amount) } 
       - "users1_deductions_medicare_monthly_amount": ${ "{:.2f}".format(jobs.deductions_medicare_monthly_amount) } 
@@ -5260,7 +5452,7 @@ attachments:
       - "users1_kids_expenses_diapers_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_diapers'], times_per_year=12)) } 
       - "users1_expenses_child_care_net_monthly_amount_1": |
-          ${ "{:.2f}".format(children_expenses.total(source=['kids_childcare'], times_per_year=12)) } 
+          ${ "{:.2f}".format(out_of_pocket_costs) } 
       - "users1_kids_expenses_lunch_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_lunch'], times_per_year=12)) } 
       - "users1_kids_expenses_supplies_monthly_amount": |
@@ -5274,7 +5466,7 @@ attachments:
       - "users1_kids_expenses_medical_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_medical'], times_per_year=12)) } 
       - "users1_kids_expenses_childsupport_monthly_amount": |
-          ${ "{:.2f}".format(children_expenses.total(source=['kids_childsupport'], times_per_year=12)) } 
+          ${ "{:.2f}".format(child_support_shared) } 
       - "users1_kids_expenses_other1_description": |
           ${ children_expenses.matches(source=['kids_other'])[0].source_other } 
       - "users1_kids_expenses_other1_monthly_amount": |
@@ -5292,7 +5484,7 @@ attachments:
       - "users1_kids_expenses_other4_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.matches(source=['kids_other'])[3].total(times_per_year=12)) } 
       - "users1_kids_expenses_total_monthly_amount": |
-          ${ "{:.2f}".format(children_expenses.total(times_per_year = 12)) } 
+          ${ "{:.2f}".format(float(children_expenses.total(times_per_year = 12))+out_of_pocket_costs+child_support_shared) } 
       - "rental_income_amount": ${ "{:.2f}".format(annual_rental_income) } 
       - "rental_cleaning_amount": |
           ${ "{:.2f}".format(rental_expenses.total(source=['cleaning'], times_per_year=1)) } 
