@@ -4664,8 +4664,18 @@ attachments:
       - "why_unemployed": ${ why_unemployed } 
       - "users1_income_wages_monthly_amount": |
           ${ "{:.2f}".format(jobs.total(source=['part time', 'full time'],times_per_year=12)) } 
-      - "overtime_included_yes": ${ overtime_included_any_job } 
-      - "overtime_included_no": ${ not overtime_included_any_job } 
+      - "overtime_included_yes": |
+          % if len(jobs) == 0:
+          { }
+          % else:
+          ${ overtime_included_any_job } 
+          % endif
+      - "overtime_included_no": |
+          % if len(jobs) == 0:
+          { }
+          % else:
+          ${ not overtime_included_any_job } 
+          % endif
       - "users1_income_tips_commissions_monthly_amount": |
           ${ "{:.2f}".format(jobs.total(source=['Tips', 'Commissions','Bonuses','Royalties'], times_per_year=12)) } 
       - "users1_income_self_employment_monthly_amount": |
