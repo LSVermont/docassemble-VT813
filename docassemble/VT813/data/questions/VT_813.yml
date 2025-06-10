@@ -1113,13 +1113,7 @@ subquestion: |
   % endif
 
   % if rental_income:
-  You said that your total monthly rental income is
-  % if has_schedule_e:
-  **${ currency(schedule_e_income/12) }**
-  % else: 
-  **${ currency(monthly_rental_income) }** 
-  % endif
-  . This amount will be entered into the form. You will be able to edit it.
+  You have already told us about your rental income.
   % endif
 fields:
   - Source of income: other_incomes[i].source
@@ -1250,6 +1244,7 @@ fields:
     datatype: yesnoradio
   - note: |
       Many people don't file an IRS Schedule E for rental income. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly rental income. Only complete the worksheet if you can’t include an IRS Schedule E.
+    show if: rental_income
   - Do you have a copy of your IRS Schedule E tax form for rental income?: has_schedule_e
     datatype: yesnoradio
     show if: rental_income
@@ -1828,19 +1823,10 @@ columns:
       row_item.employer.name.first if defined("row_item.employer.name.first") else ""
   - Monthly gross income: |
       currency(row_item.gross_total(times_per_year=12)) 
-  - Health insurance offered: |
-      word(yesno(row_item.healthcare_available)) if defined("row_item.healthcare_available") else ""
-  - You are enrolled: |
-      word(yesno(row_item.enrolled)) if defined("row_item.enrolled") else ""
-  - Kids are enrolled: |
-      word(yesno(row_item.kids_enrolled)) if defined("row_item.kids_enrolled") else ""
-  - Amount you pay for it: |
-      currency(row_item.health_insurance_paid) if defined("row_item.health_insurance_paid") else ""
 
 edit:
   - employer.name.first
   - to_add.revisit
-  - healthcare_available
 
 confirm: True
 ---
@@ -1913,7 +1899,7 @@ subquestion: |
 
   If you aren't sure if you should fill it out, <a href="https://www.vermontjudiciary.org/self-help/ARC"> contact the Vermont Judiciary Access and Resource Center.</a> Their services are free and they serve the whole state. They do NOT give legal advice. Or, call the <a href="https://www.vermontjudiciary.org/court-locations?f%5B0%5D=court_division%3A4">Family Division of the court handling your case.</a>
 
-  ${ next_accordion('<h2 class="h5">What you will need</h2>') }
+  ${ next_accordion('<h2 class="h5">Information you will need</h2>') }
   <p>You will need to know:</p>
   
   <li>birthdates of you, the other party and any children</li>
@@ -2662,7 +2648,7 @@ subquestion: |
 
     % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
   **Health insurance through work:**
-  You said that you pay ${ currency(health_insurance_paid) } for health insurance and someone else pays ${ currency(health_insurance_paid_by_employer) }. [You can edit this by clicking this link](${ url_action('health_insurance_paid')})
+  You said that you pay **${ currency(health_insurance_paid) }** for health insurance and someone else pays **${ currency(health_insurance_paid_by_employer) }**. [You can edit this by clicking this link](${ url_action('health_insurance_paid')})
   % endif
   
   ${ insurance_expenses_table }
@@ -2766,7 +2752,7 @@ subquestion: |
   <hr>
   **Personal expenses you have told us about already**
   
-  You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
+  You said that you make these monthly debt payments:
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
     - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) }. 
@@ -2797,6 +2783,8 @@ subquestion: |
   % else:
   
   % endif
+
+  (Note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section.)
   <hr>
 fields:
   - no label: personal_expenses.selected_types
@@ -2881,6 +2869,8 @@ subquestion: |
   
   % if total_monthly_debt_payment > 0:
   <hr>
+  **Personal expenses that you have told us about already**
+  
   You said that you make these monthly debt payments (note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section):
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
@@ -2897,7 +2887,7 @@ subquestion: |
   % endif
   % endfor
 
-      - [Click here to edit other loans.](${ url_action('other_loans.revisit')})
+      - [Click here to edit the other loans.](${ url_action('other_loans.revisit')})
   
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
@@ -2908,8 +2898,6 @@ subquestion: |
   % endif
    
    Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**.
-
-  "Monthly loan and debt payments" is pre-selected below. This amount will be entered into the form. You will be able to edit it.
   
   <hr>
   % endif
@@ -3035,7 +3023,7 @@ subquestion: |
   <hr>
   **Child expenses you have told us about already**
   
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). This amount will be entered into the form. You will be able to edit it.
+  You said earlier that your monthly out-of-pocket childcare cost is: **${ currency(out_of_pocket_costs)}** (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }). This amount will be entered into the form. You will be able to edit it.
   % endif
   
   % if out_of_pocket_costs == 0 and child_support_shared > 0:
@@ -3057,7 +3045,7 @@ fields:
 id: children expense information
 reconsider: children_expenses[i].display_name
 question: |
-  Tell us about your ${ children_expenses[i].display_name.lower() }
+  Tell us about the ${ children_expenses[i].display_name.lower() } expense for the child/children
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -3115,11 +3103,11 @@ subquestion: |
   Tap Next if you don't have more to add.
 
   % if out_of_pocket_costs > 0:
-  You said earlier that your monthly out-of-pocket childcare cost is ${ currency(out_of_pocket_costs)} (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).  This amount will be entered into the form. [Click here to change this amount.](${ url_action('out_of_pocket_costs')})
+  You said earlier that your monthly out-of-pocket childcare cost is: **${ currency(out_of_pocket_costs)}** (the total childcare cost of ${currency(total_monthly_childcare_costs) } minus the subsidy of ${ currency(childcare_subsidy) }).  This amount will be entered into the form. [Click here to change this amount.](${ url_action('out_of_pocket_costs')})
   % endif
 
   % if child_support_shared > 0:
-  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is: **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
   % endif
   
   ${ children_expenses_table }
@@ -3513,7 +3501,7 @@ objects:
 id: are there real estate loans
 question: Loans on other real estate
 subquestion: |
-  Note: Do not include business or rental property loans. Do not include mortgages or loans on the home you live in.
+  Note: On this screen, do not include business or rental property loans. Do not include mortgages or loans on the home you live in.
 fields:
   - Do you have loans on other pieces of real estate?: real_estate_loans.there_are_any
     datatype: yesnoradio
@@ -4039,9 +4027,7 @@ review:
       **Jobs**
 
       % for item in jobs:
-      **${ item.source }**, ${ item.employer.name.first }
-      
-      * Health insurance is offered by this job: ${ word(yesno(item.healthcare_available)) }
+      - ${ item.source }, ${ item.employer.name.first }
       
       % endfor
       % if len(jobs) == 0:
@@ -4077,11 +4063,9 @@ review:
       - You are self-employed: ${ self_employed_description }.
 
       % if has_schedule_c:
-      - You have a Schedule C. Your monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
+      - You have a Schedule C. You do not need to fill out the self-employment worksheet (seen on page 11 of the form).
       % else:
-      - You do not have a Schedule C.
-
-      - Your monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      - You do not have a Schedule C. You used the self employment worksheet (edit below).
       % endif
       % else:
       - You are not self-employed.
@@ -4194,9 +4178,9 @@ review:
       **Rental income - IRS Schedule E**
       
       % if has_schedule_e:
-      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10). Edit the net income above.
+      - You have a Schedule E. You do not need to fill out the rental income worksheet (seen on page 10 of the form).
       % else:
-      You do not have a Schedule E. You used the rental income worksheet (edit below).
+      - You do not have a Schedule E. You used the rental income worksheet (edit below).
       % endif
       % endif
       
@@ -4584,7 +4568,7 @@ code: |
 id: attachment objects
 objects:
   - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_813A_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - vt_financial_form_813A_attachment: ALDocument.using(title="Vermont financial form 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - vt_financial_form_813A_attachment: ALDocument.using(title="Financial Affidavit 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 id: al_user_bundle objects
 objects:
@@ -4746,23 +4730,23 @@ attachments:
           % endif
       - "users1_income_monthly_total": |
           % if employed and is_self_employed and has_schedule_c and rental_income and has_schedule_e:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + schedule_e_income/12) } 
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + float(schedule_e_income/12)) }
           % elif employed and is_self_employed and has_schedule_c and rental_income:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
           % elif employed and is_self_employed and not has_schedule_c and rental_income and has_schedule_e:          
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))+ schedule_e_income/12) }          
           % elif employed and is_self_employed and not has_schedule_c and rental_income:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))  + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }
           % elif employed and is_self_employed and has_schedule_c:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
           % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % elif rental_income and has_schedule_e: 
-          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)+ schedule_e_income/12) }
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + schedule_e_income/12) }
           % elif rental_income: 
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (annual_rental_income - float(rental_expenses.total(times_per_year=1)))/12) }
           % else: 
-          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)) }
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12))) }
           % endif
           
       - "users1_receives_benefits_yes": |
@@ -5637,9 +5621,7 @@ attachments:
           ${ }
           % endif
       - "users1_income_self_employment_monthly_amount_1": |
-          % if has_schedule_c:
-          ${ "{:.2f}".format(self_employed_net_income/12) }
-          % else:
+          % if not has_schedule_c:
           ${ "{:.2f}".format(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % endif
 ---
