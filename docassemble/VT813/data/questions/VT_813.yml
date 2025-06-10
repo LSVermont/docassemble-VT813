@@ -1623,8 +1623,8 @@ code: |
   jobs.deductions_other_monthly_amount
   single_jobs_attribute = True
 ---
-id: healthcare benefits
-question: Healthcare benefits
+id: health insurance through work
+question: Health insurance through your work
 fields:
   - Could you get insurance through a job — even if you choose not to enroll yourself or your children?: healthcare_available
     datatype: yesnoradio
@@ -4121,9 +4121,10 @@ review:
       % for item in self_empl_common_exp:
       * ${ item.source }: ${ currency(item.value) }
       % endfor
+
   - Edit: self_empl_other_insurances[0].value
     button: |
-      **Insurance (not health)**:
+      **Insurance**:
       
       % if self_empl_other_insurances[0].source != '':
       * ${ self_empl_other_insurances[0].source }: ${ currency(self_empl_other_insurances[0].value) }
@@ -4370,6 +4371,24 @@ review:
       % if vehicle_expenses.number_gathered() == 0:
       - None
 
+      % endif
+  - Edit: healthcare_available
+    button: |
+      **Health insurance through work**
+      
+      % if healthcare_available:
+      - You can get health insurance through your work.
+      % else:
+      - You cannot get health insurance through your work.
+      % endif
+      % if defined("enrolled") and enrolled:
+      - You are enrolled.
+      % endif
+      % if defined("kids_enrolled") and kids_enrolled:
+      - Your child/children are enrolled.
+      % endif
+      % if defined("health_insurance_paid"):
+      - You pay this much each month: ${ currency(health_insurance_paid) }
       % endif
   - Edit: insurance_expenses.revisit
     button: |
@@ -4665,15 +4684,11 @@ attachments:
       - "users1_income_wages_monthly_amount": |
           ${ "{:.2f}".format(jobs.total(source=['part time', 'full time'],times_per_year=12)) } 
       - "overtime_included_yes": |
-          % if len(jobs) == 0:
-          { }
-          % else:
+          % if len(jobs) > 0:
           ${ overtime_included_any_job } 
           % endif
       - "overtime_included_no": |
-          % if len(jobs) == 0:
-          { }
-          % else:
+          % if len(jobs) > 0:
           ${ not overtime_included_any_job } 
           % endif
       - "users1_income_tips_commissions_monthly_amount": |
@@ -4894,9 +4909,17 @@ attachments:
           ${ "{:.2f}".format(health_insurance_single_person_cost) }
           % endif
       - "health_insurance_kids_enrolled_yes": |
+          % if healthcare_available and len(shared_children) > 0:
           ${ kids_enrolled } 
+          % elif healthcare_available and len(other_children) > 0:
+          ${ kids_enrolled } 
+          % endif
       - "health_insurance_kids_enrolled_no": |
+          % if healthcare_available and len(shared_children) > 0:
           ${ not kids_enrolled } 
+          % elif healthcare_available and len(other_children) > 0:
+          ${ not kids_enrolled } 
+          % endif
       - "users1_expenses_child_care_monthly_amount": ${ "{:.2f}".format(total_monthly_childcare_costs) } 
       - "users1_expenses_child_care_subsidy_monthly_amount": |
           ${ "{:.2f}".format(childcare_subsidy) } 
