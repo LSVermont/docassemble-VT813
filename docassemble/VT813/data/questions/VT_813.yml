@@ -3045,7 +3045,7 @@ fields:
 id: children expense information
 reconsider: children_expenses[i].display_name
 question: |
-  Tell us about your ${ children_expenses[i].display_name.lower() }
+  Tell us about the ${ children_expenses[i].display_name.lower() } expense for the child/children
 subquestion: |
   **Tip**: You can look back 12 months for this expense. That will give an accurate picture of how much the expense really is.
 fields: 
@@ -4568,7 +4568,7 @@ code: |
 id: attachment objects
 objects:
   - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_813A_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - vt_financial_form_813A_attachment: ALDocument.using(title="Vermont financial form 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - vt_financial_form_813A_attachment: ALDocument.using(title="Financial Affidavit 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 id: al_user_bundle objects
 objects:
