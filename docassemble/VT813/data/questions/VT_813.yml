@@ -4027,9 +4027,7 @@ review:
       **Jobs**
 
       % for item in jobs:
-      **${ item.source }**, ${ item.employer.name.first }
-      
-      * Health insurance is offered by this job: ${ word(yesno(item.healthcare_available)) }
+      - ${ item.source }, ${ item.employer.name.first }
       
       % endfor
       % if len(jobs) == 0:
@@ -4065,11 +4063,9 @@ review:
       - You are self-employed: ${ self_employed_description }.
 
       % if has_schedule_c:
-      - You have a Schedule C. Your monthly self-employment income is: ${ currency((self_employed_net_income)/12) }.
+      - You have a Schedule C. You do not need to fill out the self-employment worksheet (seen on page 11 of the form).
       % else:
-      - You do not have a Schedule C.
-
-      - Your monthly net income is ${ currency(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
+      - You do not have a Schedule C. You used the self employment worksheet (edit below).
       % endif
       % else:
       - You are not self-employed.
@@ -4182,9 +4178,9 @@ review:
       **Rental income - IRS Schedule E**
       
       % if has_schedule_e:
-      You have a Schedule E. You do not need to use the rental income worksheet (seen on page 10). Edit the net income above.
+      - You have a Schedule E. You do not need to fill out the rental income worksheet (seen on page 10 of the form).
       % else:
-      You do not have a Schedule E. You used the rental income worksheet (edit below).
+      - You do not have a Schedule E. You used the rental income worksheet (edit below).
       % endif
       % endif
       
@@ -4734,23 +4730,23 @@ attachments:
           % endif
       - "users1_income_monthly_total": |
           % if employed and is_self_employed and has_schedule_c and rental_income and has_schedule_e:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + schedule_e_income/12) } 
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + float(schedule_e_income/12)) }
           % elif employed and is_self_employed and has_schedule_c and rental_income:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12)) + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }        
           % elif employed and is_self_employed and not has_schedule_c and rental_income and has_schedule_e:          
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))+ schedule_e_income/12) }          
           % elif employed and is_self_employed and not has_schedule_c and rental_income:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))  + (float(annual_rental_income) - float(rental_expenses.total(times_per_year=1)))/12) }
           % elif employed and is_self_employed and has_schedule_c:
-          ${ "{:.2f}".format((other_incomes.total(times_per_year = 12)) + (jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (float(self_employed_net_income/12))) }     
           % elif employed and is_self_employed and not has_schedule_c:
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + float(self_empl_gross_sales_monthly_amount)  - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % elif rental_income and has_schedule_e: 
-          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)+ schedule_e_income/12) }
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + schedule_e_income/12) }
           % elif rental_income: 
           ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12)) + (annual_rental_income - float(rental_expenses.total(times_per_year=1)))/12) }
           % else: 
-          ${ "{:.2f}".format(other_incomes.total(times_per_year = 12) + jobs.total(times_per_year = 12)) }
+          ${ "{:.2f}".format(float(other_incomes.total(times_per_year = 12)) + float(jobs.total(times_per_year = 12))) }
           % endif
           
       - "users1_receives_benefits_yes": |
@@ -5625,9 +5621,7 @@ attachments:
           ${ }
           % endif
       - "users1_income_self_employment_monthly_amount_1": |
-          % if has_schedule_c:
-          ${ "{:.2f}".format(self_employed_net_income/12) }
-          % else:
+          % if not has_schedule_c:
           ${ "{:.2f}".format(self_empl_gross_sales_monthly_amount - float(sum([ expense.total(times_per_year=12) for expense in al_expense_lists ]))) }
           % endif
 ---
