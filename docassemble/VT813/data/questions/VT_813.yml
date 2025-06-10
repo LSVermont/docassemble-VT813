@@ -1239,6 +1239,8 @@ code: |
 ---
 id: rental net income
 question:  Rental income
+subquestion: |
+  This can include long-term or short-term rental income.
 fields:
   - Do you receive any rental income?: rental_income
     datatype: yesnoradio
@@ -2745,8 +2747,10 @@ question: |
   What kind of personal expenses do you have?
 subquestion: |
   You can look back 12 months for these expenses listed below. That will give an accurate picture of how much the expenses really are.
-
-  If you have kids and already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
+  
+  % if len(shared_children) > 0:
+  If you already answered questions about expenses for children of your relationship with ${ other_parties[0] }, do **not** include those child expenses here.
+  % endif
   
   % if monthly_debt_payment > 0:
   <hr>
@@ -2770,7 +2774,9 @@ subquestion: |
     - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
   % endif
    
-   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
+  Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
+
+  (Note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section.)
   % endif
 
   % if monthly_debt_payment == 0 and child_support_other_total > 0:
@@ -2784,7 +2790,6 @@ subquestion: |
   
   % endif
 
-  (Note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section.)
   <hr>
 fields:
   - no label: personal_expenses.selected_types
