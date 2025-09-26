@@ -1,0 +1,30 @@
+[build-system]
+requires = [
+    "setuptools==80.9.0",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "docassemble.VT813"
+version = "1.1"
+description = "Financial Affidavit - Vermont - Form 813A"
+readme = "README.md"
+dependencies = [
+    "docassemble.ALToolbox @ git+https://github.com/SuffolkLITLab/docassemble-ALToolbox.git@main",
+    "docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main",
+    "docassemble.GithubFeedbackForm @ git+https://github.com/SuffolkLITLab/docassemble-GithubFeedbackForm.git@main",
+    "docassemble.VTFeedback @ git+https://github.com/VTskier/docassemble-VTFeedback.git@main",
+    "docassemble.VTSharedYMLFile @ git+https://github.com/LSVermont/docassemble-VTSharedYMLFile.git@main",
+]
+
+[[project.authors]]
+name = "Guided interview by Legal Services Vermont / VTCourtForms"
+email = "ksurette@legalservicesvt.org"
+
+[project.urls]
+Homepage = "https://VTLawHelp.org/VTCourtForms"
+
+[tool.setuptools.packages.find]
+where = [
+    ".",
+]

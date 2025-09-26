@@ -55,7 +55,8 @@ id: self employment worksheet
 question: |
   Self-employment
 fields:
-  - Description of your self-employed business: self_employed_description
+  - Short description of your self-employed business: self_employed_description
+    maxlength: 52
   - note: |
       Many self-employed people don't file a IRS Schedule C form each year. If this is the case, the Vermont Judiciary offers a worksheet to figure your monthly net income from self-employment. Only complete the worksheet if you cannot include an IRS Schedule C.
   - Do you have a copy of your IRS Schedule C tax form?: has_schedule_c

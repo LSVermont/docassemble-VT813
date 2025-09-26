@@ -294,7 +294,7 @@ code: |
   if len(personal_expenses) > 0:
     personal_expenses.review_items
   set_progress(79)
-
+  wait_while_form_is_generated
   
       
 
@@ -2247,7 +2247,7 @@ subquestion: |
   <hr>
   % endif
 fields:
-  - no label: household_expenses.selected_types
+  - Household expenses: household_expenses.selected_types
     datatype: checkboxes
     code: |
       household_expenses_ordered
@@ -2407,7 +2407,7 @@ subquestion: |
   <hr>
   % endif
 fields:
-  - no label: vehicle_expenses.selected_types
+  - Vehicle expenses: vehicle_expenses.selected_types
     datatype: checkboxes
     code: |
       vehicle_expenses_ordered
@@ -2577,7 +2577,7 @@ subquestion: |
   You said that you pay **${ currency(health_insurance_paid) }** for health insurance and someone else pays **${ currency(health_insurance_paid_by_employer) }.** This amount will be entered into the form. You will be able to change this after entering any other insurance expense information.
   % endif
 fields:
-  - no label: insurance_expenses.selected_types
+  - Insurance expenses: insurance_expenses.selected_types
     datatype: checkboxes
     code: |
       insurance_expenses_ordered
@@ -2792,7 +2792,7 @@ subquestion: |
 
   <hr>
 fields:
-  - no label: personal_expenses.selected_types
+  - Personal expenses: personal_expenses.selected_types
     datatype: checkboxes
     code: |
       personal_expenses_ordered
@@ -2908,7 +2908,7 @@ subquestion: |
   % endif
 
   % if child_support_other_total > 0:
-  According to the information you entered about children of another relationship, your monthly child support expense for these children is ${ currency(child_support_other_total )}. This will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
+  According to the information you entered about children of another relationship, your monthly child support expense for these children is **${ currency(child_support_other_total )}**. This will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('other_children.revisit')})
   % endif  
   
   ${ personal_expenses_table }
@@ -2918,6 +2918,12 @@ subquestion: |
   **Total of personal expenses shown above:** ${ currency(float(personal_expenses.total(times_per_year=12)) + float(total_monthly_debt_payment) + child_support_other_total) }
 
 continue button field: personal_expenses.review_items
+---
+id: we are ready to create your form
+question: We're ready to create your form
+subquestion: |
+  It will take a moment to generate the form after you tap the Next button.
+continue button field: wait_while_form_is_generated
 ---
 reconsider: total_monthly_debt_payment
 id: personal_expenses.revisit
@@ -3042,7 +3048,7 @@ subquestion: |
   % endif
   <hr>
 fields:
-  - no label: children_expenses.selected_types
+  - Expenses for children: children_expenses.selected_types
     datatype: checkboxes
     code: |
       children_expenses_ordered
