@@ -50,11 +50,10 @@ setup(name='docassemble.VT813',
       long_description_content_type='text/markdown',
       author='Guided interview by Legal Services Vermont / VTCourtForms',
       author_email='ksurette@legalservicesvt.org',
-      license='The MIT License',
+      license='MIT',
       url='https://VTLawHelp.org/VTCourtForms',
       packages=find_namespace_packages(),
-      install_requires=['docassemble.ALToolbox>=0.11.3', 'docassemble.AssemblyLine>=3.4.0', 'docassemble.GithubFeedbackForm>=0.4.1.1', 'docassemble.VTFeedback', 'docassemble.VTSharedYMLFile'],
+      install_requires=['docassemble.ALToolbox @ git+https://github.com/SuffolkLITLab/docassemble-ALToolbox.git@main', 'docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main', 'docassemble.GithubFeedbackForm @ git+https://github.com/SuffolkLITLab/docassemble-GithubFeedbackForm.git@main', 'docassemble.VTFeedback @ git+https://github.com/VTskier/docassemble-VTFeedback.git@main', 'docassemble.VTSharedYMLFile @ git+https://github.com/LSVermont/docassemble-VTSharedYMLFile.git@main'],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/VT813/', package='docassemble.VT813'),
      )
-
