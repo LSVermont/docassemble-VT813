@@ -3313,7 +3313,7 @@ fields:
   - Lender: primary_residence_loans[i].lender
   - Balance owed: primary_residence_loans[i].balance
     datatype: currency
-  - Monthly payment: primary_residence_loans[i].monthly_payment
+  - Monthly payment set by the lender: primary_residence_loans[i].monthly_payment
     datatype: currency
   - Are YOU making this payment?: primary_residence_loans[i].self_payment
     datatype: yesnoradio
@@ -3440,7 +3440,7 @@ fields:
   - Lender: other_loans[i].lender
   - Balance owed: other_loans[i].balance
     datatype: currency
-  - Monthly payment: other_loans[i].monthly_payment
+  - Monthly payment set by lender: other_loans[i].monthly_payment
     datatype: currency
   - Are YOU making this payment?: other_loans[i].self_payment
     datatype: yesnoradio
@@ -3530,7 +3530,7 @@ fields:
   - Lender: real_estate_loans[i].lender
   - Balance owed: real_estate_loans[i].balance
     datatype: currency
-  - Monthly payment: real_estate_loans[i].monthly_payment
+  - Monthly payment set by lender: real_estate_loans[i].monthly_payment
     datatype: currency
   - Are YOU making this payment?: real_estate_loans[i].self_payment
     datatype: yesnoradio
@@ -3600,7 +3600,7 @@ fields:
   - Lender: vehicle_loans[i].lender
   - Balance owed: vehicle_loans[i].balance
     datatype: currency
-  - Monthly payment: vehicle_loans[i].monthly_payment
+  - Monthly payment set by the lender: vehicle_loans[i].monthly_payment
     datatype: currency
   - Are YOU making this payment?: vehicle_loans[i].self_payment
     datatype: yesnoradio
@@ -3683,8 +3683,10 @@ fields:
   - Company: credit_card_debt[i].lender
   - Balance owed: credit_card_debt[i].balance
     datatype: currency
-  - Monthly payment: credit_card_debt[i].monthly_payment
+  - Monthly payment set by credit card company: credit_card_debt[i].monthly_payment
     datatype: currency
+  - note: |
+      Note: If you aren't paying off your credit card bill each month, what is the minimum amount that the credit card company asks for?
   - Are YOU making this payment?: credit_card_debt[i].self_payment
     datatype: yesnoradio
 validation code: |
@@ -3761,7 +3763,7 @@ fields:
   - Company/Entity owed: other_debt[i].lender
   - Balance owed: other_debt[i].balance
     datatype: currency
-  - Monthly payment: other_debt[i].monthly_payment
+  - Monthly payment set by the lender or creditor -- if any: other_debt[i].monthly_payment
     datatype: currency
   - Are YOU making this payment?: other_debt[i].self_payment
     datatype: yesnoradio
