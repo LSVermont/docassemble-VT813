@@ -4070,6 +4070,8 @@ review:
           - is_self_employed
           - self_empl_gross_sales_monthly_amount
           - has_schedule_c
+          - self_employed_estimated_taxes_paid_feds
+          - self_employed_estimated_taxes_paid_state
           - self_employed_net_income
           - self_employed_expenses_monthly_amount
           - self_employed_net_income_monthly_amount
@@ -4101,7 +4103,8 @@ review:
       - You are not self-employed.
       % endif   
 
-  - Edit: self_employed_estimated_taxes_paid_feds
+  - Edit: 
+      - self_employed_estimated_taxes_paid_feds
     button: |
       **Estimated taxes you paid on your self-employed income**
 
