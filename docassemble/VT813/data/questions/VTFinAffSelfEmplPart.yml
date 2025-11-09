@@ -330,7 +330,7 @@ question: |
 subquestion: |
   Bad debt, taxes and other interest paid for your business
 fields:
-  - "Taxes paid": self_empl_debts[0].value
+  - "Business taxes paid": self_empl_debts[0].value
     datatype: currency
     min: 0
     required: false
