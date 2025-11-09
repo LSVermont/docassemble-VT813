@@ -307,10 +307,12 @@ code: |
     if is_self_employed:
       if has_schedule_c:
         self_employed_net_income
+        self_employed_estimated_taxes_paid_feds
       else:
         net_income_order
         self_employed_expenses_monthly_amount
         self_employed_net_income_monthly_amount
+        self_employed_estimated_taxes_paid_feds
     if len(jobs) > 0:
       review_jobs
       healthcare_available 
@@ -1347,6 +1349,19 @@ fields:
     datatype: yesnoradio
   - note: |
       Self-employed income includes some gig work such as driving for Uber or Door Dash, where you usually get an IRS form 1099 from the company.
+---
+id: self employed estimated taxes
+question: |
+  How much you pay in estimated taxes
+subquestion: |
+  When you are self-employed, you usually pay Federal and State estimated taxes on your income through the year. Or maybe you pay just once a year.
+
+  Enter 0 if you did not pay taxes on your self-employed income.
+fields:
+  - How much did you pay in **Federal** estimated taxes in the last year?: self_employed_estimated_taxes_paid_feds
+    datatype: currency
+  - How much did you pay in **State** estimated taxes in the last year?: self_employed_estimated_taxes_paid_state
+    datatype: currency
 ---
 id: regular income
 question: |
@@ -4055,6 +4070,8 @@ review:
           - is_self_employed
           - self_empl_gross_sales_monthly_amount
           - has_schedule_c
+          - self_employed_estimated_taxes_paid_feds
+          - self_employed_estimated_taxes_paid_state
           - self_employed_net_income
           - self_employed_expenses_monthly_amount
           - self_employed_net_income_monthly_amount
@@ -4075,7 +4092,7 @@ review:
       **Self-employment**
       
       % if is_self_employed:
-      - You are self-employed: ${ self_employed_description }.
+      - You are self-employed: ${ self_employed_description }
 
       % if has_schedule_c:
       - You have a Schedule C. You do not need to fill out the self-employment worksheet (seen on page 11 of the form).
@@ -4086,7 +4103,18 @@ review:
       - You are not self-employed.
       % endif   
 
+  - Edit: 
+      - self_employed_estimated_taxes_paid_feds
+    button: |
+      **Estimated taxes you paid on your self-employed income**
+
+      % if defined("self_employed_estimated_taxes_paid_feds") and self_employed_estimated_taxes_paid_feds > 0:
+      - Federal estimated taxes
+      % endif
       
+      % if defined("self_employed_estimated_taxes_paid_state") and self_employed_estimated_taxes_paid_state > 0:
+      - State estimated taxes 
+      % endif
 
   - note: |
       % if is_self_employed and not has_schedule_c:
@@ -5474,10 +5502,20 @@ attachments:
           ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment)) + (float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment + health_insurance_paid_by_employer + float(total_monthly_debt_payment) - float(monthly_debt_payment) + child_support_other_other_paid) }
       - "users1_expenses_grand_total_monthly_amount": |
           ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment) + child_support_other_total) }
-      - "users1_deductions_federal_monthly_amount": ${ "{:.2f}".format(jobs.deductions_federal_monthly_amount) } 
+      - "users1_deductions_federal_monthly_amount": |
+          % if is_self_employed and has_jobs:
+          ${ "{:.2f}".format(float(self_employed_estimated_taxes_paid_feds / 12) + float(jobs.deductions_federal_monthly_amount)) }
+          % elif is_self_employed:
+           ${ "{:.2f}".format(self_employed_estimated_taxes_paid_feds / 12) }
+          % endif
       - "users1_deductions_fica_monthly_amount": ${ "{:.2f}".format(jobs.deductions_fica_monthly_amount) } 
       - "users1_deductions_medicare_monthly_amount": ${ "{:.2f}".format(jobs.deductions_medicare_monthly_amount) } 
-      - "users1_deductions_state_monthly_amount": ${ "{:.2f}".format(jobs.deductions_state_monthly_amount) } 
+      - "users1_deductions_state_monthly_amount": |
+          % if is_self_employed and has_jobs:
+          ${ "{:.2f}".format(float(self_employed_estimated_taxes_paid_state / 12) + float(jobs.deductions_state_monthly_amount)) }
+          % elif is_self_employed:
+           ${ "{:.2f}".format(self_employed_estimated_taxes_paid_state / 12) }
+          % endif
       - "users1_deductions_other_monthly_amount": ${ "{:.2f}".format(jobs.deductions_other_monthly_amount) } 
       - "users1_kids_expenses_clothes_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_clothes'], times_per_year=12)) } 
