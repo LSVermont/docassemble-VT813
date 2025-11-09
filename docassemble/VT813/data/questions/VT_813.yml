@@ -3157,6 +3157,8 @@ subquestion: |
   How much do you pay for daycare or child care for children of this relationship?
   
   Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12. Do not include summer camps or vacation camps — we'll collect that information later.
+
+  Enter 0 if these don't apply to you.
 fields:
   - Total monthly childcare costs: total_monthly_childcare_costs
     datatype: currency
@@ -3622,7 +3624,7 @@ continue button field: vehicle_loans.review_items
 id: vehicle_loans.revisit
 continue button field: vehicle_loans.revisit
 question: |
-  Edit vehicle_loans
+  Edit your vehicle loans
 subquestion: |
   ${ vehicle_loans_table }
 
@@ -3711,7 +3713,7 @@ continue button field: credit_card_debt.review_items
 id: credit_card_debt.revisit
 continue button field: credit_card_debt.revisit
 question: |
-  Edit credit_card_debt
+  Edit your credit card debt
 subquestion: |
   ${ credit_card_debt_table }
 
