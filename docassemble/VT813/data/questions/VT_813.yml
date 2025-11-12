@@ -2426,9 +2426,6 @@ fields:
     datatype: checkboxes
     code: |
       vehicle_expenses_ordered
-    default:
-      code: |
-        {'auto_loans': vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0}
 ---
 id: vehicle expense information
 reconsider: vehicle_expenses[i].display_name
@@ -2445,7 +2442,6 @@ fields:
       variable: vehicle_expenses[i].source
       is: other
   - Amount: vehicle_expenses[i].value
-    datatype: currency
   - How often do you pay this amount?: vehicle_expenses[i].times_per_year
     input type: radio
     default: 12
@@ -2467,23 +2463,6 @@ validation code: |
     else:
       vehicle_expenses[i].paid_by_other_monthly_default = 0
     invalidate('vehicle_expenses[i].paid_by_other_monthly')
----
-code: |
-  vehicle_expenses.appendObject()
-  vehicle_expenses[-1].source = 'auto_loans'
-  vehicle_loans.vehicles_expenses_list_number = len(household_expenses)-1  
----
-if: vehicle_expenses[i].source == 'auto_loans' and vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0
-code: |
-  vehicle_expenses[i].value = vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)
-  vehicle_expenses[i].times_per_year = 12
-  if float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - vehicle_loans.total_monthly_self_payment > 0:
-    vehicle_expenses[i].paid_by_other = True
-    vehicle_expenses[i].paid_by_other_monthly = float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) - vehicle_loans.total_monthly_self_payment
-  else:
-    vehicle_expenses[i].paid_by_other = False    
-    vehicle_expenses[i].paid_by_other_monthly = 0
-  vehicle_loans.vehicles_expenses_list_number = i
 ---
 id: vehicle expenses paid by others
 question:  Other payments for ${ vehicle_expenses[i].display_name.lower() }
@@ -3311,12 +3290,16 @@ fields:
 id: primary_residence_loans complete
 code: |
   primary_residence_loans[i].balance
+  if not primary_residence_loans[i].self_payment:
+    primary_residence_loans[i].paid_by_other_monthly
   primary_residence_loans[i].complete = True
 ---
 id: primary_residence_loans complete
 generic object: ALAssetList
 code: |
   x[i].market_value
+  if not x[i].self_payment:
+    x[i].paid_by_other_monthly
   x[i].complete = True
 ---
 id: info for each primary_residence_loans
@@ -3334,6 +3317,9 @@ fields:
     datatype: currency
   - Are YOU making this payment?: primary_residence_loans[i].self_payment
     datatype: yesnoradio
+validation code: |
+  primary_residence_loans[i].value = primary_residence_loans[i].monthly_payment
+  primary_residence_loans[i].times_per_year = 12
 ---
 id: primary residence loan display name
 code: |
@@ -3343,6 +3329,17 @@ code: |
     primary_residence_loans[i].display_name = primary_residence_loans[i].source_other
   else:
     primary_residence_loans[i].display_name = primary_residence_loans_other_display
+---
+generic object: ALAssetList
+id: household expenses paid by others
+question:  Other payments for ${ x[i].display_name.lower() }
+subquestion: |
+  You said your ${ x[i].display_name.lower() } expense is ${ currency(x[i].total(times_per_year=12)) } per month.
+fields: 
+  - How much does somebody else pay for that expense per month?: x[i].paid_by_other_monthly
+    datatype: currency
+    min: 0
+    max: ${ float(x[i].total(times_per_year=12)) }
 ---
 reconsider: primary_residence_loans.total_monthly_self_payment
 id: want to add more primary_residence_loans
@@ -3444,6 +3441,8 @@ id: other loans complete
 generic object: ALAssetList
 code: |
   other_loans[i].lender
+  if not other_loans[i].self_payment:
+    other_loans[i].paid_by_other_monthly
   other_loans[i].complete = True
 ---
 id: info for each other_loans
@@ -3468,6 +3467,8 @@ validation code: |
     other_loans[i].display_name = other_loans.terms_ordered.get(other_loans[i].source, other_loans[i].source)
   else:
     other_loans[i].display_name = other_loans_other_display
+  other_loans[i].value = other_loans[i].monthly_payment
+  other_loans[i].times_per_year = 12
 ---
 id: other loans display name
 code: |
@@ -3537,7 +3538,13 @@ fields:
 id: real_estate_loans complete
 code: |
   real_estate_loans[i].lender
+  if not real_estate_loans[i].self_payment:
+    real_estate_loans[i].paid_by_other_monthly
   real_estate_loans[i].complete = True
+---
+id: real estate loan display name
+code: |
+  real_estate_loans[i].display_name = real_estate_loans[i].source
 ---
 id: info for each real estate loans
 question: |
@@ -3551,11 +3558,14 @@ fields:
     datatype: currency
   - Are YOU making this payment?: real_estate_loans[i].self_payment
     datatype: yesnoradio
+validation code: |
+  real_estate_loans[i].value = real_estate_loans[i].monthly_payment
+  real_estate_loans[i].times_per_year = 12
 ---
 id: want to add more real_estate_loans
 question: Do you want to list any more real estate loans?
 subquestion: |
-  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total_monthly_self_payment) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }.**
+  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total(times_per_year=12)) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }.**
   
   Tap Next if you don't have more to add.
   
@@ -3607,6 +3617,8 @@ fields:
 id: vehicle_loans complete
 code: |
   vehicle_loans[i].lender
+  if not vehicle_loans[i].self_payment:
+    vehicle_loans[i].paid_by_other_monthly
   vehicle_loans[i].complete = True
 ---
 id: info for each vehicle loans
@@ -3621,6 +3633,13 @@ fields:
     datatype: currency
   - Are YOU making this payment?: vehicle_loans[i].self_payment
     datatype: yesnoradio
+validation code: |
+  vehicle_loans[i].value = vehicle_loans[i].monthly_payment
+  vehicle_loans[i].times_per_year = 12
+---
+id: vehicle_loans display name
+code: |
+  vehicle_loans[i].display_name = vehicle_loans[i].source
 ---
 id: more vehicle loans
 reconsider: vehicle_loans.total_monthly_self_payment
@@ -3681,6 +3700,8 @@ fields:
 id: credit_card_debt complete
 code: |
   credit_card_debt[i].lender
+  if not credit_card_debt[i].self_payment:
+    credit_card_debt[i].paid_by_other_monthly
   credit_card_debt[i].complete = True
 ---
 id: info for each credit_card_debt loans
@@ -3711,6 +3732,8 @@ validation code: |
     credit_card_debt[i].display_name = credit_card_debt[i].source
   else: 
     credit_card_debt[i].display_name = credit_card_debt[i].source_other
+  credit_card_debt[i].value = credit_card_debt[i].monthly_payment
+  credit_card_debt[i].times_per_year = 12
 ---
 id: want to add more credit_card_debt
 reconsider: credit_card_debt.total_monthly_self_payment
@@ -3770,7 +3793,13 @@ fields:
 id: other_debt complete
 code: |
   other_debt[i].lender
+  if not other_debt[i].self_payment:
+    other_debt[i].paid_by_other_monthly
   other_debt[i].complete = True
+---
+id: other_debt display name
+code: |
+  other_debt[i].display_name = other_debt[i].source
 ---
 id: info for each other_debt loans
 question: |
@@ -3786,6 +3815,9 @@ fields:
     datatype: yesnoradio
   - note: |
       Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
+validation code: |
+  other_debt[i].value = other_debt[i].monthly_payment
+  other_debt[i].times_per_year = 12
 ---
 id: want to add more other debt
 reconsider: other_debt.total_monthly_self_payment
@@ -4291,10 +4323,6 @@ review:
       % endif
   - Edit: 
       - vehicle_loans.revisit
-      - recompute: 
-        - vehicle_loans.total_monthly_self_payment
-        - household_expenses[vehicle_loans.vehicles_expenses_list_number].value
-      - household_expenses.revisit
       - recompute: 
         - vehicle_loans.total_monthly_self_payment
     button: |
