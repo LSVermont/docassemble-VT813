@@ -2248,6 +2248,9 @@ objects:
 ---
 #expenses
 id: household expenses types
+reconsider:
+  - primary_residence_loans.total_monthly_self_payment
+  - primary_residence_loans.total_monthly_other_payment
 question: |
   What kind of household expenses do you have?
 subquestion: |
@@ -2257,7 +2260,7 @@ subquestion: |
   <hr>
   **Household expenses you have told us about already**
   
-  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your primary residence is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(primary_residence_loans.total_monthly_self_payment) }** and others pay **${ currency(primary_residence_loans.total_monthly_other_payment) }**. This amount will be entered into the form. You will be able to edit it.
   
   <hr>
   % endif
@@ -2409,6 +2412,9 @@ objects:
 ---
 #expenses
 id: vehicle expenses types
+reconsider:
+  - vehicle_loans.total_monthly_self_payment
+  - vehicle_loans.total_monthly_other_payment
 question: |
   What kind of car, truck and other vehicle expenses do you have?
 subquestion: | 
@@ -2418,7 +2424,7 @@ subquestion: |
   <hr>
   **Vehicle expenses you have told us about already**
   
-  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }**. This amount will be entered into the form. You will be able to edit it.
+  You said that the total monthly expenses for paying for loans on your vehicles is **${ currency(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }** and others pay **${ currency(vehicle_loans.total_monthly_other_payment) }**. This amount will be entered into the form. You will be able to edit it.
   <hr>
   % endif
 fields:
@@ -2729,6 +2735,13 @@ depends on:
   - other_debt.total_monthly_self_payment
 ---
 code: |
+  monthly_debt_other_payment = real_estate_loans.total_monthly_other_payment + other_loans.total_monthly_other_payment + other_debt.total_monthly_other_payment
+depends on:
+  - real_estate_loans.total_monthly_other_payment
+  - other_loans.total_monthly_other_payment
+  - other_debt.total_monthly_other_payment
+---
+code: |
   total_monthly_debt_payment = real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) + other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) + other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)
 depends on:
   - real_estate_loans
@@ -2737,6 +2750,15 @@ depends on:
 ---
 #expenses
 id: personal expenses types
+reconsider:
+ - real_estate_loans.total_monthly_self_payment
+ - real_estate_loans.total_monthly_other_payment
+ - other_loans.total_monthly_self_payment
+ - other_loans.total_monthly_other_payment
+ - other_debt.total_monthly_self_payment
+ - other_debt.total_monthly_other_payment
+ - monthly_debt_payment
+ - monthly_debt_other_payment
 question: |
   What kind of personal expenses do you have?
 subquestion: |
@@ -2753,10 +2775,10 @@ subquestion: |
   You said that you make these monthly debt payments:
 
   % if real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12) > 0:
-    - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) }. 
+    - Real estate loans (not including your primary residence): Total of ${ currency(real_estate_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(real_estate_loans.total_monthly_self_payment) } and others pay ${ currency(real_estate_loans.total_monthly_other_payment) }. 
   % endif
   % if other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)>0:
-    - Other loans: Total of ${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_loans.total_monthly_self_payment) }. They include:
+    - Other loans: Total of ${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_loans.total_monthly_self_payment) } and others pay you pay ${ currency(other_loans.total_monthly_other_payment) }. They include:
   % for loan_type in ["personal","school","other"]:
   % if len(other_loans.matches(source=[loan_type])) > 0:
       - ${ quantity_noun(len(other_loans.matches(source=[loan_type])), other_loans.terms_ordered.get(loan_type, loan_type)).lower() }
@@ -2765,10 +2787,10 @@ subquestion: |
 
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
-    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) }.
+    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) } and others you pay ${ currency(other_debt.total_monthly_other_payment) }.
   % endif
    
-  Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
+  Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }** and others pay **${ currency(monthly_debt_other_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
 
   (Note that primary residence loans, credit card debt and vehicle payments are not included in this "personal expenses" section.)
   % endif
@@ -3315,7 +3337,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender: primary_residence_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this payment?: primary_residence_loans[i].self_payment
+  - Are YOU paying this in full?: primary_residence_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   primary_residence_loans[i].value = primary_residence_loans[i].monthly_payment
@@ -3331,22 +3353,29 @@ code: |
     primary_residence_loans[i].display_name = primary_residence_loans_other_display
 ---
 generic object: ALAssetList
-id: household expenses paid by others
+id: generic object for loans paid by others
 question:  Other payments for ${ x[i].display_name.lower() }
 subquestion: |
-  You said your ${ x[i].display_name.lower() } expense is ${ currency(x[i].total(times_per_year=12)) } per month.
+  You said your ${ x[i].display_name.lower() } loan payment is ${ currency(x[i].total(times_per_year=12)) } per month, but you do not pay it in full yourself.
+  
 fields: 
-  - How much does somebody else pay for that expense per month?: x[i].paid_by_other_monthly
+  - How much do you pay for that loan payment per month? : x[i].paid_by_self_monthly
     datatype: currency
     min: 0
-    max: ${ float(x[i].total(times_per_year=12)) }
+    default: 0
+  - How much does somebody else pay for that loan payment per month?: x[i].paid_by_other_monthly
+    datatype: currency
+    min: 0
+    default: 0
 ---
-reconsider: primary_residence_loans.total_monthly_self_payment
+reconsider:
+  - primary_residence_loans.total_monthly_self_payment
+  - primary_residence_loans.total_monthly_other_payment
 id: want to add more primary_residence_loans
 question: Do you want to list any more primary residence loans?
 subquestion: |
   
-  The total for the monthly loan expenses below is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }**.
+  The total for the monthly loan expenses below is **${ currency(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and the amount you pay is **${ currency(primary_residence_loans.total_monthly_self_payment) }** and others pay **${ currency(primary_residence_loans.total_monthly_other_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3363,6 +3392,24 @@ code: |
     if item.self_payment:
       temp_total += item.monthly_payment
   x.total_monthly_self_payment = temp_total
+---
+generic object: ALAssetList
+code: |
+  temp_total = 0
+  for item in x:
+    if item.self_payment:
+      temp_total += item.monthly_payment
+    else:
+      temp_total += item.paid_by_self_monthly
+  x.total_monthly_self_payment = temp_total
+---
+generic object: ALAssetList
+code: |
+  temp_total = 0
+  for item in x:
+    if not item.self_payment:
+      temp_total += item.paid_by_other_monthly
+  x.total_monthly_other_payment = temp_total
 ---
 reconsider: primary_residence_loans.total_monthly_self_payment
 id: primary_residence_loans.revisit
@@ -3386,8 +3433,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -3458,7 +3505,7 @@ fields:
     datatype: currency
   - Monthly payment set by lender: other_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this payment?: other_loans[i].self_payment
+  - Are YOU paying this in full?: other_loans[i].self_payment
     datatype: yesnoradio
   - note: |
       Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
@@ -3480,11 +3527,13 @@ code: |
     other_loans[i].display_name = other_loans_other_display
 ---
 id: want to add more other_loans
-reconsider: other_loans.total_monthly_self_payment
+reconsider:
+  - other_loans.total_monthly_self_payment
+  - other_loans.total_monthly_other_payment
 question: Do you want to list any other loans?
 subquestion: |
   
-  The total for the monthly loan expenses below is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }.**
+  The total for the monthly loan expenses below is **${ currency(other_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_loans.total_monthly_self_payment) }** and others pay **${ currency(other_loans.total_monthly_other_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3514,8 +3563,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -3556,16 +3605,19 @@ fields:
     datatype: currency
   - Monthly payment set by lender: real_estate_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this payment?: real_estate_loans[i].self_payment
+  - Are YOU paying this in full?: real_estate_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   real_estate_loans[i].value = real_estate_loans[i].monthly_payment
   real_estate_loans[i].times_per_year = 12
 ---
 id: want to add more real_estate_loans
+reconsider:
+  - real_estate_loans.total_monthly_self_payment
+  - real_estate_loans.total_monthly_other_payment
 question: Do you want to list any more real estate loans?
 subquestion: |
-  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total(times_per_year=12)) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }.**
+  The total for the monthly loan expenses below is **${ currency(real_estate_loans.total(times_per_year=12)) }** and you pay **${ currency(real_estate_loans.total_monthly_self_payment) }** and others pay **${ currency(real_estate_loans.total_monthly_other_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3595,8 +3647,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -3631,7 +3683,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender: vehicle_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this payment?: vehicle_loans[i].self_payment
+  - Are YOU paying this in full?: vehicle_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   vehicle_loans[i].value = vehicle_loans[i].monthly_payment
@@ -3642,10 +3694,12 @@ code: |
   vehicle_loans[i].display_name = vehicle_loans[i].source
 ---
 id: more vehicle loans
-reconsider: vehicle_loans.total_monthly_self_payment
+reconsider: 
+ - vehicle_loans.total_monthly_self_payment
+ - vehicle_loans.total_monthly_other_payment
 question: Do you want to list any more vehicle loans?
 subquestion: |
-  The total for the monthly vehicle loan expenses is **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }.**
+  The total for the monthly vehicle loan expenses is **${ currency( vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(vehicle_loans.total_monthly_self_payment) }** and others pay **${ currency(vehicle_loans.total_monthly_other_payment) }**.
   
   
   Tap Next if you don't have more to add.
@@ -3676,8 +3730,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -3725,7 +3779,7 @@ fields:
     datatype: currency
   - note: |
       Note: If you aren't paying off your credit card bill each month, what is the minimum amount that the credit card company asks for?
-  - Are YOU making this payment?: credit_card_debt[i].self_payment
+  - Are YOU paying this in full?: credit_card_debt[i].self_payment
     datatype: yesnoradio
 validation code: |
   if credit_card_debt[i].source != "Other":
@@ -3736,10 +3790,12 @@ validation code: |
   credit_card_debt[i].times_per_year = 12
 ---
 id: want to add more credit_card_debt
-reconsider: credit_card_debt.total_monthly_self_payment
+reconsider: 
+ - credit_card_debt.total_monthly_self_payment
+ - credit_card_debt.total_monthly_other_payment
 question: Do you want to list any more credit card debt?
 subquestion:  |
-  The total for the monthly credit card debt expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }.**
+  The total for the monthly credit card debt expenses is **${ currency(credit_card_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(credit_card_debt.total_monthly_self_payment) }** and others pay **${ currency(credit_card_debt.total_monthly_other_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3769,8 +3825,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -3811,7 +3867,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender or creditor -- if any: other_debt[i].monthly_payment
     datatype: currency
-  - Are YOU making this payment?: other_debt[i].self_payment
+  - Are YOU paying this in full?: other_debt[i].self_payment
     datatype: yesnoradio
   - note: |
       Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
@@ -3820,10 +3876,12 @@ validation code: |
   other_debt[i].times_per_year = 12
 ---
 id: want to add more other debt
-reconsider: other_debt.total_monthly_self_payment
+reconsider: 
+ - other_debt.total_monthly_self_payment
+ - other_debt.total_monthly_other_payment
 question: Do you want to list any other debt?
 subquestion: |
-  The total for the monthly debt expenses below is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.**
+  The total for the monthly debt expenses below is **${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) }** and you pay **${ currency(other_debt.total_monthly_self_payment) }.** and others pay **${ currency(other_debt.total_monthly_other_payment) }**.
   
   Tap Next if you don't have more to add.
   
@@ -3853,8 +3911,8 @@ columns:
       currency(row_item.balance) if defined("row_item.balance") else ""
   - Monthly Payment: |
       currency(row_item.monthly_payment) if defined("row_item.monthly_payment") else ""
-  - YOU are making this payment: |
-      row_item.self_payment
+  - Amount paid per month: |
+      "You pay in full" if row_item.self_payment else "You pay " + currency(row_item.paid_by_self_monthly) + "\n Others pay "  + currency(row_item.paid_by_other_monthly)
 edit:
   - source
   - lender
@@ -4600,7 +4658,7 @@ code: |
     {'lender': "Lender"},
     {'balance': "Amount owed"},
     {'monthly_payment': "Monthly payment"},
-    {'self_payment': "You are making this payment"},
+    {'self_payment': "You are paying this in full"},
   ]  
 
   vt_financial_form_813A_attachment.overflow_fields["vehicle_loans"].label = "Vehicle loans"
@@ -4610,7 +4668,7 @@ code: |
     {'lender': "Lender"},
     {'balance': "Amount owed"},
     {'monthly_payment': "Monthly payment"},
-    {'self_payment': "You are making this payment"},
+    {'self_payment': "You are paying this in full"},
   ]  
 
   vt_financial_form_813A_attachment.overflow_fields["other_loans"].label = "Other real estate loans"
@@ -4620,7 +4678,7 @@ code: |
     {'lender': "Lender"},
     {'balance': "Amount owed"},
     {'monthly_payment': "Monthly payment"},
-    {'self_payment': "You are making this payment"},
+    {'self_payment': "You are paying this in full"},
   ]  
 
   vt_financial_form_813A_attachment.overflow_fields["other_debt"].label = "Other debt"
@@ -4630,7 +4688,7 @@ code: |
     {'lender': "Lender"},
     {'balance': "Amount owed"},
     {'monthly_payment': "Monthly payment"},
-    {'self_payment': "You are making this payment"},
+    {'self_payment': "You are paying this in full"},
   ]  
 
 
@@ -5245,7 +5303,7 @@ attachments:
       - "users1_expenses_rent_mortgage_self_paid": |
           ${ "{:.2f}".format(primary_residence_loans.total_monthly_self_payment+float(household_expenses.total(source='rent', times_per_year=12) -household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_rent_mortgage_other_paid": |
-          ${ "{:.2f}".format((float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment)+float(household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'))) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_monthly_other_payment+float(household_expenses.total_other_attribute(source='rent', attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_rent_mortgage_monthly_amount": |
           ${ "{:.2f}".format(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+household_expenses.total(source=['rent'], times_per_year=12)) } 
       - "users1_expenses_property_tax_self_paid": |
@@ -5323,13 +5381,13 @@ attachments:
       - "users1_expenses_total_self_paid": |
           ${ "{:.2f}".format(primary_residence_loans.total_monthly_self_payment+float(household_expenses.total(times_per_year=12) -household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_total_other_paid": |
-          ${ "{:.2f}".format((float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment)+float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
+          ${ "{:.2f}".format(primary_residence_loans.total_monthly_other_payment+float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_total_monthly_amount": |
           ${ "{:.2f}".format(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+household_expenses.total(times_per_year = 12)) } 
       - "users1_assets_vehicles_total_payment_self_paid_1": |
           ${ "{:.2f}".format(vehicle_loans.total_monthly_self_payment) } 
       - "users1_assets_vehicles_total_payment_other_paid_1": |
-          ${ "{:.2f}".format(float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment) } 
+          ${ "{:.2f}".format(vehicle_loans.total_monthly_other_payment) } 
       - "users1_assets_vehicles_total_payment_1": |
           ${ "{:.2f}".format(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } 
       - "users1_expenses_auto_insur_self_paid": |
@@ -5359,7 +5417,7 @@ attachments:
       - "users1_expenses_auto_total_self_paid": |
           ${ "{:.2f}".format(vehicle_loans.total_monthly_self_payment+float(vehicle_expenses.total(times_per_year=12) -vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_auto_total_other_paid": |
-          ${ "{:.2f}".format(float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment+float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
+          ${ "{:.2f}".format(vehicle_loans.total_monthly_other_payment+float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) } 
       - "users1_expenses_auto_total_monthly_amount": |
           ${ "{:.2f}".format(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)+vehicle_expenses.total(times_per_year = 12)) } 
       - "users1_expenses_insur_life_self_paid": |
@@ -5485,7 +5543,7 @@ attachments:
       - "users1_expenses_loandebt_self_paid": |
           ${ "{:.2f}".format(monthly_debt_payment) } 
       - "users1_expenses_loandebt_other_paid": |
-          ${ "{:.2f}".format(float(total_monthly_debt_payment) - float(monthly_debt_payment)) } 
+          ${ "{:.2f}".format(monthly_debt_other_payment) } 
       - "users1_expenses_loandebt_monthly_amount": |
           ${ "{:.2f}".format(total_monthly_debt_payment) } 
       - "users1_expenses_other_kids_self_paid": |
@@ -5515,19 +5573,19 @@ attachments:
       - "users1_expenses_monthly_total_self_paid": |
           ${ "{:.2f}".format(float(personal_expenses.total(times_per_year=12) -personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+ monthly_debt_payment + child_support_other_self_paid ) } 
       - "users1_expenses_monthly_total_other_paid": |
-          ${ "{:.2f}".format(float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+float(total_monthly_debt_payment)-float(monthly_debt_payment) + child_support_other_other_paid ) } 
+          ${ "{:.2f}".format(float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))+float(monthly_debt_other_payment) + child_support_other_other_paid ) } 
       - "users1_expenses_monthly_total": |
           ${ "{:.2f}".format(float(personal_expenses.total(times_per_year = 12))+float(total_monthly_debt_payment)  + child_support_other_total ) } 
       - "users1_credit_card_debt_total_payment_self_paid": |
           ${ "{:.2f}".format(float(credit_card_debt.total_monthly_self_payment)) } 
       - "users1_credit_card_debt_total_payment_other_paid": |
-          ${ "{:.2f}".format(float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12)) - float(credit_card_debt.total_monthly_self_payment)) } 
+          ${ "{:.2f}".format(float(credit_card_debt.total_monthly_other_payment)) } 
       - "users1_credit_card_debt_total_payment_1": |
           ${ "{:.2f}".format(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12)) } 
       - "users1_expenses_grand_total_self_paid": |
           ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment) + primary_residence_loans.total_monthly_self_payment + vehicle_loans.total_monthly_self_payment + health_insurance_paid + monthly_debt_payment+ child_support_other_self_paid) }
       - "users1_expenses_grand_total_other_paid": |
-          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + (float(credit_card_debt.total_other_attribute(attribute='monthly_payment'))-float(credit_card_debt.total_monthly_self_payment)) + (float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-primary_residence_loans.total_monthly_self_payment) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12))-vehicle_loans.total_monthly_self_payment + health_insurance_paid_by_employer + float(total_monthly_debt_payment) - float(monthly_debt_payment) + child_support_other_other_paid) }
+          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(credit_card_debt.total_monthly_other_payment) + (float(primary_residence_loans.total_monthly_other_payment) + float(vehicle_loans.total_monthly_other_payment) + health_insurance_paid_by_employer + float(monthly_debt_other_payment) + child_support_other_other_paid)) }
       - "users1_expenses_grand_total_monthly_amount": |
           ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment) + child_support_other_total) }
       - "users1_deductions_federal_monthly_amount": |
