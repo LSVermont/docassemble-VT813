@@ -351,8 +351,11 @@ code: |
       data={
           "zip": showifdef("users[0].address.zip"),
           "county_where_filing": showifdef("trial_court.address.county"),
+          "user_role": showifdef("user_ask_role"),
           "gets_public_benefits": showifdef("public_benefits.sources"),
           "employed": showifdef("employed"),
+          "shared_children": showifdef("shared_children.number_gathered"),
+          "other_children": showifdef("other_children.number_gathered"),
           "reached_interview_end": True,
           "num_forms": len(al_user_bundle.enabled_documents()),
       },
@@ -1918,7 +1921,7 @@ subquestion: |
 
   ${ next_accordion('<h2 class="h5">Information you will need</h2>') }
   <p>You will need to know:</p>
-  
+  <ul>
   <li>birthdates of you, the other party and any children</li>
   <li>any Social Security or disability income received by your kids</li>
   <li>information about your court case like a case number (You can find this information on other court papers you have about this case. If you are starting a new case, you won't have a case number yet.)</li>
@@ -2787,7 +2790,7 @@ subquestion: |
 
   % endif
   % if other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12):
-    - Other debt - Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) } and others you pay ${ currency(other_debt.total_monthly_other_payment) }.
+    - Other debt: Total of ${ currency(other_debt.total_other_attribute(attribute="monthly_payment",times_per_year=12)) } of which you pay ${ currency(other_debt.total_monthly_self_payment) } and others you pay ${ currency(other_debt.total_monthly_other_payment) }.
   % endif
    
   Grand total of **${ currency(total_monthly_debt_payment) }** of which you pay **${ currency(monthly_debt_payment) }** and others pay **${ currency(monthly_debt_other_payment) }**. This amount will be entered into the form. You will be able to edit it after entering other expenses.
@@ -3242,7 +3245,7 @@ comment: |
   used in this display line
   About your ___
 code: |
-  primary_residence_loans_other_display = "other primary_residence_loan"
+  primary_residence_loans_other_display = "other primary residence loan"
 ---
 id: primary_residence_loans object
 objects:
