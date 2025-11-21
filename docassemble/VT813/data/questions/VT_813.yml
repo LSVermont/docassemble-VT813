@@ -14,7 +14,6 @@ objects:
 id: modules
 modules:
   - .al_income_move
-  - docassemble.demo.accordion
 ---
 id: trial_court_index
 code: |
