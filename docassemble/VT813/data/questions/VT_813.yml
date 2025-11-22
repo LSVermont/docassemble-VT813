@@ -47,7 +47,8 @@ metadata:
     Fill Out Form 813A - Financial Affidavit: Income and Expenses
   authors:
     - VTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website
-    - Authored by Legal Services Vermont
+    - K. Surette, Legal Services Vermont
+    - T. Fey, Lemma Legal
   categories:
     - "FA-00-00-00-00"
     - "HO-00-00-00-00"
@@ -4546,7 +4547,7 @@ review:
 
   - Edit: signature_date
     button: |
-      **Date of signature for these forms**:
+      **Date of signature for this form**:
       ${ signature_date }
 
   - note: |
