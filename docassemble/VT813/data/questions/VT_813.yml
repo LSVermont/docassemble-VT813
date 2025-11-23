@@ -3338,7 +3338,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender: primary_residence_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this monthly payment in full?: primary_residence_loans[i].self_payment
+  - Are YOU paying this monthly payment in full?: primary_residence_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   primary_residence_loans[i].value = primary_residence_loans[i].monthly_payment
@@ -3506,7 +3506,7 @@ fields:
     datatype: currency
   - Monthly payment set by lender: other_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this monthly payment in full?: other_loans[i].self_payment
+  - Are YOU paying this monthly payment in full?: other_loans[i].self_payment
     datatype: yesnoradio
   - note: |
       Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
@@ -3606,7 +3606,7 @@ fields:
     datatype: currency
   - Monthly payment set by lender: real_estate_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this monthly payment in full?: real_estate_loans[i].self_payment
+  - Are YOU paying this monthly payment in full?: real_estate_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   real_estate_loans[i].value = real_estate_loans[i].monthly_payment
@@ -3684,7 +3684,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender: vehicle_loans[i].monthly_payment
     datatype: currency
-  - Are YOU making this monthly payment in full?: vehicle_loans[i].self_payment
+  - Are YOU paying this monthly payment in full?: vehicle_loans[i].self_payment
     datatype: yesnoradio
 validation code: |
   vehicle_loans[i].value = vehicle_loans[i].monthly_payment
@@ -3780,7 +3780,7 @@ fields:
     datatype: currency
   - note: |
       Note: If you aren't paying off your credit card bill each month, what is the minimum amount that the credit card company asks for?
-  - Are YOU making this monthly payment in full?: credit_card_debt[i].self_payment
+  - Are YOU paying this monthly payment in full?: credit_card_debt[i].self_payment
     datatype: yesnoradio
 validation code: |
   if credit_card_debt[i].source != "Other":
@@ -3868,7 +3868,7 @@ fields:
     datatype: currency
   - Monthly payment set by the lender or creditor -- if any: other_debt[i].monthly_payment
     datatype: currency
-  - Are YOU making this monthly payment in full?: other_debt[i].self_payment
+  - Are YOU paying this monthly payment in full?: other_debt[i].self_payment
     datatype: yesnoradio
   - note: |
       Don't have an official monthly payment? Look back over the last 12 months and enter an average monthly payment.
