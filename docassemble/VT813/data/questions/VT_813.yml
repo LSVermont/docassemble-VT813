@@ -3355,16 +3355,16 @@ code: |
 ---
 generic object: ALAssetList
 id: generic object for loans paid by others
-question:  Other payments for ${ x[i].display_name.lower() }
+question:  Actual payments
 subquestion: |
-  You said your ${ x[i].display_name.lower() } loan payment is ${ currency(x[i].total(times_per_year=12)) } per month, but you do not pay it in full yourself.
+  You said your payment is ${ currency(x[i].total(times_per_year=12)) } per month, but you do not pay it in full yourself.
   
 fields: 
-  - How much do you pay for that loan payment per month? : x[i].paid_by_self_monthly
+  - How much do you pay per month? : x[i].paid_by_self_monthly
     datatype: currency
     min: 0
     default: 0
-  - How much does somebody else pay for that loan payment per month?: x[i].paid_by_other_monthly
+  - How much does somebody else pay per month?: x[i].paid_by_other_monthly
     datatype: currency
     min: 0
     default: 0
