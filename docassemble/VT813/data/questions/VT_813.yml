@@ -789,7 +789,7 @@ subquestion: |
 
   ${ shared_children.add_action() }
 
-  The child support you pay for your shared children is ${ child_support_shared }.
+  The child support you pay for your shared children is ${ currency(child_support_shared) }.
 ---
 reconsider: supported_children.gathered
 id: other_children.revisit
@@ -3060,12 +3060,30 @@ subquestion: |
   % endif
   
   % if child_support_shared > 0:
-  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is: 
+  You said your monthly child support expense for your shared children with ${ other_parties[0] } is: 
   **${ currency(child_support_shared) }**. This amount will be entered into the form. You will be able to edit it.
+  % endif
+
+  % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids or defined("educational_expenses_kids") and educational_expenses_kids or defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
+  You said you had these "extraordinary expenses" for the child/children:
+
+    % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids:
+    * ${ uninsured_medical_expenses_type }: **${ currency(uninsured_medical_expenses_amount) }**
+    % endif
+    
+    % if defined("educational_expenses_kids") and educational_expenses_kids:
+    * ${ educational_expenses_type }: **${ currency(educational_expenses_amount) }**
+    % endif
+  
+    % if defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
+    * ${ special_needs_expenses_type }: **${ currency(special_needs_expenses_amount) }**
+    % endif
+  
+  This will be entered into the form. You will be able to edit it.
   % endif
   <hr>
 fields:
-  - Expenses for children: children_expenses.selected_types
+  - More expenses for children: children_expenses.selected_types
     datatype: checkboxes
     code: |
       children_expenses_ordered
@@ -3135,14 +3153,32 @@ subquestion: |
   % endif
 
   % if child_support_shared > 0:
-  According to the information you entered about shared children with ${ other_parties[0] }, your monthly child support expense for these children is: **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
+  You said your monthly child support expense for your shared children with ${ other_parties[0] } is: **${ currency(child_support_shared) }**. This amount will be entered into the form. [Click here to change this amount by editing the child support for any child.](${ url_action('shared_children.revisit')})
   % endif
+  % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids or defined("educational_expenses_kids") and educational_expenses_kids or defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
+
+  You said you had these "extraordinary expenses" for the child/children:
+
+    % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids:
+    * ${ uninsured_medical_expenses_type }: **${ currency(uninsured_medical_expenses_amount) }**
+    % endif
+    
+    % if defined("educational_expenses_kids") and educational_expenses_kids:
+    * ${ educational_expenses_type }: **${ currency(educational_expenses_amount) }**
+    % endif
+  
+    % if defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
+    * ${ special_needs_expenses_type }: **${ currency(special_needs_expenses_amount) }**
+    % endif
+  
+  This will be entered into the form. [Click here to change these extraordinary expenses.](${ url_action('uninsured_medical_expenses_type')})
+    % endif
   
   ${ children_expenses_table }
 
   ${ children_expenses.add_action() }
 
-  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared ) }
+  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared + uninsured_medical_expenses_amount + educational_expenses_amount + special_needs_expenses_amount) }
  
 continue button field: children_expenses.review_items
 ---
