@@ -456,7 +456,7 @@ fields:
       shared_children[i].name_fields(person_or_business='person')
   - Date of birth: shared_children[i].birthdate
     datatype: BirthDate
-  - Their address: shared_children[i].address
+  - Child's address: shared_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
@@ -520,7 +520,7 @@ fields:
       shared_children[i].name_fields(person_or_business='person')
   - Date of birth: shared_children[i].birthdate
     datatype: BirthDate
-  - Their address: shared_children[i].address
+  - Child's address: shared_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
@@ -644,7 +644,7 @@ fields:
       other_children[i].name_fields(person_or_business='person')
   - Date of birth: other_children[i].birthdate
     datatype: BirthDate
-  - Their address: other_children[i].address
+  - Child's address: other_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
@@ -702,7 +702,7 @@ fields:
       other_children[i].name_fields(person_or_business='person')
   - Date of birth: other_children[i].birthdate
     datatype: BirthDate
-  - Their address: other_children[i].address
+  - Child's address: other_children[i].address
     datatype: object_radio
     choices: address_choices
     none of the above: A different address
@@ -2815,8 +2815,6 @@ fields:
     datatype: checkboxes
     code: |
       personal_expenses_ordered
-  - note: |
-      After you enter any personal expenses, it will take a moment to generate your draft form so you can review it!
 ---
 id: personal expense information
 reconsider: personal_expenses[i].display_name
@@ -3016,13 +3014,13 @@ data: !!omap
   - kids_activities: "Fees/expenses for special activities (e.g., piano lessons, sports)"
   - kids_camp: "Summer camp/school vacation camp"
   - kids_tuition: "Private school tuition"
-  - kids_medical: "Uninsured medical/dental expenses"
+  - kids_medical: "Ordinary uninsured medical/dental/vision expenses"
   - kids_other: "Miscellaneous"
 
 --- 
 id: children expenses display name default
 code: |
-  children_expenses_other_display = "another children expense"
+  children_expenses_other_display = "other"
 
 ---
 id: children_expenses object
@@ -3194,7 +3192,7 @@ code: |
 id: extraordinary expenses
 question: Your extraordinary expenses for children with ${ other_parties[0].name.full() }
 subquestion: |
-  Do you have these expenses for children of this relationship?
+  Do you have these extraordinary expenses for children of this relationship?
   
   Look back over the last 12 months. If your monthly amount changes during the year, use your total amount for the year and divide by 12.
 
