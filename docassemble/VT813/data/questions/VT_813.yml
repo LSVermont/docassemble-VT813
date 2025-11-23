@@ -2573,7 +2573,7 @@ question: |
 subquestion: |
   You can look back 12 months for these expenses. That will give an accurate picture of how much the expenses really are.
 
-  % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  % if defined('health_insurance_paid') and health_insurance_paid > 0 or defined('health_insurance_paid_by_employer') and health_insurance_paid_by_employer > 0:
   <hr>
   **Health insurance expenses you have told us about already**
   
@@ -2651,7 +2651,7 @@ question: Do you want to list any more insurance expenses?
 subquestion: |
   Tap Next if you don't have more to add.
 
-    % if health_insurance_paid > 0 or health_insurance_paid_by_employer > 0:
+  % if defined('health_insurance_paid') and health_insurance_paid > 0:
   **Health insurance through work:**
   You said that you pay **${ currency(health_insurance_paid) }** for health insurance and someone else pays **${ currency(health_insurance_paid_by_employer) }**. [You can edit this by clicking this link](${ url_action('health_insurance_paid')})
   % endif
@@ -2660,7 +2660,14 @@ subquestion: |
   
   ${ insurance_expenses.add_action() }
 
-  **Total of insurance expenses shown above:** ${ currency(float(insurance_expenses.total(times_per_year=12)) + health_insurance_paid) }
+  **Total of insurance expenses shown above:**
+  
+  % if defined('health_insurance_paid') and health_insurance_paid > 0:
+  ${ currency(float(insurance_expenses.total(times_per_year=12)) + health_insurance_paid) }
+
+  % else:
+  ${ currency(insurance_expenses.total(times_per_year=12)) }
+  % endif
 continue button field: insurance_expenses.review_items
 ---
 reconsider: insurance_expenses.total_monthly_self_payment
