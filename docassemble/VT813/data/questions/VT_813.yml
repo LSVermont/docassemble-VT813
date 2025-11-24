@@ -4495,20 +4495,17 @@ review:
   - Edit:
       - no_extraordinary_expenses
     button: |
-      **Extraordinary expenseses for children with ${ other_parties[0].name.full() }**
+      **Extraordinary expenses for children with ${ other_parties[0].name.full() }**
 
       % if defined("uninsured_medical_expenses_kids") and uninsured_medical_expenses_kids:
       * ${ uninsured_medical_expenses_type } 
       % endif
-      
       % if defined("educational_expenses_kids") and educational_expenses_kids:
       * ${ educational_expenses_type }
       % endif
-
       % if defined("specialneeds_expenses_kids") and specialneeds_expenses_kids:
       * ${ special_needs_expenses_type }
       % endif
-
       % if no_extraordinary_expenses:
       * None
       % endif
@@ -5649,6 +5646,8 @@ attachments:
           ${ "{:.2f}".format(float(self_employed_estimated_taxes_paid_feds / 12) + float(jobs.deductions_federal_monthly_amount)) }
           % elif is_self_employed:
            ${ "{:.2f}".format(self_employed_estimated_taxes_paid_feds / 12) }
+          % elif has_jobs:
+          ${ "{:.2f}".format(float(jobs.deductions_federal_monthly_amount)) }
           % endif
       - "users1_deductions_fica_monthly_amount": ${ "{:.2f}".format(jobs.deductions_fica_monthly_amount) } 
       - "users1_deductions_medicare_monthly_amount": ${ "{:.2f}".format(jobs.deductions_medicare_monthly_amount) } 
@@ -5657,7 +5656,9 @@ attachments:
           ${ "{:.2f}".format(float(self_employed_estimated_taxes_paid_state / 12) + float(jobs.deductions_state_monthly_amount)) }
           % elif is_self_employed:
            ${ "{:.2f}".format(self_employed_estimated_taxes_paid_state / 12) }
-          % endif
+          % elif has_jobs:
+          ${ "{:.2f}".format(float(jobs.deductions_state_monthly_amount)) }
+          % endif          
       - "users1_deductions_other_monthly_amount": ${ "{:.2f}".format(jobs.deductions_other_monthly_amount) } 
       - "users1_kids_expenses_clothes_monthly_amount": |
           ${ "{:.2f}".format(children_expenses.total(source=['kids_clothes'], times_per_year=12)) } 
