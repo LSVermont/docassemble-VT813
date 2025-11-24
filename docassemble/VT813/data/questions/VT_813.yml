@@ -5477,11 +5477,23 @@ attachments:
       - "users1_expenses_insur_disab_monthly_amount": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_disab'], times_per_year=12)) } 
       - "users1_expenses_insur_health_self_paid": |
-          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'))+ health_insurance_paid) } 
+          % if defined("enrolled") and enrolled:
+          ${ "{:.2f}".format(float(health_insurance_paid)) } 
+          % else:
+          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'))) } 
+          % endif
       - "users1_expenses_insur_health_other_paid": |
-          ${ "{:.2f}".format(float(insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly')) + health_insurance_paid_by_employer) } 
+          % if defined("enrolled") and enrolled:
+          ${ "{:.2f}".format(float(health_insurance_paid_by_employer)) } 
+          % else:
+          ${ "{:.2f}".format(float(insurance_expenses.total_other_attribute(source=['insur_health'],attribute='paid_by_other_monthly'))) } 
+          % endif
       - "users1_expenses_insur_health_monthly_amount": |
-          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'], times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer) } 
+          % if defined("enrolled") and enrolled:
+          ${ "{:.2f}".format(float(health_insurance_paid + health_insurance_paid_by_employer)) } 
+          % else:
+          ${ "{:.2f}".format(float(insurance_expenses.total(source=['insur_health'], times_per_year=12))) } 
+          % endif
       - "users1_expenses_insur_dentvis_self_paid": |
           ${ "{:.2f}".format(insurance_expenses.total(source=['insur_dentvis'],times_per_year=12) -insurance_expenses.total_other_attribute(source=['insur_dentvis'],attribute='paid_by_other_monthly')) } 
       - "users1_expenses_insur_dentvis_other_paid": |
