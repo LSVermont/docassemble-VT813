@@ -4549,7 +4549,7 @@ review:
       % if healthcare_available:
       - You can get health insurance through your work.
       % else:
-      - You cannot get health insurance through your work.
+      - You cannot get health insurance through work.
       % endif
       % if defined("enrolled") and enrolled:
       - You are enrolled.
@@ -5656,12 +5656,26 @@ attachments:
           ${ "{:.2f}".format(float(credit_card_debt.total_monthly_other_payment)) } 
       - "users1_credit_card_debt_total_payment_1": |
           ${ "{:.2f}".format(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year = 12)) } 
+          
       - "users1_expenses_grand_total_self_paid": |
+          % if defined("enrolled") and enrolled:
           ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment) + primary_residence_loans.total_monthly_self_payment + vehicle_loans.total_monthly_self_payment + health_insurance_paid + monthly_debt_payment+ child_support_other_self_paid) }
+          % else:
+          ${ "{:.2f}".format((float(household_expenses.total(times_per_year=12)) - float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(vehicle_expenses.total(times_per_year=12)) - float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(insurance_expenses.total(times_per_year=12)) - float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + (float(personal_expenses.total(times_per_year=12)) - float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly'))) + float(credit_card_debt.total_monthly_self_payment) + primary_residence_loans.total_monthly_self_payment + vehicle_loans.total_monthly_self_payment + monthly_debt_payment+ child_support_other_self_paid) }
+          % endif
       - "users1_expenses_grand_total_other_paid": |
+          % if defined("enrolled") and enrolled:
           ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(credit_card_debt.total_monthly_other_payment) + (float(primary_residence_loans.total_monthly_other_payment) + float(vehicle_loans.total_monthly_other_payment) + health_insurance_paid_by_employer + float(monthly_debt_other_payment) + child_support_other_other_paid)) }
+          % else:
+          ${ "{:.2f}".format(float(household_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(vehicle_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(insurance_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(personal_expenses.total_other_attribute(attribute='paid_by_other_monthly')) + float(credit_card_debt.total_monthly_other_payment) + (float(primary_residence_loans.total_monthly_other_payment) + float(vehicle_loans.total_monthly_other_payment) + float(monthly_debt_other_payment) + child_support_other_other_paid)) }
+          % endif
       - "users1_expenses_grand_total_monthly_amount": |
+          % if defined("enrolled") and enrolled:
           ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + health_insurance_paid + health_insurance_paid_by_employer + float(total_monthly_debt_payment) + child_support_other_total) }
+          % else:
+          ${ "{:.2f}".format(float(household_expenses.total(times_per_year = 12)) + float(vehicle_expenses.total(times_per_year = 12)) + float(insurance_expenses.total(times_per_year = 12)) + float(personal_expenses.total(times_per_year = 12)) + float(credit_card_debt.total_other_attribute(attribute='monthly_payment',times_per_year=12)) + float(primary_residence_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(vehicle_loans.total_other_attribute(attribute="monthly_payment",times_per_year=12)) + float(total_monthly_debt_payment) + child_support_other_total) }
+          % endif
+          
       - "users1_deductions_federal_monthly_amount": |
           % if is_self_employed and has_jobs:
           ${ "{:.2f}".format(float(self_employed_estimated_taxes_paid_feds / 12) + float(jobs.deductions_federal_monthly_amount)) }
