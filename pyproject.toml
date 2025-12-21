@@ -6,11 +6,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docassemble.VT813"
-version = "1.1"
+version = "1.2"
 description = "Financial Affidavit - Vermont - Form 813A"
 readme = "README.md"
 dependencies = [
-    "docassemble.ALLinter @ git+https://github.com/SuffolkLITLab/docassemble-ALLinter.git@main",
+    "docassemble.ALToolbox @ git+https://github.com/SuffolkLITLab/docassemble-ALToolbox.git@main",
+    "docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main",
+    "docassemble.VTFeedback @ git+https://github.com/VTskier/docassemble-VTFeedback.git@main",
+    "docassemble.VTSharedYMLFile @ git+https://github.com/LSVermont/docassemble-VTSharedYMLFile.git@main",
 ]
 
 [[project.authors]]
