@@ -3185,7 +3185,7 @@ subquestion: |
 
   ${ children_expenses.add_action() }
 
-  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared + uninsured_medical_expenses_amount + educational_expenses_amount + special_needs_expenses_amount) }
+  **Total of expenses shown above:**    ${ currency(float(children_expenses.total(times_per_year=12)) + out_of_pocket_costs + child_support_shared + more_kids_expenses_to_show_want_to_add_more) }
  
 continue button field: children_expenses.review_items
 ---
@@ -3273,6 +3273,23 @@ fields:
       - educational_expenses_kids
       - specialneeds_expenses_kids
 continue button field: extraordinary_expenses
+---
+code: |
+  # Assign 0 if one of these extraordinary kids expenses is undefined, otherwise use its value. Then add them up.
+  if defined("uninsured_medical_expenses_amount"):
+    val1 = uninsured_medical_expenses_amount
+  else:
+    val1 = 0
+  if defined("educational_expenses_amount"):
+    val2 = educational_expenses_amount
+  else:
+    val2 = 0
+  if defined("special_needs_expenses_amount"):
+    val3 = special_needs_expenses_amount
+  else:
+    val3 = 0
+
+  more_kids_expenses_to_show_want_to_add_more = val1 + val2 + val3
 ---
 id: primary_residence_loans.terms_ordered
 variable name: primary_residence_loans.terms_ordered
