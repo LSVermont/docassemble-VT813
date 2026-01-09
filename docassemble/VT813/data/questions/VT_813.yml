@@ -172,7 +172,7 @@ code: |
   
   nav.set_section('intro')
   set_progress(5)
-
+  VT_start_time
   VT_813A_intro
   important_notes_to_user
   
@@ -346,6 +346,7 @@ code: |
   set_progress(95)
   al_form_requires_digital_signature = False
   basic_questions_signature_flow
+  VT_end_time
   
     # Store anonymous data for analytics / statistics
   store_variables_snapshot(
@@ -360,6 +361,7 @@ code: |
           "other_children": len(other_children),
           "reached_interview_end": True,
           "num_forms": len(al_user_bundle.enabled_documents()),
+          "elapsed_time": date_difference(starting=VT_start_time,ending=VT_end_time),
       },
   )
   nav.set_section('get_docs')
@@ -367,6 +369,15 @@ code: |
   if defined("user_selected_county"):
     trial_court.address.county
   VT_813A_download
+---
+# Capture user start time and end time. Cannot use just 'start time' because it's a function.
+---
+code: |
+  VT_start_time = current_datetime()
+---
+code: |
+  VT_end_time = current_datetime()
+---
 ---
 id: other_parties object
 objects:
