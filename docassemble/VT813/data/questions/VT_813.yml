@@ -264,9 +264,11 @@ code: |
   if len(credit_card_debt) > 0:
     credit_card_debt.review_items
   credit_card_debt.total_monthly_self_payment
+  credit_card_debt.total_monthly_other_payment
   set_progress(65)
   if len(other_debt) > 0:
     other_debt.review_items
+  total_monthly_debt_payment
 
   nav.set_section('your_expenses')
   set_progress(70)

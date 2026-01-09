@@ -11,8 +11,8 @@ description = "Financial Affidavit - Vermont - Form 813A"
 readme = "README.md"
 dependencies = [
     "docassemble.ALToolbox @ git+https://github.com/SuffolkLITLab/docassemble-ALToolbox.git@main",
-    "docassemble.AssemblyLine @ git+https://github.com/SuffolkLITLab/docassemble-AssemblyLine.git@main",
-    "docassemble.VTFeedback @ git+https://github.com/VTskier/docassemble-VTFeedback.git@main",
+    "docassemble.AssemblyLine @ git+https://github.com/suffolklitlab/docassemble-AssemblyLine.git@main",
+    "docassemble.VTFeedback @ git+https://github.com/LSVermont/docassemble-VTFeedback.git@main",
     "docassemble.VTSharedYMLFile @ git+https://github.com/LSVermont/docassemble-VTSharedYMLFile.git@main",
 ]
 
