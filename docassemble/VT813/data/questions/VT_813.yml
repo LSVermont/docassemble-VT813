@@ -347,6 +347,7 @@ code: |
   al_form_requires_digital_signature = False
   basic_questions_signature_flow
   VT_end_time
+  elapsed
   
     # Store anonymous data for analytics / statistics
   store_variables_snapshot(
@@ -361,7 +362,7 @@ code: |
           "other_children": len(other_children),
           "reached_interview_end": True,
           "num_forms": len(al_user_bundle.enabled_documents()),
-          "elapsed_time": date_difference(starting=VT_start_time,ending=VT_end_time),
+          "elapsed_time": showifdef("elapsed.minutes"),
       },
   )
   nav.set_section('get_docs')
@@ -378,6 +379,8 @@ code: |
 code: |
   VT_end_time = current_datetime()
 ---
+code: |
+  elapsed = date_difference(starting=VT_start_time, ending=VT_end_time)
 ---
 id: other_parties object
 objects:
