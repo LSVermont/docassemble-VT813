@@ -148,7 +148,7 @@ sections:
   - intro: Is this tool right for you
   - about_you: About you
   - other_party: The other party
-  - children: About kids
+  - kids: About kids
   - case_info: Your court case
   - your_income: Your income
   - your_loans: Your loans
@@ -191,7 +191,7 @@ code: |
   other_parties[0].name.first
   other_parties[0].birthdate
   
-  nav.set_section('children')
+  nav.set_section('kids')
   set_progress(20)
   
   shared_children.gather()
@@ -362,7 +362,7 @@ code: |
           "other_children": len(other_children),
           "reached_interview_end": True,
           "num_forms": len(al_user_bundle.enabled_documents()),
-          "elapsed_time": showifdef("elapsed.minutes"),
+          "elapsed_time_seconds": showifdef("elapsed.seconds"),
       },
   )
   nav.set_section('get_docs')
@@ -400,7 +400,7 @@ fields:
   - Date of birth: other_parties[0].birthdate
     datatype: BirthDate
 ---
-#################### CHILDREN ####################
+#################### KIDS ####################
 ---
 id: shared_children object
 objects:
@@ -433,7 +433,7 @@ code: |
     address_choices.append(users[1].address)
   address_choices.gathered = True
 ---
-id: shared children complete
+id: shared_children complete
 code: |
   shared_children[i].income.gather()
   shared_children[i].complete = True
@@ -449,12 +449,12 @@ code: |
         children_income.parents = children_income.parents + " & " + income.parent 
   children_income.gathered = True
 ---
-id: other children complete
+id: other_children complete
 code: |
   other_children[i].name.first
   other_children[i].complete = True
 ---
-id: are there shared children
+id: are there shared_children
 question: Minor children with ${ other_parties[0].name.full() }
 fields:
   - Do you have children under 18 years old with ${ other_parties[0].name.full() }?: shared_children.there_are_any
@@ -4658,6 +4658,8 @@ event: VT_813A_download
 question: |
   ${ download_screen_instructions_headline_one_form }
 subquestion: |
+  
+  ${ elapsed.seconds } seconds
   
   ${ download_screen_instructions_one_form }
 
