@@ -4659,8 +4659,6 @@ question: |
   ${ download_screen_instructions_headline_one_form }
 subquestion: |
   
-  ${ elapsed.seconds } seconds
-  
   ${ download_screen_instructions_one_form }
 
   **Do not edit the PDF itself.** Use the Edit your answers button.
