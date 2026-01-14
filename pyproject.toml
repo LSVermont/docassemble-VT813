@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "docassemble.VT813"
-version = "1.3"
+version = "1.4"
 description = "Financial Affidavit - Vermont - Form 813A"
 readme = "README.md"
 dependencies = [

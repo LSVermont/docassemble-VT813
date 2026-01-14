@@ -44,7 +44,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.VT813',
-      version='1.3',
+      version='1.4',
       description=('Financial Affidavit - Vermont - Form 813A'),
       long_description='# docassemble.VtFeeWaiver\r\n\r\nFinancial Affidavit - Vermont - Form 813A\r\n\r\n## Author\r\n\r\nVTCourtForms guided interview by Legal Services Vermont / VTLawHelp.org website\r\n\r\n',
       long_description_content_type='text/markdown',
