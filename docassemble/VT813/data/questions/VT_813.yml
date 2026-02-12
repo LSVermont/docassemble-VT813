@@ -55,6 +55,10 @@ metadata:
   tags:
     - "FA-00-00-00-00"
     - "FA-06-00-00-00"
+  LIST_topics:
+    - "FA-00-00-00-00"
+    - "FA-06-00-00-00"
+  jurisdiction: NAM-US-US+VT
   typical role: "plaintiff"
   generate download screen: True
 ---
