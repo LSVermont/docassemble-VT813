@@ -61,9 +61,9 @@ metadata:
     - "FA-06-00-00-00"
   jurisdiction: NAM-US-US+VT
   can_I_use_this_form: |
-    This is a VTCourtForms tool. VTCourtForms was designed to be used by people who are not represented by a lawyer. You can use this tool to ask for a fee waiver in any Vermont court. At this time, this tool is only available in English.
+    This is a VTCourtForms tool. VTCourtForms was designed to be used by people who are not represented by a lawyer.
   before_you_start: |
-    [Visit this page to see what you will need to know before you start.](https://vtlawhelp.org/vtcourtforms/fee-waiver)
+    [Visit this page to see what you will need to know before you start.](https://vtlawhelp.org/vtcourtforms/813A)
   when_you_are_finished: |
     At the end you will get a chance to preview your form and make changes if you need to. Then you can download, save, print and/or email a PDF of your completed form. You will also get an instruction sheet about how to get the completed form to the court.
   typical role: "plaintiff"
