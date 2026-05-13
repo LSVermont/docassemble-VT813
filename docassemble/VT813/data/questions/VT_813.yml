@@ -4682,6 +4682,7 @@ subquestion: |
   
   ${ collapse_template(not_seeing_email) }
   ${ collapse_template(log_out_when_done) }
+  ${ thumbs_up_thumbs_down_review }
 
 progress: 100
 ---
