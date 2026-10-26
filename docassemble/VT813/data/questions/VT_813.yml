@@ -4024,23 +4024,89 @@ question: |
 subquestion: |
   How do you want to sign them?
 fields: 
-  - I will sign: signature_choice
+  - "I will sign <span class='visually-hidden'>desktop</span>": signature_choice
     input type: radio
     choices:
-      - On my computer or phone: this_device
+      - On this device: this_device
+      - With a typed signature, like "${ al_typed_signature_prefix }${ slash_s_example_name }": typed_signature
+      - On a phone with my finger: phone
+        help: |
+          % if is_sms_enabled():
+          We can text or share a link with your phone on the next screen. WARNING: This will make your answers and forms visible on that phone.
+          % else:
+          We can share a link with your phone on the next screen. WARNING: This will make your answers and forms visible on that phone.
+          % endif
     show if:
       code: |
-        al_form_requires_digital_signature
-  - I will sign: signature_choice
+        al_form_requires_digital_signature and not (
+          device() and (device().is_mobile or device().is_touch_capable)
+        )
+  - "I will sign <span class='visually-hidden'>mobile</span>": signature_choice
     input type: radio
     choices:
-      - On my computer or phone: this_device
+      - On this device: this_device
+      - With a typed signature, like "${ al_typed_signature_prefix }${ slash_s_example_name }": typed_signature
+    show if:
+      code: |
+        al_form_requires_digital_signature and (
+          device() and (device().is_mobile or device().is_touch_capable)
+        )
+  - "I will sign <span class='visually-hidden'>desktop with print</span>": signature_choice
+    input type: radio
+    choices:
+      - On this device: this_device
+      - With a typed signature, like "${ al_typed_signature_prefix }${ slash_s_example_name }": typed_signature
+      - On the paper with a pen after I print the documents: sign_after_printing
+      - On a phone with my finger: phone
+        help: |
+          % if is_sms_enabled():
+          We can text or share a link with your phone on the next screen. WARNING: This will make your answers and forms visible on that phone.
+          % else:
+          We can share a link with your phone on the next screen. WARNING: This will make your answers and forms visible on that phone.
+
+          % endif
+    show if:
+      code: |
+        not al_form_requires_digital_signature and not (
+          device() and (device().is_mobile or device().is_touch_capable)
+        )
+  - "I will sign <span class='visually-hidden'>mobile with print</span>": signature_choice
+    input type: radio
+    choices:
+      - On this device: this_device
+      - With a typed signature, like "${ al_typed_signature_prefix }${ slash_s_example_name }": typed_signature
       - On the paper with a pen after I print the documents: sign_after_printing
     show if:
       code: |
-        not al_form_requires_digital_signature
-continue button field: saw_signature_choice    
+        not al_form_requires_digital_signature and (
+          device() and (device().is_mobile or device().is_touch_capable)
+        )
+continue button field: saw_signature_choice
 ---
+#id: signature choice
+#decoration: file-signature
+#question: |
+#  Your documents are almost ready
+#subquestion: |
+#  How do you want to sign them?
+#fields: 
+#  - I will sign: signature_choice
+#    input type: radio
+#    choices:
+#      - On my computer or phone: this_device
+#    show if:
+#      code: |
+#        al_form_requires_digital_signature
+#  - I will sign: signature_choice
+#    input type: radio
+#    choices:
+#      - On my computer or phone: this_device
+#      - On the paper with a pen after I print the documents: sign_after_printing
+#    show if:
+#      code: |
+#        not al_form_requires_digital_signature
+#continue button field: saw_signature_choice    
+#---
 
 ##################### PREVIEW SCREEN #######################
 ---
