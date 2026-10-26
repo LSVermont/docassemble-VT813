@@ -4951,8 +4951,8 @@ attachments:
       - "users1_email": ${ users[0].email } 
       - "signature_date": ${ signature_date } 
       - "users1_signature": ${ users[0].signature_if_final(i) }
-      - "users1_name_full__1": |
-          ${ users[0].name.full() } 
+      - "printed_signature": |
+          ${ printed_signature } 
       - "users1_employer_0_name": |
           ${ jobs[0].employer.name.first }, ${ jobs[0].employer.address.on_one_line() } 
 
