@@ -4870,12 +4870,12 @@ code: |
 id: attachment objects
 objects:
   - VT_financial_form_813a_post_interview_instructions: ALDocument.using(title="NEXT STEPS - Instructions for filing this form with the court", filename="VT_813A_next_steps.docx", enabled=True, has_addendum=False, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
-  - vt_financial_form_813A_attachment: ALDocument.using(title="Financial Affidavit 813A", filename="VT_financial_form_813A.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
+  - vt_financial_form_813A_attachment: ALDocument.using(title="813A Financial Affidavit", filename="VT_813A_financial_affidavit.pdf", enabled=True, has_addendum=True, default_overflow_message=AL_DEFAULT_OVERFLOW_MESSAGE)
 ---
 id: al_user_bundle objects
 objects:
-  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
-  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_financial_form_813A.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_user_bundle: ALDocumentBundle.using(elements=[VT_financial_form_813a_post_interview_instructions,vt_financial_form_813A_attachment], filename="VT_813A_financial_affidavit.pdf_package.pdf", title="All forms to download for your records", enabled=True)
+  - al_court_bundle: ALDocumentBundle.using(elements=[vt_financial_form_813A_attachment], filename="VT_813A_financial_affidavit.pdf_package.pdf", title="All forms to download for your records", enabled=True)
 ---
 id: attachments
 attachments:
