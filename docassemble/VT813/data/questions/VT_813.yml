@@ -2480,6 +2480,7 @@ fields:
       variable: vehicle_expenses[i].source
       is: other
   - Amount: vehicle_expenses[i].value
+    datatype: currency
   - How often do you pay this amount?: vehicle_expenses[i].times_per_year
     input type: radio
     default: 12
@@ -2974,7 +2975,7 @@ continue button field: personal_expenses.review_items
 ---
 id: we are ready to create your form
 question: We're ready to create your form
-subquestion: |
+subquestion: |  
   It will take a moment to generate the form after you tap the Next button.
 continue button field: wait_while_form_is_generated
 ---
@@ -4286,9 +4287,9 @@ review:
           - self_employed_net_income_monthly_amount
           - jobs
           - review_jobs
+          - single_jobs_attribute
       - employed
       - recompute:
-        - single_jobs_attribute
         - jobs_order
     button: |
       **Work**
@@ -4331,7 +4332,7 @@ review:
           - self_empl_other_expenses
           - self_empl_debts
           - net_income_order
-      - is_self_employed
+          - single_jobs_attribute
       - recompute:
         - jobs_order
     button: |
@@ -4445,16 +4446,17 @@ review:
       ###Other incomes       
   - Edit: 
       - other_incomes.revisit
-      - recompute:
-        - other_incomes.gathered
     button: |
       **Other incomes**
 
       % for income in other_incomes.complete_elements():
+      % if hasattr(income,'display_name'):
       * ${ income.display_name.lower() }
+      % endif
+      
       % endfor
 
-      % if len(other_incomes) == 0:
+      % if len(other_incomes.complete_elements()) == 0:
       - None
       % endif
 
